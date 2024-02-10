@@ -11,11 +11,11 @@ namespace gs
 	
 	class IDataSocketDef
 	{
-
+	public:
 	};
 
 	template <typename T>
-	class IDataSocketDefT : IDataSocketDef
+	class IDataSocketDefT : public IDataSocketDef
 	{
 	public:
 		T& Get();
@@ -29,13 +29,13 @@ namespace gs
 		template <typename T>
 		IDataSocketDef* AddArgument(HashString variableName)
 		{
-			if (m_DataSockets.find(variableName) != m_DataSockets.end())
+			if (m_DataSockets.find(variableName) == m_DataSockets.end())
 			{
-				return m_DataSockets[variableName];
+				m_DataSockets.emplace(variableName, new IDataSocketDefT<T>());
 			}
-
-			m_DataSockets.emplace(variableName, new IDataSocketDefT<T>());
+			return m_DataSockets[variableName];
 		}
+
 		HashMap<HashString, IDataSocketDef*> m_DataSockets;
 	};
 
@@ -56,7 +56,7 @@ namespace gs
 	};
 
 	template <typename T>
-	class IVariableDefT : IVariableDef
+	class IVariableDefT : public IVariableDef
 	{
 	public:
 		T&		Get();
@@ -70,7 +70,29 @@ namespace gs
 
 	class INodeBuilder
 	{
+	public:
+		template <typename T>
+		IDataSocketDef* AddInput(HashString variableName)
+		{
+			if (m_InputDataSockets.find(variableName) == m_InputDataSockets.end())
+			{
+				m_InputDataSockets.emplace(variableName, new IDataSocketDefT<T>());
+			}
+			return m_InputDataSockets[variableName];
+		}
 
+		template <typename T>
+		IDataSocketDef* AddOutput(HashString variableName)
+		{
+			if (m_OutputDataSockets.find(variableName) == m_OutputDataSockets.end())
+			{
+				m_OutputDataSockets.emplace(variableName, new IDataSocketDefT<T>());
+			}
+			return m_OutputDataSockets[variableName];
+		}
+
+		HashMap<HashString, IDataSocketDef*> m_InputDataSockets;
+		HashMap<HashString, IDataSocketDef*> m_OutputDataSockets;
 	};
 
 
@@ -92,17 +114,16 @@ namespace gs
 	class GraphBuilder
 	{
 	public:
-		IFunctionDef& AddFunction(const String& functionName);
+		IFunctionDef& AddFunction(HashString functionName);
 
 		template <typename T>
 		IVariableDef* AddVariable(HashString variableName)
 		{
-			if (m_Variables.find(variableName) != m_Variables.end())
+			if (m_Variables.find(variableName) == m_Variables.end())
 			{
-				return m_Variables[variableName];
+				m_Variables.emplace(variableName, new IVariableDefT<T>());
 			}
-
-			m_Variables.emplace(variableName, new IVariableDefT<T>());
+			return m_Variables[variableName];
 		}
 
 		HashMap<HashString, IVariableDef*> m_Variables;

@@ -17,3 +17,14 @@ uint64_t gs::HashString::Hash(const String& input) {
 	}
 	return r;
 }
+
+gs::IFunctionDef& gs::GraphBuilder::AddFunction(HashString functionName)
+{
+	// TODO: insert return statement here
+	if (m_Functions.find(functionName) == m_Functions.end())
+	{
+		m_Functions[functionName] = IFunctionDef();
+	}
+
+	return m_Functions[functionName];
+}

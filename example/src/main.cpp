@@ -20,10 +20,10 @@ int main() {
 	gs::IDataSocketDef* param1 = entry.AddArgument<float>("NameOfParameter");
 	gs::IVariableDef* var = builder.AddVariable<float>("NameOfVariable");
 	// 
-	// INodeBuilder multiplyNodeBuilder;
-	// IDataSocketDef inputParam = multiplyNodeBuilder.AddInput<float>("input");
-	// IDataSocketDef multipleParam = multiplyNodeBuilder.AddInput<float>("multiple");
-	// IDataSocketDef returnDef = multiplyNodeBuilder.AddOutput<float>("result");
+	gs::INodeBuilder multiplyNodeBuilder;
+	gs::IDataSocketDef* inputParam = multiplyNodeBuilder.AddInput<float>("input");
+	gs::IDataSocketDef* multipleParam = multiplyNodeBuilder.AddInput<float>("multiple");
+	gs::IDataSocketDef* returnDef = multiplyNodeBuilder.AddOutput<float>("result");
 	// multiplyNodeBuilder.AddFunctionality((&multiplyNodeBuilder) =>
 	// {
 	//     float& input = multiplyNodeBuilder.GetValue<float>("input");
