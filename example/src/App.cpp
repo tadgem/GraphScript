@@ -1,8 +1,10 @@
 #include "App.h"
+#include "OpenSans.h"
 #include <iostream>
 
 #include <GLFW/glfw3.h>
 #include <imgui.h>
+#include "imnodes.h"
 #include <glad/glad.h>
 
 #include "../vendor/imgui_impl_glfw.h"
@@ -32,6 +34,7 @@ bool gs::ExampleApp::Init()
 	}
 
 	ImGui::CreateContext();
+	ImNodes::CreateContext();
 
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.IniFilename = "imgui.ini";
@@ -39,6 +42,8 @@ bool gs::ExampleApp::Init()
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	ImGui_ImplGlfw_InitForOpenGL(p_Window, true);
 	ImGui_ImplOpenGL3_Init(GLSL_VERSION);
+
+	ImFont* font = io.Fonts->AddFontFromMemoryTTF((void*) & OpenSans[0], 529700, 22.0f);
 }
 
 bool gs::ExampleApp::ShouldRun()
@@ -58,6 +63,7 @@ bool gs::ExampleApp::ShouldRun()
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
+	Dockspace();
 
 	return true;
 }
@@ -74,8 +80,43 @@ void gs::ExampleApp::Shutdown()
 {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
+	
+	ImNodes::DestroyContext();
 	ImGui::DestroyContext();
 
 	glfwDestroyWindow(p_Window);
 	glfwTerminate();
+}
+
+void gs::ExampleApp::Dockspace()
+{
+	static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
+
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImVec2 winPos = viewport->Pos;
+	ImVec2 winSize = viewport->Size;
+	ImGui::SetNextWindowPos(winPos);
+	ImGui::SetNextWindowSize(winSize);
+	ImGui::SetNextWindowViewport(viewport->ID);
+
+	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+
+	// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
+	if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+		window_flags |= ImGuiWindowFlags_NoBackground;
+
+	// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
+	// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
+	// all active windows docked into it will lose their parent and become undocked.
+	// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
+	// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
+	ImGui::Begin("DockSpace", nullptr, window_flags);
+	ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+	ImGui::DockSpace(dockspace_id, winSize, dockspace_flags);
+	ImGui::End();
 }

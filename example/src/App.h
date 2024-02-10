@@ -16,6 +16,8 @@ namespace gs
 		void Shutdown();
 
 	protected:
+
+		void Dockspace();
 		GLFWwindow* p_Window;
 	};
 }
