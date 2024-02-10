@@ -6,7 +6,10 @@ int main() {
 	using namespace gs;
 	ExampleApp app;
 
-	app.Init();
+	if (!app.Init())
+	{
+		return -1;
+	}
 
 	const int hardcoded_node_id = 1;
 
