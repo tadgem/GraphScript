@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.17)
-project(dear-imgui-template)
+project(graphscript-example)
 
 set(CMAKE_CXX_STANDARD 20)
 set(LIBRARIES_DIR lib)
 
-add_executable(dear-imgui-template
+add_executable(graphscript-example
         vendor/imgui_impl_glfw.h
         vendor/imgui_impl_glfw.cpp
         vendor/imgui_impl_opengl3.h
@@ -39,3 +39,9 @@ add_library("imgui"
 target_include_directories("imgui" PRIVATE "${IMGUI_DIR}/include")
 target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}/include")
 target_link_libraries(${PROJECT_NAME} "imgui" "${CMAKE_DL_LIBS}")
+
+# graphscript
+get_filename_component(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
+add_subdirectory("${ROOT_DIR}/graphscript" ${CMAKE_CURRENT_BINARY_DIR}/graphscript)
+target_link_libraries(${PROJECT_NAME} GraphScript)
+target_include_directories(${PROJECT_NAME} PRIVATE "${ROOT_DIR}/graphscript/include")
