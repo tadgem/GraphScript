@@ -1,2 +1,2 @@
 # GraphScript
- visual scripting language designed for Harmony engine. 
+ visual scripting language designed to be embedded in other applications.
