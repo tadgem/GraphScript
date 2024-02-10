@@ -1,10 +1,11 @@
 #include "App.h"
 #include <imgui.h>
 #include "imnodes.h"
+#include "GraphScript.h"
+
 
 int main() {
-	using namespace gs;
-	ExampleApp app;
+	gs::ExampleApp app;
 
 	if (!app.Init())
 	{
@@ -12,6 +13,47 @@ int main() {
 	}
 
 	const int hardcoded_node_id = 1;
+
+	// GSContext context;
+	// GSGraphBuilder builder;
+	// IFunctionDef entry = builder.AddFunction("NameOfEntry");
+	// IDataSocketDef param1 = entry.AddArgument<float>("NameOfParameter");
+	// IVariableDef var = builder.AddVariable<float>("NameOfVariable");
+	// 
+	// INodeBuilder multiplyNodeBuilder;
+	// IDataSocketDef inputParam = multiplyNodeBuilder.AddInput<float>("input");
+	// IDataSocketDef multipleParam = multiplyNodeBuilder.AddInput<float>("multiple");
+	// IDataSocketDef returnDef = multiplyNodeBuilder.AddOutput<float>("result");
+	// multiplyNodeBuilder.AddFunctionality((&multiplyNodeBuilder) =>
+	// {
+	//     float& input = multiplyNodeBuilder.GetValue<float>("input");
+	//     float& multiple = multiplyNodeBuilder.GetValue<float>("multiple");
+	//     float& result = multiplyNodeBuilder.GetValue<float>("result");
+	//     result = input * multiple;
+	// 
+	// });
+	//
+	// INode multiplyNode = builder.AddNodeFromBuilder(multiplyNodeBuilder);
+	// INode printNode = builder.AddNode(new PrintValueNode());
+	// 
+	// IDataConnectionDef entryToInputDef = builder.Connect<float>(param1, multiplyNode.GetConnection<float>("input"));
+	// IDataConnectionDef varToMultipleDef = builder.Connect<float>(var, multiplyNode.GetConnection<float>("multiple"));
+	// IDataConnectionDef outputToPrintDef = builder.Connect<float>(multiplyNode.GetConnection<float>("result"), printNode.GetConnection<float>("input"));
+	//
+	// IExecutionConnectionDef entryToMultiplyExecution = builder.AddExecutionConnection(entry, multiplyNode);
+	// IExecutionConnectionDef multiplyToPrintExecution = builder.AddExecutionConnection(multiplyNode, printNode);
+	// 
+	// GSGraph instance = builder.Build();
+	// GSObject object = context.AddGraph(instance);
+	// object.SetVariable("NameOfVariable", 3.0f):
+	// 
+	// GSArgs args;
+	// args["NameOfParameter"] = 3.0f;
+	// object.CallFunction("NameOfEntry", args);
+	// expected output = 9.0f;
+
+
+
 
 	while (app.ShouldRun())
 	{
