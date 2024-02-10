@@ -3,6 +3,9 @@
 gs::HashString::HashString(const String& input) : m_Value(Hash(input)) {
 }
 
+gs::HashString::HashString(const char* input) : m_Value(Hash(String(input))) {
+}
+
 gs::HashString::HashString(uint64_t value) : m_Value(value)
 {
 }

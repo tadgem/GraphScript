@@ -14,11 +14,11 @@ int main() {
 
 	const int hardcoded_node_id = 1;
 
-	// GSContext context;
-	// GSGraphBuilder builder;
-	// IFunctionDef entry = builder.AddFunction("NameOfEntry");
-	// IDataSocketDef param1 = entry.AddArgument<float>("NameOfParameter");
-	// IVariableDef var = builder.AddVariable<float>("NameOfVariable");
+	gs::Context context;
+	gs::GraphBuilder builder;
+	gs::IFunctionDef& entry = builder.AddFunction("NameOfEntry");
+	gs::IDataSocketDef* param1 = entry.AddArgument<float>("NameOfParameter");
+	gs::IVariableDef* var = builder.AddVariable<float>("NameOfVariable");
 	// 
 	// INodeBuilder multiplyNodeBuilder;
 	// IDataSocketDef inputParam = multiplyNodeBuilder.AddInput<float>("input");

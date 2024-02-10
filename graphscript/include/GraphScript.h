@@ -4,35 +4,9 @@
 
 #ifndef GRAPHSCRIPT_GUARD_H
 #define GRAPHSCRIPT_GUARD_H
-#include <string>
-#include <any>
-#include <map>
-
+#include "TypeDef.h"
 namespace gs
 {
-	using String = std::string;
-
-	template<typename T, typename Y>
-	using HashMap = std::map<T, Y>;
-
-	using Any = std::any;
-
-	struct HashString {
-		HashString() { m_Value = 0; }
-
-		HashString(const String& input);
-		HashString(uint64_t value);
-
-		uint64_t m_Value;
-
-		bool operator==(HashString const& rhs) const { return m_Value == rhs.m_Value; }
-
-		operator uint64_t() const { return m_Value; }
-
-	protected:
-		static uint64_t Hash(const String& input);
-	};
-	
 	using VariableSet = HashMap<HashString, Any>;
 	
 	class IDataSocketDef
@@ -40,9 +14,29 @@ namespace gs
 
 	};
 
+	template <typename T>
+	class IDataSocketDefT : IDataSocketDef
+	{
+	public:
+		T& Get();
+		bool	Set(const T& other);
+	};
+
+
 	class IFunctionDef
 	{
-		HashMap<HashString, IDataSocketDef> m_DataSockets;
+	public:
+		template <typename T>
+		IDataSocketDef* AddArgument(HashString variableName)
+		{
+			if (m_DataSockets.find(variableName) != m_DataSockets.end())
+			{
+				return m_DataSockets[variableName];
+			}
+
+			m_DataSockets.emplace(variableName, new IDataSocketDefT<T>());
+		}
+		HashMap<HashString, IDataSocketDef*> m_DataSockets;
 	};
 
 	class IDataConnectionDef
@@ -57,7 +51,16 @@ namespace gs
 
 	class IVariableDef
 	{
+	public:
+		Any m_Value;
+	};
 
+	template <typename T>
+	class IVariableDefT : IVariableDef
+	{
+	public:
+		T&		Get();
+		bool	Set(const T& other);
 	};
 
 	class INode
@@ -79,6 +82,7 @@ namespace gs
 
 	class Graph
 	{
+	public:
 		VariableSet m_Variables;
 
 		FunctionCallResult CallFunction(const String& functionName, VariableSet args);
@@ -87,9 +91,21 @@ namespace gs
 
 	class GraphBuilder
 	{
+	public:
 		IFunctionDef& AddFunction(const String& functionName);
 
-		HashMap<HashString, IVariableDef> m_Variables;
+		template <typename T>
+		IVariableDef* AddVariable(HashString variableName)
+		{
+			if (m_Variables.find(variableName) != m_Variables.end())
+			{
+				return m_Variables[variableName];
+			}
+
+			m_Variables.emplace(variableName, new IVariableDefT<T>());
+		}
+
+		HashMap<HashString, IVariableDef*> m_Variables;
 		HashMap<HashString, IFunctionDef> m_Functions;
 
 	};
