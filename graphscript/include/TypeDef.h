@@ -7,15 +7,21 @@
 #include <string>
 #include <any>
 #include <map>
-
+#include <functional>
+#include <optional>
 namespace gs
 {
 	using String = std::string;
 
+	using Any = std::any;
+
+	using Procedure = std::function<void()>;
+
+	template<typename T>
+	using Optional = std::optional<T>;
+
 	template<typename T, typename Y>
 	using HashMap = std::map<T, Y>;
-
-	using Any = std::any;
 
 	struct HashString {
 		HashString() { m_Value = 0; }

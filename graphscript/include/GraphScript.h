@@ -9,6 +9,18 @@ namespace gs
 {
 	using VariableSet = HashMap<HashString, Any>;
 	
+	class IDataConnectionDef
+	{
+	public:
+	};
+
+	template<typename T>
+	class IDataConnectionDefT : public IDataConnectionDef
+	{
+	public:
+
+	};
+
 	class IDataSocketDef
 	{
 	public:
@@ -18,8 +30,16 @@ namespace gs
 	class IDataSocketDefT : public IDataSocketDef
 	{
 	public:
-		T& Get();
-		bool	Set(const T& other);
+		Optional<T>		Get()
+		{
+			return {};
+		}
+		bool	Set(const T& other)
+		{
+			return false;
+		}
+
+		IDataConnectionDefT<T>* m_Connection = nullptr;
 	};
 
 
@@ -27,21 +47,16 @@ namespace gs
 	{
 	public:
 		template <typename T>
-		IDataSocketDef* AddArgument(HashString variableName)
+		IDataSocketDefT<T>* AddArgument(HashString variableName)
 		{
 			if (m_DataSockets.find(variableName) == m_DataSockets.end())
 			{
 				m_DataSockets.emplace(variableName, new IDataSocketDefT<T>());
 			}
-			return m_DataSockets[variableName];
+			return static_cast<IDataSocketDefT<T>*>(m_DataSockets[variableName]);
 		}
 
 		HashMap<HashString, IDataSocketDef*> m_DataSockets;
-	};
-
-	class IDataConnectionDef
-	{
-
 	};
 
 	class IExecutionConnectionDef
@@ -72,27 +87,33 @@ namespace gs
 	{
 	public:
 		template <typename T>
-		IDataSocketDef* AddInput(HashString variableName)
+		IDataSocketDefT<T>* AddInput(HashString variableName)
 		{
 			if (m_InputDataSockets.find(variableName) == m_InputDataSockets.end())
 			{
 				m_InputDataSockets.emplace(variableName, new IDataSocketDefT<T>());
 			}
-			return m_InputDataSockets[variableName];
+			return static_cast<IDataSocketDefT<T>*>(m_InputDataSockets[variableName]);
 		}
 
 		template <typename T>
-		IDataSocketDef* AddOutput(HashString variableName)
+		IDataSocketDefT<T>* AddOutput(HashString variableName)
 		{
 			if (m_OutputDataSockets.find(variableName) == m_OutputDataSockets.end())
 			{
 				m_OutputDataSockets.emplace(variableName, new IDataSocketDefT<T>());
 			}
-			return m_OutputDataSockets[variableName];
+			return static_cast<IDataSocketDefT<T>*>(m_OutputDataSockets[variableName]);
+		}
+
+		void AddFunctionality(Procedure proc)
+		{
+			m_Proc = proc;
 		}
 
 		HashMap<HashString, IDataSocketDef*> m_InputDataSockets;
 		HashMap<HashString, IDataSocketDef*> m_OutputDataSockets;
+		Procedure m_Proc = NULL;
 	};
 
 
@@ -117,13 +138,13 @@ namespace gs
 		IFunctionDef& AddFunction(HashString functionName);
 
 		template <typename T>
-		IVariableDef* AddVariable(HashString variableName)
+		IVariableDefT<T>* AddVariable(HashString variableName)
 		{
 			if (m_Variables.find(variableName) == m_Variables.end())
 			{
 				m_Variables.emplace(variableName, new IVariableDefT<T>());
 			}
-			return m_Variables[variableName];
+			return static_cast<IVariableDefT<T>*>(m_Variables[variableName]);
 		}
 
 		HashMap<HashString, IVariableDef*> m_Variables;

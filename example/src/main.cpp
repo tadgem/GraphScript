@@ -21,17 +21,21 @@ int main() {
 	gs::IVariableDef* var = builder.AddVariable<float>("NameOfVariable");
 	// 
 	gs::INodeBuilder multiplyNodeBuilder;
-	gs::IDataSocketDef* inputParam = multiplyNodeBuilder.AddInput<float>("input");
-	gs::IDataSocketDef* multipleParam = multiplyNodeBuilder.AddInput<float>("multiple");
-	gs::IDataSocketDef* returnDef = multiplyNodeBuilder.AddOutput<float>("result");
-	// multiplyNodeBuilder.AddFunctionality((&multiplyNodeBuilder) =>
-	// {
-	//     float& input = multiplyNodeBuilder.GetValue<float>("input");
-	//     float& multiple = multiplyNodeBuilder.GetValue<float>("multiple");
-	//     float& result = multiplyNodeBuilder.GetValue<float>("result");
-	//     result = input * multiple;
-	// 
-	// });
+	gs::IDataSocketDefT<float>* inputParam = multiplyNodeBuilder.AddInput<float>("input");
+	gs::IDataSocketDefT<float>* multipleParam = multiplyNodeBuilder.AddInput<float>("multiple");
+	gs::IDataSocketDefT<float>* returnDef = multiplyNodeBuilder.AddOutput<float>("result");
+	multiplyNodeBuilder.AddFunctionality([ & inputParam, &multipleParam, &returnDef]()
+	{
+		 gs::Optional<float> input = inputParam->Get();
+		 gs::Optional<float> multiple = multipleParam->Get();
+
+		 if (!input.has_value() || multiple.has_value())
+		 {
+			 return;
+		 }
+		 returnDef->Set(input.value() * multiple.value());
+	 
+	});
 	//
 	// INode multiplyNode = builder.AddNodeFromBuilder(multiplyNodeBuilder);
 	// INode printNode = builder.AddNode(new PrintValueNode());
