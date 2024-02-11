@@ -17,33 +17,33 @@ int main() {
 	gs::Context context;
 	gs::GraphBuilder builder;
 	gs::IFunctionDef& entry = builder.AddFunction("NameOfEntry");
-	gs::IDataSocketDef* param1 = entry.AddArgument<float>("NameOfParameter");
-	gs::IVariableDef* var = builder.AddVariable<float>("NameOfVariable");
+	gs::IDataSocketDefT<float>* param1 = entry.AddArgument<float>("NameOfParameter");
+	gs::IVariableDefT<float>* var = builder.AddVariable<float>("NameOfVariable");
 	// 
-	gs::INodeBuilder multiplyNodeBuilder;
-	gs::IDataSocketDefT<float>* inputParam = multiplyNodeBuilder.AddInput<float>("input");
-	gs::IDataSocketDefT<float>* multipleParam = multiplyNodeBuilder.AddInput<float>("multiple");
-	gs::IDataSocketDefT<float>* returnDef = multiplyNodeBuilder.AddOutput<float>("result");
-	multiplyNodeBuilder.AddFunctionality([ & inputParam, &multipleParam, &returnDef]()
+	auto multiplyNodeBuilder = gs::CreateUnique<gs::ICustomNode>();
+	gs::IDataSocketDefT<float>* inputParam = multiplyNodeBuilder->AddInput<float>("input");
+	gs::IDataSocketDefT<float>* multipleParam = multiplyNodeBuilder->AddInput<float>("multiple");
+	gs::IDataSocketDefT<float>* resultDef = multiplyNodeBuilder->AddOutput<float>("result");
+	multiplyNodeBuilder->AddFunctionality([ & inputParam, &multipleParam, &resultDef]()
 	{
-		 gs::Optional<float> input = inputParam->Get();
-		 gs::Optional<float> multiple = multipleParam->Get();
-
-		 if (!input.has_value() || multiple.has_value())
-		 {
-			 return;
-		 }
-		 returnDef->Set(input.value() * multiple.value());
+			resultDef->Set(inputParam->Get() * multipleParam->Get());
 	 
 	});
-	//
-	// INode multiplyNode = builder.AddNodeFromBuilder(multiplyNodeBuilder);
-	// INode printNode = builder.AddNode(new PrintValueNode());
-	// 
-	// IDataConnectionDef entryToInputDef = builder.Connect<float>(param1, multiplyNode.GetConnection<float>("input"));
-	// IDataConnectionDef varToMultipleDef = builder.Connect<float>(var, multiplyNode.GetConnection<float>("multiple"));
-	// IDataConnectionDef outputToPrintDef = builder.Connect<float>(multiplyNode.GetConnection<float>("result"), printNode.GetConnection<float>("input"));
-	//
+
+	auto printFloatNodeBuilder = gs::CreateUnique<gs::ICustomNode>();
+	gs::IDataSocketDefT<float>* floatInputParam = multiplyNodeBuilder->AddInput<float>("input");
+	multiplyNodeBuilder->AddFunctionality([&floatInputParam]()
+		{
+			printf("float : %f", floatInputParam->Get());
+		});
+
+	builder.AddNode(multiplyNodeBuilder.get());
+	builder.AddNode(printFloatNodeBuilder.get());
+
+	gs::IDataConnectionDefT<float>*entryToInputDef = builder.Connect<float>(param1, inputParam);
+	gs::IDataConnectionDefT<float>* varToMultipleDef = builder.Connect<float>(&var->m_Socket, multipleParam);
+	gs::IDataConnectionDefT<float>* outputToPrintDef = builder.Connect<float>(resultDef, floatInputParam);
+	
 	// IExecutionConnectionDef entryToMultiplyExecution = builder.AddExecutionConnection(entry, multiplyNode);
 	// IExecutionConnectionDef multiplyToPrintExecution = builder.AddExecutionConnection(multiplyNode, printNode);
 	// 

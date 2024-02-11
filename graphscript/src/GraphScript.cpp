@@ -28,3 +28,21 @@ gs::IFunctionDef& gs::GraphBuilder::AddFunction(HashString functionName)
 
 	return m_Functions[functionName];
 }
+
+
+void gs::ICustomNode::Process()
+{
+	m_Proc();
+}
+
+gs::GraphBuilder::~GraphBuilder()
+{
+	for (int i = 0; i < m_Connections.size(); i++)
+	{
+		delete m_Connections[i];
+	}
+	m_Connections.clear();
+	m_Functions.clear();
+	m_Nodes.clear();
+	m_Variables.clear();
+}

@@ -9,6 +9,10 @@
 #include <map>
 #include <functional>
 #include <optional>
+#include <memory>
+#include <vector>
+#include <type_traits>
+
 namespace gs
 {
 	using String = std::string;
@@ -22,6 +26,17 @@ namespace gs
 
 	template<typename T, typename Y>
 	using HashMap = std::map<T, Y>;
+
+	template<typename T>
+	using Unique = std::unique_ptr<T>;
+
+	template<typename T>
+	using Vector = std::vector<T>;
+
+	template<typename T, typename ... Args>
+	constexpr Unique<T> CreateUnique(Args &&... args) {
+		return std::make_unique<T>(std::forward<Args>(args)...);
+	}
 
 	struct HashString {
 		HashString() { m_Value = 0; }

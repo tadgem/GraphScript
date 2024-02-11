@@ -9,38 +9,58 @@ namespace gs
 {
 	using VariableSet = HashMap<HashString, Any>;
 	
-	class IDataConnectionDef
+	enum FunctionCallResult
 	{
-	public:
-	};
-
-	template<typename T>
-	class IDataConnectionDefT : public IDataConnectionDef
-	{
-	public:
-
+		Success,
+		Fail
 	};
 
 	class IDataSocketDef
 	{
 	public:
+		Any m_Value;
 	};
 
 	template <typename T>
 	class IDataSocketDefT : public IDataSocketDef
 	{
 	public:
-		Optional<T>		Get()
+		T		Get()
 		{
-			return {};
+			return std::any_cast<T>(m_Value);
 		}
-		bool	Set(const T& other)
+		void Set(const T& other)
 		{
-			return false;
+			m_Value = other;
+		}
+	};
+
+	class IDataConnectionDef
+	{
+	public:
+		virtual void Process() = 0;
+	};
+
+	template<typename T>
+	class IDataConnectionDefT : public IDataConnectionDef
+	{
+	public:
+		IDataConnectionDefT(IDataSocketDefT<T>* lhs, IDataSocketDefT<T>* rhs)
+		{
+			p_LHS = lhs;
+			p_RHS = rhs;
 		}
 
-		IDataConnectionDefT<T>* m_Connection = nullptr;
+		void Process() override
+		{
+			p_RHS->Set(p_LHS->Get());
+		}
+
+	protected:
+		IDataSocketDefT<T>* p_LHS;
+		IDataSocketDefT<T>* p_RHS;
 	};
+
 
 
 	class IFunctionDef
@@ -51,12 +71,12 @@ namespace gs
 		{
 			if (m_DataSockets.find(variableName) == m_DataSockets.end())
 			{
-				m_DataSockets.emplace(variableName, new IDataSocketDefT<T>());
+				m_DataSockets.emplace(variableName, CreateUnique<IDataSocketDefT<T>>());
 			}
-			return static_cast<IDataSocketDefT<T>*>(m_DataSockets[variableName]);
+			return static_cast<IDataSocketDefT<T>*>(m_DataSockets[variableName].get());
 		}
 
-		HashMap<HashString, IDataSocketDef*> m_DataSockets;
+		HashMap<HashString, Unique<IDataSocketDef>> m_DataSockets;
 	};
 
 	class IExecutionConnectionDef
@@ -74,16 +94,27 @@ namespace gs
 	class IVariableDefT : public IVariableDef
 	{
 	public:
-		T&		Get();
-		bool	Set(const T& other);
+		T		Get()
+		{
+			T val = std::any_cast<T>(m_Value);
+		}
+		void Set(const T& other)
+		{
+			m_Value = other;
+			m_Socket.Set(m_Value);
+		}
+
+		IDataSocketDefT<T> m_Socket;
 	};
 
 	class INode
 	{
+	public:
+		virtual void Process() = 0;
 
 	};
 
-	class INodeBuilder
+	class ICustomNode : public INode
 	{
 	public:
 		template <typename T>
@@ -91,9 +122,9 @@ namespace gs
 		{
 			if (m_InputDataSockets.find(variableName) == m_InputDataSockets.end())
 			{
-				m_InputDataSockets.emplace(variableName, new IDataSocketDefT<T>());
+				m_InputDataSockets.emplace(variableName, CreateUnique<IDataSocketDefT<T>>());
 			}
-			return static_cast<IDataSocketDefT<T>*>(m_InputDataSockets[variableName]);
+			return static_cast<IDataSocketDefT<T>*>(m_InputDataSockets[variableName].get());
 		}
 
 		template <typename T>
@@ -101,9 +132,9 @@ namespace gs
 		{
 			if (m_OutputDataSockets.find(variableName) == m_OutputDataSockets.end())
 			{
-				m_OutputDataSockets.emplace(variableName, new IDataSocketDefT<T>());
+				m_OutputDataSockets.emplace(variableName, CreateUnique<IDataSocketDefT<T>>());
 			}
-			return static_cast<IDataSocketDefT<T>*>(m_OutputDataSockets[variableName]);
+			return static_cast<IDataSocketDefT<T>*>(m_OutputDataSockets[variableName].get());
 		}
 
 		void AddFunctionality(Procedure proc)
@@ -111,16 +142,11 @@ namespace gs
 			m_Proc = proc;
 		}
 
-		HashMap<HashString, IDataSocketDef*> m_InputDataSockets;
-		HashMap<HashString, IDataSocketDef*> m_OutputDataSockets;
+		void Process() override;
+
+		HashMap<HashString, Unique<IDataSocketDef>> m_InputDataSockets;
+		HashMap<HashString, Unique<IDataSocketDef>> m_OutputDataSockets;
 		Procedure m_Proc = NULL;
-	};
-
-
-	enum FunctionCallResult
-	{
-		Success,
-		Fail
 	};
 
 	class Graph
@@ -135,6 +161,9 @@ namespace gs
 	class GraphBuilder
 	{
 	public:
+
+		~GraphBuilder();
+
 		IFunctionDef& AddFunction(HashString functionName);
 
 		template <typename T>
@@ -142,14 +171,28 @@ namespace gs
 		{
 			if (m_Variables.find(variableName) == m_Variables.end())
 			{
-				m_Variables.emplace(variableName, new IVariableDefT<T>());
+				m_Variables.emplace(variableName, CreateUnique<IVariableDefT<T>>());
 			}
-			return static_cast<IVariableDefT<T>*>(m_Variables[variableName]);
+			return static_cast<IVariableDefT<T>*>(m_Variables[variableName].get());
 		}
 
-		HashMap<HashString, IVariableDef*> m_Variables;
-		HashMap<HashString, IFunctionDef> m_Functions;
+		void AddNode(INode* node)
+		{
+			m_Nodes.push_back(node);
+		}
 
+		template<typename T>
+		IDataConnectionDefT<T>* Connect(IDataSocketDefT<T>* lhs, IDataSocketDefT<T>* rhs)
+		{
+			auto conn = new IDataConnectionDefT<T>(lhs, rhs);
+			m_Connections.emplace_back(conn);
+			return conn;
+		}
+
+		HashMap<HashString, Unique<IVariableDef>> m_Variables;
+		HashMap<HashString, IFunctionDef> m_Functions;
+		Vector<INode*> m_Nodes;
+		Vector<IDataConnectionDef*> m_Connections;
 	};
 
 	class Context
