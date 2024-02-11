@@ -49,7 +49,18 @@ int main() {
 	
 	gs::IExecutionConnectionDef entryToMultiplyExecution = builder.ConnectNode(&entry, multiplyNodeBuilder.get());
 	gs::IExecutionConnectionDef multiplyToPrintExecution = builder.ConnectNode(multiplyNodeBuilder.get(), printFloatNodeBuilder.get());
-	// 
+	
+
+
+
+
+
+
+
+
+
+
+	// Benchmark
 	// GSGraph instance = builder.Build();
 	// GSObject object = context.AddGraph(instance);
 	builder.SetVariable<float>("NameOfVariable", 3.0f);
@@ -59,7 +70,6 @@ int main() {
 	gs::HashString entryName("NameOfEntry");
 
 	const int ITERATIONS = 100000;
-
 	gs::Timer gsTimer;
 	gsTimer.start();
 	for (int i = 0; i < ITERATIONS; i++)
