@@ -9,6 +9,7 @@ gs::HashString::HashString(const char* input) : m_Value(Hash(String(input))), m_
 gs::HashString::HashString(uint64_t value) : m_Value(value)
 {
 }
+
 uint64_t gs::HashString::Hash(const String& input) {
 	uint64_t r = 0;
 	for (int i = 0; i < input.size(); i++) {
@@ -142,7 +143,6 @@ gs::IExecutionConnectionDef gs::GraphBuilder::ConnectNode(gs::INode* lhs, gs::IN
 	m_ExecutionConnections.push_back(conn);
 	return conn;
 }
-
 
 gs::INode* gs::GraphBuilder::FindSocketNode(IDataSocketDef* socket)
 {
