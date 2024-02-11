@@ -37,7 +37,7 @@ int main() {
 	gs::IDataSocketDefT<float>* floatInputParam = multiplyNodeBuilder->AddInput<float>("input");
 	printFloatNodeBuilder->AddFunctionality([&floatInputParam]()
 		{
-			printf("float : %f", floatInputParam->Get().value());
+			printf("float : %f\n", floatInputParam->Get().value());
 		});
 
 	builder.AddNode(multiplyNodeBuilder.get());
@@ -56,7 +56,12 @@ int main() {
 	gs::VariableSet args;
 	args["NameOfParameter"] = 3.0f;
 	
-	builder.CallFunction("NameOfEntry", args);
+
+	for (int i = 0; i < 100; i++)
+	{
+		builder.CallFunction("NameOfEntry", args);
+	}
+
 	// expected : 9.0f
     // Getting : 3.0f
 	

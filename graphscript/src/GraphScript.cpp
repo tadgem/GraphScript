@@ -49,6 +49,8 @@ gs::FunctionCallResult gs::GraphBuilder::CallFunction(HashString nameOfMethod, V
 	{
 		return FunctionCallResult::Fail;
 	}
+
+	ResetSockets();
 	
 	IFunctionNode& func = m_Functions[nameOfMethod];
 	PopulateParams(func, args);
@@ -61,6 +63,7 @@ gs::FunctionCallResult gs::GraphBuilder::CallFunction(HashString nameOfMethod, V
 
 		next = FindRHS(next);
 	}
+
 
 	return FunctionCallResult::Success;
 }
@@ -126,6 +129,22 @@ void gs::GraphBuilder::PopulateParams(IFunctionNode& functionNode, VariableSet p
 		if (params.find(name) != params.end())
 		{
 			socket->m_Value = params[name];
+		}
+	}
+}
+
+void gs::GraphBuilder::ResetSockets()
+{
+	for (INode* node : m_Nodes)
+	{
+		for (auto& [name, socket] : node->m_InputDataSockets)
+		{
+			socket->m_Value.reset();
+		}
+
+		for (auto& [name, socket] : node->m_OutputDataSockets)
+		{
+			socket->m_Value.reset();
 		}
 	}
 }

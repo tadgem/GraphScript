@@ -217,11 +217,13 @@ namespace gs
 		Vector<IExecutionConnectionDef> m_ExecutionConnections;
 
 	protected:
+		VariableSet p_VariableData;
 		INode* FindRHS(INode* lhs);
 		INode* FindSocketNode(IDataSocketDef* socket);
 		void PrintNodeSockets(INode* node);
 		void ProcessDataConnections();
 		void PopulateParams(IFunctionNode& functionNode, VariableSet params);
+		void ResetSockets();
 	};
 }
 #endif //GRAPHSCRIPT_GUARD_H
