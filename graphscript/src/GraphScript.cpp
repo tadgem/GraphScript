@@ -100,15 +100,22 @@ void gs::GraphBuilder::PrintNodeSockets(INode* node)
 void gs::GraphBuilder::ProcessDataConnections()
 {
 	const bool CONNECTIONS_DEBUG = true;
-	for (int i = 0; i < m_DataConnections.size(); i++)
+
+	if (CONNECTIONS_DEBUG)
 	{
 		std::cout << "--" << std::endl;
+	}
+	for (int i = 0; i < m_DataConnections.size(); i++)
+	{
 		if (CONNECTIONS_DEBUG)
 		{
 			m_DataConnections[i]->Print();
 		}
-		std::cout << "--" << std::endl;
 		m_DataConnections[i]->Process();
+	}
+	if (CONNECTIONS_DEBUG)
+	{
+		std::cout << "--" << std::endl;
 	}
 }
 
