@@ -37,7 +37,7 @@ int main() {
 	gs::IDataSocketDefT<float>* floatInputParam = multiplyNodeBuilder->AddInput<float>("input");
 	printFloatNodeBuilder->AddFunctionality([&floatInputParam]()
 		{
-			printf("float : %f\n", floatInputParam->Get().value());
+			printf("GS : float : %f\n", floatInputParam->Get().value());
 		});
 
 	builder.AddNode(multiplyNodeBuilder.get());
@@ -56,11 +56,29 @@ int main() {
 	gs::VariableSet args;
 	args["NameOfParameter"] = 3.0f;
 	
+	gs::HashString entryName("NameOfEntry");
 
-	for (int i = 0; i < 100; i++)
+	const int ITERATIONS = 100000;
+
+	gs::Timer gsTimer;
+	gsTimer.start();
+	for (int i = 0; i < ITERATIONS; i++)
 	{
-		builder.CallFunction("NameOfEntry", args);
+		builder.CallFunction(entryName, args);
 	}
+	gsTimer.stop();
+
+	gs::Timer cTimer;
+	cTimer.start();
+	for (int i = 0; i < ITERATIONS; i++)
+	{
+		float x = 3.0 * 3.0;
+		printf("C : float : %f\n", x);
+	}
+	cTimer.stop();
+	std::cout << "--\n-- RESULTS --\n--\n";
+	std::cout << "GS Time : " << gsTimer.elapsedMilliseconds() << "ms \n";
+	std::cout << "C Time : " << cTimer.elapsedMilliseconds() << "ms \n";
 
 	// expected : 9.0f
     // Getting : 3.0f

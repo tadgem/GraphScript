@@ -102,7 +102,7 @@ void gs::GraphBuilder::PrintNodeSockets(INode* node)
 
 void gs::GraphBuilder::ProcessDataConnections()
 {
-	const bool CONNECTIONS_DEBUG = true;
+	const bool CONNECTIONS_DEBUG = false;
 
 	if (CONNECTIONS_DEBUG)
 	{
