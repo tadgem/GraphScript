@@ -29,6 +29,11 @@ gs::IFunctionDef& gs::GraphBuilder::AddFunction(HashString functionName)
 	return m_Functions[functionName];
 }
 
+void gs::GraphBuilder::AddNode(INode* node)
+{
+	m_Nodes.push_back(node);
+}
+
 
 void gs::ICustomNode::Process()
 {

@@ -112,6 +112,8 @@ namespace gs
 	public:
 		virtual void Process() = 0;
 
+		HashMap<HashString, Unique<IDataSocketDef>> m_InputDataSockets;
+		HashMap<HashString, Unique<IDataSocketDef>> m_OutputDataSockets;
 	};
 
 	class ICustomNode : public INode
@@ -144,8 +146,7 @@ namespace gs
 
 		void Process() override;
 
-		HashMap<HashString, Unique<IDataSocketDef>> m_InputDataSockets;
-		HashMap<HashString, Unique<IDataSocketDef>> m_OutputDataSockets;
+
 		Procedure m_Proc = NULL;
 	};
 
@@ -165,6 +166,7 @@ namespace gs
 		~GraphBuilder();
 
 		IFunctionDef& AddFunction(HashString functionName);
+		void AddNode(INode* node);
 
 		template <typename T>
 		IVariableDefT<T>* AddVariable(HashString variableName)
@@ -176,10 +178,6 @@ namespace gs
 			return static_cast<IVariableDefT<T>*>(m_Variables[variableName].get());
 		}
 
-		void AddNode(INode* node)
-		{
-			m_Nodes.push_back(node);
-		}
 
 		template<typename T>
 		IDataConnectionDefT<T>* Connect(IDataSocketDefT<T>* lhs, IDataSocketDefT<T>* rhs)
