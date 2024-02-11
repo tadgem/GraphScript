@@ -52,7 +52,6 @@ gs::FunctionCallResult gs::GraphBuilder::CallFunction(HashString nameOfMethod, V
 	
 	IFunctionNode& func = m_Functions[nameOfMethod];
 	PopulateParams(func, args);
-
 	INode* next = &func;
 
 	while (next != nullptr)
@@ -103,10 +102,12 @@ void gs::GraphBuilder::ProcessDataConnections()
 	const bool CONNECTIONS_DEBUG = true;
 	for (int i = 0; i < m_DataConnections.size(); i++)
 	{
+		std::cout << "--" << std::endl;
 		if (CONNECTIONS_DEBUG)
 		{
 			m_DataConnections[i]->Print();
 		}
+		std::cout << "--" << std::endl;
 		m_DataConnections[i]->Process();
 	}
 }
@@ -137,5 +138,5 @@ gs::GraphBuilder::~GraphBuilder()
 	m_DataConnections.clear();
 	m_Functions.clear();
 	m_Nodes.clear();
-	m_Variables.clear();
+	m_VariablesDefs.clear();
 }

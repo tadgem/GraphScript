@@ -52,14 +52,14 @@ int main() {
 	// 
 	// GSGraph instance = builder.Build();
 	// GSObject object = context.AddGraph(instance);
-	// object.SetVariable("NameOfVariable", 3.0f):
-	// 
+	builder.SetVariable<float>("NameOfVariable", 3.0f);
 	gs::VariableSet args;
 	args["NameOfParameter"] = 3.0f;
 	
 	builder.CallFunction("NameOfEntry", args);
-	// expected output = 9.0f;
-
+	// expected : 9.0f
+    // Getting : 3.0f
+	
 
 
 

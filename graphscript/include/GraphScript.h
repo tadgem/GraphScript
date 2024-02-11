@@ -93,7 +93,7 @@ namespace gs
 		void Set(const T& other)
 		{
 			m_Value = other;
-			m_Socket.Set(m_Value);
+			m_Socket.Set(other);
 		}
 
 		IDataSocketDefT<T> m_Socket;
@@ -182,11 +182,11 @@ namespace gs
 		template <typename T>
 		IVariableDefT<T>* AddVariable(HashString variableName)
 		{
-			if (m_Variables.find(variableName) == m_Variables.end())
+			if (m_VariablesDefs.find(variableName) == m_VariablesDefs.end())
 			{
-				m_Variables.emplace(variableName, CreateUnique<IVariableDefT<T>>());
+				m_VariablesDefs.emplace(variableName, CreateUnique<IVariableDefT<T>>());
 			}
-			return static_cast<IVariableDefT<T>*>(m_Variables[variableName].get());
+			return static_cast<IVariableDefT<T>*>(m_VariablesDefs[variableName].get());
 		}
 
 		template<typename T>
@@ -197,17 +197,26 @@ namespace gs
 			return conn;
 		}
 
+		template<typename T>
+		void SetVariable(HashString variableName, const T& other)
+		{
+			if (m_VariablesDefs.find(variableName) != m_VariablesDefs.end())
+			{
+				IVariableDefT<T>* varDef = (IVariableDefT<T>*)m_VariablesDefs[variableName].get();
+				varDef->Set(other);
+			}
+		}
+
 		IExecutionConnectionDef ConnectNode(INode* lhs, INode* rhs);
 		FunctionCallResult CallFunction(HashString nameOfMethod, VariableSet args);
 
-		HashMap<HashString, Unique<IVariableDef>> m_Variables;
+		HashMap<HashString, Unique<IVariableDef>> m_VariablesDefs;
 		HashMap<HashString, IFunctionNode> m_Functions;
 		Vector<INode*> m_Nodes;
 		Vector<IDataConnectionDef*> m_DataConnections;
 		Vector<IExecutionConnectionDef> m_ExecutionConnections;
 
 	protected:
-
 		INode* FindRHS(INode* lhs);
 		INode* FindSocketNode(IDataSocketDef* socket);
 		void PrintNodeSockets(INode* node);
