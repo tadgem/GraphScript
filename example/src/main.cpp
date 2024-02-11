@@ -16,7 +16,7 @@ int main() {
 
 	gs::Context context;
 	gs::GraphBuilder builder;
-	gs::IFunctionDef& entry = builder.AddFunction("NameOfEntry");
+	gs::IFunctionNode& entry = builder.AddFunction("NameOfEntry");
 	gs::IDataSocketDefT<float>* param1 = entry.AddArgument<float>("NameOfParameter");
 	gs::IVariableDefT<float>* var = builder.AddVariable<float>("NameOfVariable");
 	// 
@@ -32,7 +32,7 @@ int main() {
 
 	auto printFloatNodeBuilder = gs::CreateUnique<gs::ICustomNode>();
 	gs::IDataSocketDefT<float>* floatInputParam = multiplyNodeBuilder->AddInput<float>("input");
-	multiplyNodeBuilder->AddFunctionality([&floatInputParam]()
+	printFloatNodeBuilder->AddFunctionality([&floatInputParam]()
 		{
 			printf("float : %f", floatInputParam->Get());
 		});
@@ -40,12 +40,12 @@ int main() {
 	builder.AddNode(multiplyNodeBuilder.get());
 	builder.AddNode(printFloatNodeBuilder.get());
 
-	gs::IDataConnectionDefT<float>*entryToInputDef = builder.Connect<float>(param1, inputParam);
-	gs::IDataConnectionDefT<float>* varToMultipleDef = builder.Connect<float>(&var->m_Socket, multipleParam);
-	gs::IDataConnectionDefT<float>* outputToPrintDef = builder.Connect<float>(resultDef, floatInputParam);
+	gs::IDataConnectionDefT<float>*entryToInputDef = builder.ConnectSocket<float>(param1, inputParam);
+	gs::IDataConnectionDefT<float>* varToMultipleDef = builder.ConnectSocket<float>(&var->m_Socket, multipleParam);
+	gs::IDataConnectionDefT<float>* outputToPrintDef = builder.ConnectSocket<float>(resultDef, floatInputParam);
 	
-	// IExecutionConnectionDef entryToMultiplyExecution = builder.AddExecutionConnection(entry, multiplyNode);
-	// IExecutionConnectionDef multiplyToPrintExecution = builder.AddExecutionConnection(multiplyNode, printNode);
+	gs::IExecutionConnectionDef entryToMultiplyExecution = builder.ConnectNode(&entry, multiplyNodeBuilder.get());
+	gs::IExecutionConnectionDef multiplyToPrintExecution = builder.ConnectNode(multiplyNodeBuilder.get(), printFloatNodeBuilder.get());
 	// 
 	// GSGraph instance = builder.Build();
 	// GSObject object = context.AddGraph(instance);

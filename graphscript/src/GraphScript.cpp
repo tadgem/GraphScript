@@ -18,12 +18,13 @@ uint64_t gs::HashString::Hash(const String& input) {
 	return r;
 }
 
-gs::IFunctionDef& gs::GraphBuilder::AddFunction(HashString functionName)
+gs::IFunctionNode& gs::GraphBuilder::AddFunction(HashString functionName)
 {
 	// TODO: insert return statement here
 	if (m_Functions.find(functionName) == m_Functions.end())
 	{
-		m_Functions[functionName] = IFunctionDef();
+		m_Functions[functionName] = IFunctionNode();
+		m_Nodes.push_back(&m_Functions[functionName]);
 	}
 
 	return m_Functions[functionName];
@@ -34,6 +35,14 @@ void gs::GraphBuilder::AddNode(INode* node)
 	m_Nodes.push_back(node);
 }
 
+gs::IExecutionConnectionDef gs::GraphBuilder::ConnectNode(gs::INode* lhs, gs::INode* rhs)
+{
+	// TODO: insert return statement here
+	IExecutionConnectionDef conn{ lhs, rhs };
+	m_ExecutionConnections.push_back(conn);
+	return conn;
+}
+
 
 void gs::ICustomNode::Process()
 {
@@ -42,11 +51,11 @@ void gs::ICustomNode::Process()
 
 gs::GraphBuilder::~GraphBuilder()
 {
-	for (int i = 0; i < m_Connections.size(); i++)
+	for (int i = 0; i < m_DataConnections.size(); i++)
 	{
-		delete m_Connections[i];
+		delete m_DataConnections[i];
 	}
-	m_Connections.clear();
+	m_DataConnections.clear();
 	m_Functions.clear();
 	m_Nodes.clear();
 	m_Variables.clear();

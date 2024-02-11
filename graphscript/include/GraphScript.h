@@ -61,29 +61,6 @@ namespace gs
 		IDataSocketDefT<T>* p_RHS;
 	};
 
-
-
-	class IFunctionDef
-	{
-	public:
-		template <typename T>
-		IDataSocketDefT<T>* AddArgument(HashString variableName)
-		{
-			if (m_DataSockets.find(variableName) == m_DataSockets.end())
-			{
-				m_DataSockets.emplace(variableName, CreateUnique<IDataSocketDefT<T>>());
-			}
-			return static_cast<IDataSocketDefT<T>*>(m_DataSockets[variableName].get());
-		}
-
-		HashMap<HashString, Unique<IDataSocketDef>> m_DataSockets;
-	};
-
-	class IExecutionConnectionDef
-	{
-
-	};
-
 	class IVariableDef
 	{
 	public:
@@ -150,6 +127,29 @@ namespace gs
 		Procedure m_Proc = NULL;
 	};
 
+	class IFunctionNode : public INode
+	{
+	public:
+		template <typename T>
+		IDataSocketDefT<T>* AddArgument(HashString variableName)
+		{
+			if (m_OutputDataSockets.find(variableName) == m_OutputDataSockets.end())
+			{
+				m_OutputDataSockets.emplace(variableName, CreateUnique<IDataSocketDefT<T>>());
+			}
+			return static_cast<IDataSocketDefT<T>*>(m_OutputDataSockets[variableName].get());
+		}
+
+		void Process() override {};
+	};
+
+	class IExecutionConnectionDef
+	{
+	public:
+		INode* m_LHS;
+		INode* m_RHS;
+	};
+
 	class Graph
 	{
 	public:
@@ -165,7 +165,7 @@ namespace gs
 
 		~GraphBuilder();
 
-		IFunctionDef& AddFunction(HashString functionName);
+		IFunctionNode& AddFunction(HashString functionName);
 		void AddNode(INode* node);
 
 		template <typename T>
@@ -180,17 +180,20 @@ namespace gs
 
 
 		template<typename T>
-		IDataConnectionDefT<T>* Connect(IDataSocketDefT<T>* lhs, IDataSocketDefT<T>* rhs)
+		IDataConnectionDefT<T>* ConnectSocket(IDataSocketDefT<T>* lhs, IDataSocketDefT<T>* rhs)
 		{
 			auto conn = new IDataConnectionDefT<T>(lhs, rhs);
-			m_Connections.emplace_back(conn);
+			m_DataConnections.emplace_back(conn);
 			return conn;
 		}
 
+		IExecutionConnectionDef ConnectNode(INode* lhs, INode* rhs);
+
 		HashMap<HashString, Unique<IVariableDef>> m_Variables;
-		HashMap<HashString, IFunctionDef> m_Functions;
+		HashMap<HashString, IFunctionNode> m_Functions;
 		Vector<INode*> m_Nodes;
-		Vector<IDataConnectionDef*> m_Connections;
+		Vector<IDataConnectionDef*> m_DataConnections;
+		Vector<IExecutionConnectionDef> m_ExecutionConnections;
 	};
 
 	class Context
