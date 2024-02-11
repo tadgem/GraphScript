@@ -14,7 +14,6 @@ int main() {
 
 	const int hardcoded_node_id = 1;
 
-	gs::Context context;
 	gs::GraphBuilder builder;
 	gs::IFunctionNode& entry = builder.AddFunction("NameOfEntry");
 	gs::IDataSocketDefT<float>* param1 = entry.AddArgument<float>("NameOfParameter");
@@ -26,7 +25,11 @@ int main() {
 	gs::IDataSocketDefT<float>* resultDef = multiplyNodeBuilder->AddOutput<float>("result");
 	multiplyNodeBuilder->AddFunctionality([ & inputParam, &multipleParam, &resultDef]()
 	{
-			resultDef->Set(inputParam->Get() * multipleParam->Get());
+			if (!inputParam->Get().has_value() || !multipleParam->Get().has_value())
+			{
+				return;
+			}
+			resultDef->Set(inputParam->Get().value() * multipleParam->Get().value());
 	 
 	});
 
@@ -34,13 +37,13 @@ int main() {
 	gs::IDataSocketDefT<float>* floatInputParam = multiplyNodeBuilder->AddInput<float>("input");
 	printFloatNodeBuilder->AddFunctionality([&floatInputParam]()
 		{
-			printf("float : %f", floatInputParam->Get());
+			printf("float : %f", floatInputParam->Get().value());
 		});
 
 	builder.AddNode(multiplyNodeBuilder.get());
 	builder.AddNode(printFloatNodeBuilder.get());
 
-	gs::IDataConnectionDefT<float>*entryToInputDef = builder.ConnectSocket<float>(param1, inputParam);
+	gs::IDataConnectionDefT<float>* entryToInputDef = builder.ConnectSocket<float>(param1, inputParam);
 	gs::IDataConnectionDefT<float>* varToMultipleDef = builder.ConnectSocket<float>(&var->m_Socket, multipleParam);
 	gs::IDataConnectionDefT<float>* outputToPrintDef = builder.ConnectSocket<float>(resultDef, floatInputParam);
 	
@@ -51,9 +54,10 @@ int main() {
 	// GSObject object = context.AddGraph(instance);
 	// object.SetVariable("NameOfVariable", 3.0f):
 	// 
-	// GSArgs args;
-	// args["NameOfParameter"] = 3.0f;
-	// object.CallFunction("NameOfEntry", args);
+	gs::VariableSet args;
+	args["NameOfParameter"] = 3.0f;
+	
+	builder.CallFunction("NameOfEntry", args);
 	// expected output = 9.0f;
 
 

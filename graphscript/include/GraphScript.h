@@ -25,9 +25,13 @@ namespace gs
 	class IDataSocketDefT : public IDataSocketDef
 	{
 	public:
-		T		Get()
+		Optional<T>		Get()
 		{
-			return std::any_cast<T>(m_Value);
+			if (m_Value.has_value())
+			{
+				return std::any_cast<T>(m_Value);
+			}
+			return {};
 		}
 		void Set(const T& other)
 		{
@@ -39,6 +43,7 @@ namespace gs
 	{
 	public:
 		virtual void Process() = 0;
+		virtual void Print() = 0;
 	};
 
 	template<typename T>
@@ -53,7 +58,17 @@ namespace gs
 
 		void Process() override
 		{
-			p_RHS->Set(p_LHS->Get());
+			if (!p_LHS->Get().has_value())
+			{
+				return;
+			}
+			p_RHS->Set(p_LHS->Get().value());
+		}
+
+		void Print() override
+		{
+			std::cout << "LHS : " << p_LHS->Get() << ", RHS : " << p_RHS->Get() << std::endl;
+			//std::cout << "Hello" << std::endl;
 		}
 
 	protected:
@@ -153,10 +168,6 @@ namespace gs
 	class Graph
 	{
 	public:
-		VariableSet m_Variables;
-
-		FunctionCallResult CallFunction(const String& functionName, VariableSet args);
-		FunctionCallResult CallFunction(HashString functionName, VariableSet args);
 	};
 
 	class GraphBuilder
@@ -178,7 +189,6 @@ namespace gs
 			return static_cast<IVariableDefT<T>*>(m_Variables[variableName].get());
 		}
 
-
 		template<typename T>
 		IDataConnectionDefT<T>* ConnectSocket(IDataSocketDefT<T>* lhs, IDataSocketDefT<T>* rhs)
 		{
@@ -188,19 +198,21 @@ namespace gs
 		}
 
 		IExecutionConnectionDef ConnectNode(INode* lhs, INode* rhs);
+		FunctionCallResult CallFunction(HashString nameOfMethod, VariableSet args);
 
 		HashMap<HashString, Unique<IVariableDef>> m_Variables;
 		HashMap<HashString, IFunctionNode> m_Functions;
 		Vector<INode*> m_Nodes;
 		Vector<IDataConnectionDef*> m_DataConnections;
 		Vector<IExecutionConnectionDef> m_ExecutionConnections;
+
+	protected:
+
+		INode* FindRHS(INode* lhs);
+		INode* FindSocketNode(IDataSocketDef* socket);
+		void PrintNodeSockets(INode* node);
+		void ProcessDataConnections();
+		void PopulateParams(IFunctionNode& functionNode, VariableSet params);
 	};
-
-	class Context
-	{
-		Graph* AddGraph(GraphBuilder* graph);
-	};
-
-
 }
 #endif //GRAPHSCRIPT_GUARD_H

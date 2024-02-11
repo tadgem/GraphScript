@@ -1,9 +1,9 @@
 #include "GraphScript.h"
 
-gs::HashString::HashString(const String& input) : m_Value(Hash(input)) {
+gs::HashString::HashString(const String& input) : m_Value(Hash(input)), m_Original(input) {
 }
 
-gs::HashString::HashString(const char* input) : m_Value(Hash(String(input))) {
+gs::HashString::HashString(const char* input) : m_Value(Hash(String(input))), m_Original(String(input)) {
 }
 
 gs::HashString::HashString(uint64_t value) : m_Value(value)
@@ -41,6 +41,85 @@ gs::IExecutionConnectionDef gs::GraphBuilder::ConnectNode(gs::INode* lhs, gs::IN
 	IExecutionConnectionDef conn{ lhs, rhs };
 	m_ExecutionConnections.push_back(conn);
 	return conn;
+}
+
+gs::FunctionCallResult gs::GraphBuilder::CallFunction(HashString nameOfMethod, VariableSet args)
+{
+	if (m_Functions.find(nameOfMethod) == m_Functions.end())
+	{
+		return FunctionCallResult::Fail;
+	}
+	
+	IFunctionNode& func = m_Functions[nameOfMethod];
+	PopulateParams(func, args);
+
+	INode* next = &func;
+
+	while (next != nullptr)
+	{
+		ProcessDataConnections();
+		next->Process();
+
+		next = FindRHS(next);
+	}
+
+	return FunctionCallResult::Success;
+}
+
+gs::INode* gs::GraphBuilder::FindRHS(INode* lhs)
+{
+	for (int i = 0; i < m_ExecutionConnections.size(); i++)
+	{
+		if (m_ExecutionConnections[i].m_LHS == lhs)
+		{
+			return m_ExecutionConnections[i].m_RHS;
+		}
+	}
+	return nullptr;
+}
+
+gs::INode* gs::GraphBuilder::FindSocketNode(IDataSocketDef* socket)
+{
+	for (int i = 0; i < m_Nodes.size(); i++)
+	{
+		for (auto& [name, s] : m_Nodes[i]->m_InputDataSockets)
+		{
+			if (s.get() == socket)
+			{
+				return m_Nodes[i];
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+void gs::GraphBuilder::PrintNodeSockets(INode* node)
+{
+}
+
+void gs::GraphBuilder::ProcessDataConnections()
+{
+	const bool CONNECTIONS_DEBUG = true;
+	for (int i = 0; i < m_DataConnections.size(); i++)
+	{
+		if (CONNECTIONS_DEBUG)
+		{
+			m_DataConnections[i]->Print();
+		}
+		m_DataConnections[i]->Process();
+	}
+}
+
+void gs::GraphBuilder::PopulateParams(IFunctionNode& functionNode, VariableSet params)
+{
+	for (auto& [name, socket] : functionNode.m_OutputDataSockets)
+	{
+		if (params.find(name) != params.end())
+		{
+			socket->m_Value = params[name];
+		}
+	}
 }
 
 

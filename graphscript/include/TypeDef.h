@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 #include <type_traits>
+#include <iostream>
 
 namespace gs
 {
@@ -32,6 +33,12 @@ namespace gs
 
 	template<typename T>
 	using Vector = std::vector<T>;
+	
+	template<typename T>
+	std::ostream& operator<<(std::ostream& os, std::optional<T> const& opt)
+	{
+		return opt ? os << opt.value() : os << "EMPTY";
+	}
 
 	template<typename T, typename ... Args>
 	constexpr Unique<T> CreateUnique(Args &&... args) {
@@ -46,6 +53,8 @@ namespace gs
 		HashString(uint64_t value);
 
 		uint64_t m_Value;
+		// TODO: Remove, for debugging.
+		String m_Original;
 
 		bool operator==(HashString const& rhs) const { return m_Value == rhs.m_Value; }
 
