@@ -3,7 +3,6 @@
 #include "imnodes.h"
 #include "GraphScript.h"
 
-
 int main() {
 	gs::ExampleApp app;
 
@@ -63,22 +62,36 @@ int main() {
 	// Benchmark
 	// GSGraph instance = builder.Build();
 	// GSObject object = context.AddGraph(instance);
-	builder.SetVariable<float>("NameOfVariable", 3.0f);
-	gs::VariableSet args;
-	args["NameOfParameter"] = 3.0f;
-	
+
+	gs::Graph g1 = builder.Build();
+	gs::Graph g2 = builder.Build();
 	gs::HashString entryName("NameOfEntry");
 
+	g1.SetVariable<float>("NameOfVariable", 3.0f);
+	gs::VariableSet args;
+	args["NameOfParameter"] = 3.0f;
+
+	g2.SetVariable<float>("NameOfVariable", 4.0f);
+	gs::VariableSet args2;
+	args2["NameOfParameter"] = 4.0f;
+
 	const int ITERATIONS = 100000;
-	gs::Timer gsTimer;
-	gsTimer.start();
+	gs::Timer gsBuilderTimer, gsGraphTimer, cTimer;
+	gsBuilderTimer.start();
 	for (int i = 0; i < ITERATIONS; i++)
 	{
-		builder.CallFunction(entryName, args);
+		g1.CallFunction(entryName, args);
 	}
-	gsTimer.stop();
+	gsBuilderTimer.stop();
 
-	gs::Timer cTimer;
+	gsGraphTimer.start();
+	for (int i = 0; i < ITERATIONS; i++)
+	{
+		g2.CallFunction(entryName, args2);
+	}
+	gsGraphTimer.stop();
+
+
 	cTimer.start();
 	for (int i = 0; i < ITERATIONS; i++)
 	{
@@ -87,7 +100,8 @@ int main() {
 	}
 	cTimer.stop();
 	std::cout << "--\n-- RESULTS --\n--\n";
-	std::cout << "GS Time : " << gsTimer.elapsedMilliseconds() << "ms \n";
+	std::cout << "GS Builder Time : " << gsBuilderTimer.elapsedMilliseconds() << "ms \n";
+	std::cout << "GS Graph Time : " << gsGraphTimer.elapsedMilliseconds() << "ms \n";
 	std::cout << "C Time : " << cTimer.elapsedMilliseconds() << "ms \n";
 
 	// expected : 9.0f
