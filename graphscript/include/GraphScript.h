@@ -211,7 +211,21 @@ namespace gs
 
 	class Graph
 	{
+	protected:
+		HashMap<HashString, IFunctionNode*> m_Functions;
+		HashMap<HashString, IVariableDef*> m_VariablesDefs;
+		Vector<INode*> m_Nodes;
+		Vector<IExecutionConnectionDef> m_ExecutionConnections;
+		Vector<IDataConnectionDef*> m_DataConnections;
 	public:
+
+		Graph(
+			HashMap<HashString, IFunctionNode*> functions,
+			HashMap<HashString, IVariableDef*> variablesDefs,
+			Vector<INode*> nodes,
+			Vector<IExecutionConnectionDef> executionConnections,
+			Vector<IDataConnectionDef*> dataConnections
+		);
 
 		template<typename T>
 		void SetVariable(HashString variableName, const T& other)
@@ -225,13 +239,9 @@ namespace gs
 
 		FunctionCallResult CallFunction(HashString nameOfMethod, VariableSet args);
 
-		HashMap<HashString, IFunctionNode*> m_Functions;
-		HashMap<HashString, IVariableDef*> m_VariablesDefs;
-		Vector<INode*> m_Nodes;
-		Vector<IExecutionConnectionDef> m_ExecutionConnections;
-		Vector<IDataConnectionDef*> m_DataConnections;
 
 	protected:
+		// Internal Helper Methods
 		INode* FindRHS(INode* lhs);
 		void ProcessDataConnections();
 		void PopulateParams(IFunctionNode* functionNode, VariableSet params);
@@ -276,6 +286,14 @@ namespace gs
 		Vector<IExecutionConnectionDef> m_ExecutionConnections;
 
 	protected:
+		// Internal Build Methods
+		HashMap<HashString, IFunctionNode*> BuildFunctions();
+		HashMap<HashString, IVariableDef*> BuildVariablesDefs();
+		Vector<INode*> BuildNodes(HashMap<HashString, IFunctionNode*>& functions);
+		Vector<IExecutionConnectionDef> BuildExecutionConnections(HashMap<HashString, IFunctionNode*>& functions);
+		Vector<IDataConnectionDef*> BuildDataConnections(HashMap<HashString, IFunctionNode*>& functions,
+			HashMap<HashString, IVariableDef*> variables);
+
 		INode* FindSocketNode(IDataSocketDef* socket);
 		void PrintNodeSockets(INode* node);
 	};
