@@ -1,17 +1,19 @@
 #include "GraphScript.h"
 
-gs::HashString::HashString(const String& input) : m_Value(Hash(input)), m_Original(input) {
+using namespace gs;
+
+HashString::HashString(const String& input) : m_Value(Hash(input)), m_Original(input) {
 }
 
-gs::HashString::HashString(const char* input) : m_Value(Hash(String(input))), m_Original(String(input)) {
+HashString::HashString(const char* input) : m_Value(Hash(String(input))), m_Original(String(input)) {
 }
 
-gs::HashString::HashString(uint64_t value) : m_Value(value)
+HashString::HashString(u64 value) : m_Value(value)
 {
 }
 
-uint64_t gs::HashString::Hash(const String& input) {
-	uint64_t r = 0;
+u64 HashString::Hash(const String& input) {
+	u64 r = 0;
 	for (int i = 0; i < input.size(); i++) {
 		char c = input[i];
 		r ^= 397 * c;
@@ -19,7 +21,7 @@ uint64_t gs::HashString::Hash(const String& input) {
 	return r;
 }
 
-gs::IFunctionNode& gs::GraphBuilder::AddFunction(HashString functionName)
+IFunctionNode& GraphBuilder::AddFunction(HashString functionName)
 {
 	// TODO: insert return statement here
 	if (m_Functions.find(functionName) == m_Functions.end())
@@ -31,12 +33,12 @@ gs::IFunctionNode& gs::GraphBuilder::AddFunction(HashString functionName)
 	return *m_Functions[functionName];
 }
 
-void gs::GraphBuilder::AddNode(INode* node)
+void GraphBuilder::AddNode(INode* node)
 {
 	m_Nodes.push_back(node);
 }
 
-gs::Graph gs::GraphBuilder::Build()
+Graph GraphBuilder::Build()
 {
 	HashMap<HashString, IFunctionNode*> functions = BuildFunctions();
 	HashMap<HashString, IVariableDef*> variables = BuildVariablesDefs();
@@ -44,7 +46,7 @@ gs::Graph gs::GraphBuilder::Build()
 	return Graph(functions, variables, BuildNodes(functions), BuildExecutionConnections(functions), BuildDataConnections(functions, variables));
 }
 
-gs::IExecutionConnectionDef gs::GraphBuilder::ConnectNode(gs::INode* lhs, gs::INode* rhs)
+IExecutionConnectionDef GraphBuilder::ConnectNode(INode* lhs, INode* rhs)
 {
 	// TODO: insert return statement here
 	IExecutionConnectionDef conn{ lhs, rhs };
@@ -52,7 +54,7 @@ gs::IExecutionConnectionDef gs::GraphBuilder::ConnectNode(gs::INode* lhs, gs::IN
 	return conn;
 }
 
-gs::INode* gs::GraphBuilder::FindSocketNode(IDataSocketDef* socket)
+INode* GraphBuilder::FindSocketNode(IDataSocketDef* socket)
 {
 	for (int i = 0; i < m_Nodes.size(); i++)
 	{
@@ -68,16 +70,16 @@ gs::INode* gs::GraphBuilder::FindSocketNode(IDataSocketDef* socket)
 	return nullptr;
 }
 
-void gs::GraphBuilder::PrintNodeSockets(INode* node)
+void GraphBuilder::PrintNodeSockets(INode* node)
 {
 }
 
-void gs::ICustomNode::Process()
+void ICustomNode::Process()
 {
 	m_Proc();
 }
 
-gs::GraphBuilder::~GraphBuilder()
+GraphBuilder::~GraphBuilder()
 {
 	for (int i = 0; i < m_DataConnections.size(); i++)
 	{
@@ -89,17 +91,17 @@ gs::GraphBuilder::~GraphBuilder()
 	m_VariablesDefs.clear();
 }
 
-gs::IDataSocketDef::~IDataSocketDef()
+IDataSocketDef::~IDataSocketDef()
 {
 	m_Value.reset();
 }
 
-gs::Graph::Graph(HashMap<HashString, IFunctionNode*> functions, HashMap<HashString, IVariableDef*> variablesDefs, Vector<INode*> nodes, Vector<IExecutionConnectionDef> executionConnections, Vector<IDataConnectionDef*> dataConnections) :
+Graph::Graph(HashMap<HashString, IFunctionNode*> functions, HashMap<HashString, IVariableDef*> variablesDefs, Vector<INode*> nodes, Vector<IExecutionConnectionDef> executionConnections, Vector<IDataConnectionDef*> dataConnections) :
 	m_Functions(functions), m_VariablesDefs(variablesDefs), m_Nodes(nodes), m_ExecutionConnections(executionConnections), m_DataConnections(dataConnections)
 {
 }
 
-gs::FunctionCallResult gs::Graph::CallFunction(HashString nameOfMethod, VariableSet args)
+FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args)
 {
 	if (m_Functions.find(nameOfMethod) == m_Functions.end())
 	{
@@ -124,7 +126,7 @@ gs::FunctionCallResult gs::Graph::CallFunction(HashString nameOfMethod, Variable
 	return FunctionCallResult::Success;
 }
 
-gs::INode* gs::Graph::FindRHS(INode* lhs)
+INode* Graph::FindRHS(INode* lhs)
 {
 	for (int i = 0; i < m_ExecutionConnections.size(); i++)
 	{
@@ -136,7 +138,7 @@ gs::INode* gs::Graph::FindRHS(INode* lhs)
 	return nullptr;
 }
 
-void gs::Graph::ProcessDataConnections()
+void Graph::ProcessDataConnections()
 {
 	for (int i = 0; i < m_DataConnections.size(); i++)
 	{
@@ -144,7 +146,7 @@ void gs::Graph::ProcessDataConnections()
 	}
 }
 
-void gs::Graph::PopulateParams(IFunctionNode* functionNode, VariableSet params)
+void Graph::PopulateParams(IFunctionNode* functionNode, VariableSet params)
 {
 	for (auto& [name, socket] : functionNode->m_OutputDataSockets)
 	{
@@ -155,7 +157,7 @@ void gs::Graph::PopulateParams(IFunctionNode* functionNode, VariableSet params)
 	}
 }
 
-void gs::Graph::ResetSockets()
+void Graph::ResetSockets()
 {
 	for (INode* node : m_Nodes)
 	{
@@ -171,7 +173,7 @@ void gs::Graph::ResetSockets()
 	}
 }
 
-gs::HashMap<gs::HashString, gs::IFunctionNode*> gs::GraphBuilder::BuildFunctions()
+HashMap<HashString, IFunctionNode*> GraphBuilder::BuildFunctions()
 {
 	// Clone function defs
 	HashMap<HashString, IFunctionNode*> functions;
@@ -182,7 +184,7 @@ gs::HashMap<gs::HashString, gs::IFunctionNode*> gs::GraphBuilder::BuildFunctions
 	return functions;
 }
 
-gs::HashMap<gs::HashString, gs::IVariableDef*> gs::GraphBuilder::BuildVariablesDefs()
+HashMap<HashString, IVariableDef*> GraphBuilder::BuildVariablesDefs()
 {
 	// Clone variable defs
 	HashMap<HashString, IVariableDef*> variables;
@@ -193,7 +195,7 @@ gs::HashMap<gs::HashString, gs::IVariableDef*> gs::GraphBuilder::BuildVariablesD
 	return variables;
 }
 
-gs::Vector<gs::INode*> gs::GraphBuilder::BuildNodes(gs::HashMap<gs::HashString, gs::IFunctionNode*>& functions)
+Vector<INode*> GraphBuilder::BuildNodes(HashMap<HashString, IFunctionNode*>& functions)
 {
 	// Copy Nodes
 	// Patch nodes removing function nodes replacing with clones
@@ -221,7 +223,7 @@ gs::Vector<gs::INode*> gs::GraphBuilder::BuildNodes(gs::HashMap<gs::HashString, 
 	return nodes;
 }
 
-gs::Vector<gs::IExecutionConnectionDef> gs::GraphBuilder::BuildExecutionConnections(gs::HashMap<gs::HashString, gs::IFunctionNode*>& functions)
+Vector<IExecutionConnectionDef> GraphBuilder::BuildExecutionConnections(HashMap<HashString, IFunctionNode*>& functions)
 {
 	// Copy Execution Connections
 	// Patch Execution connection removing function nodes replacing with clones
@@ -247,7 +249,7 @@ gs::Vector<gs::IExecutionConnectionDef> gs::GraphBuilder::BuildExecutionConnecti
 	return executionConnections;
 }
 
-gs::Vector<gs::IDataConnectionDef*> gs::GraphBuilder::BuildDataConnections(gs::HashMap<gs::HashString, gs::IFunctionNode*>& functions,gs::HashMap<gs::HashString, gs::IVariableDef*> variables)
+Vector<IDataConnectionDef*> GraphBuilder::BuildDataConnections(HashMap<HashString, IFunctionNode*>& functions,HashMap<HashString, IVariableDef*> variables)
 {
 	// Copy Data Connections
 	// Patch data connection removing function nodes replacing with clones

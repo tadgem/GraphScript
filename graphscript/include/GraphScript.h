@@ -15,6 +15,12 @@ namespace gs
 		Fail
 	};
 
+	class IExecutionSocket
+	{
+	public:
+		
+	};
+
 	class IDataSocketDef
 	{
 	public:
@@ -208,6 +214,14 @@ namespace gs
 		INode* m_LHS = nullptr;
 		INode* m_RHS = nullptr;
 	};
+
+	class IExecutionConnectionDefV2
+	{
+	public:
+		IExecutionSocket* m_LHS = nullptr;
+		IExecutionSocket* m_RHS = nullptr;
+	};
+		
 
 	class Graph
 	{

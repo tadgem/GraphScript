@@ -16,23 +16,29 @@
 
 namespace gs
 {
-	using String = std::string;
-
-	using Any = std::any;
-
+	using i8		= int8_t;
+	using u8		= uint8_t;
+	using i16		= int16_t;
+	using u16		= uint16_t;
+	using i32		= int32_t;
+	using u32		= uint32_t;
+	using i64		= int64_t;
+	using u64		= u64;
+	using String	= std::string;
+	using Any		= std::any;
 	using Procedure = std::function<void()>;
 
 	template<typename T>
-	using Optional = std::optional<T>;
-
+	using Optional	= std::optional<T>;
+	
 	template<typename T, typename Y>
-	using HashMap = std::map<T, Y>;
+	using HashMap	= std::map<T, Y>;
+	
+	template<typename T>
+	using Unique	= std::unique_ptr<T>;
 
 	template<typename T>
-	using Unique = std::unique_ptr<T>;
-
-	template<typename T>
-	using Vector = std::vector<T>;
+	using Vector	= std::vector<T>;
 	
 	template<typename T>
 	std::ostream& operator<<(std::ostream& os, std::optional<T> const& opt)
@@ -50,18 +56,18 @@ namespace gs
 
 		HashString(const String& input);
 		HashString(const char* input);
-		HashString(uint64_t value);
+		HashString(u64 value);
 
-		uint64_t m_Value;
+		u64 m_Value;
 		// TODO: Remove, for debugging.
 		String m_Original;
 
 		bool operator==(HashString const& rhs) const { return m_Value == rhs.m_Value; }
 
-		operator uint64_t() const { return m_Value; }
+		operator u64() const { return m_Value; }
 
 	protected:
-		static uint64_t Hash(const String& input);
+		static u64 Hash(const String& input);
 	};
 }
 
