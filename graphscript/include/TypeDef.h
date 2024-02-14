@@ -27,7 +27,7 @@ namespace gs
 	using i32		= int32_t;
 	using u32		= uint32_t;
 	using i64		= int64_t;
-	using u64		= u64;
+	using u64		= uint64_t;
 	using String	= std::string;
 	using Any		= std::any;
 	using Procedure = std::function<void()>;
