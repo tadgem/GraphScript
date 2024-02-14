@@ -14,6 +14,10 @@
 #include <type_traits>
 #include <iostream>
 
+
+// TODO: should be a compile definition
+#define GRAPH_SCRIPT_DEBUG_HASH_STRING
+
 namespace gs
 {
 	using i8		= int8_t;
@@ -59,8 +63,10 @@ namespace gs
 		HashString(u64 value);
 
 		u64 m_Value;
-		// TODO: Remove, for debugging.
+
+#ifdef GRAPH_SCRIPT_DEBUG_HASH_STRING
 		String m_Original;
+#endif
 
 		bool operator==(HashString const& rhs) const { return m_Value == rhs.m_Value; }
 

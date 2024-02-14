@@ -289,3 +289,18 @@ Vector<IDataConnectionDef*> GraphBuilder::BuildDataConnections(HashMap<HashStrin
 	}
 	return dataConnections;
 }
+
+IExecutionSocket::IExecutionSocket(u32 loopCount) : p_LoopCount(loopCount)
+{
+
+}
+
+bool IExecutionSocket::ShouldExecute()
+{
+	return p_ShouldExecute;
+}
+
+void IExecutionSocket::Execute()
+{
+	p_ShouldExecute = true;
+}

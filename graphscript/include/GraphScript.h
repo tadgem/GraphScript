@@ -18,7 +18,15 @@ namespace gs
 	class IExecutionSocket
 	{
 	public:
-		
+
+		IExecutionSocket(u32 loopCount = 0);
+
+		bool ShouldExecute();
+		void Execute();
+
+	protected:
+		bool		p_ShouldExecute;
+		const u32	p_LoopCount;
 	};
 
 	class IDataSocketDef
@@ -252,14 +260,12 @@ namespace gs
 		}
 
 		FunctionCallResult CallFunction(HashString nameOfMethod, VariableSet args);
-
-
-	protected:
-		// Internal Helper Methods
-		INode* FindRHS(INode* lhs);
-		void ProcessDataConnections();
-		void PopulateParams(IFunctionNode* functionNode, VariableSet params);
-		void ResetSockets();
+	
+protected:
+		INode*	FindRHS(INode* lhs);
+		void	ProcessDataConnections();
+		void	PopulateParams(IFunctionNode* functionNode, VariableSet params);
+		void	ResetSockets();
 	};
 
 	class GraphBuilder
@@ -268,11 +274,11 @@ namespace gs
 
 		~GraphBuilder();
 
-		IFunctionNode& AddFunction(HashString functionName);
-		void AddNode(INode* node);
+		IFunctionNode&				AddFunction(HashString functionName);
+		void						AddNode(INode* node);
 
 		template <typename T>
-		IVariableDefT<T>* AddVariable(HashString variableName)
+		IVariableDefT<T>*			AddVariable(HashString variableName)
 		{
 			if (m_VariablesDefs.find(variableName) == m_VariablesDefs.end())
 			{
@@ -282,34 +288,34 @@ namespace gs
 		}
 
 		template<typename T>
-		IDataConnectionDefT<T>* ConnectSocket(IDataSocketDefT<T>* lhs, IDataSocketDefT<T>* rhs)
+		IDataConnectionDefT<T>*		ConnectSocket(IDataSocketDefT<T>* lhs, IDataSocketDefT<T>* rhs)
 		{
 			auto conn = new IDataConnectionDefT<T>(lhs, rhs);
 			m_DataConnections.emplace_back(conn);
 			return conn;
 		}
 
-		Graph Build();
+		Graph						Build();
 
-		IExecutionConnectionDef ConnectNode(INode* lhs, INode* rhs);
+		IExecutionConnectionDef		ConnectNode(INode* lhs, INode* rhs);
 
-		HashMap<HashString, Unique<IVariableDef>> m_VariablesDefs;
-		HashMap<HashString, Unique<IFunctionNode>> m_Functions;
-		Vector<INode*> m_Nodes;
-		Vector<IDataConnectionDef*> m_DataConnections;
-		Vector<IExecutionConnectionDef> m_ExecutionConnections;
+		HashMap<HashString, Unique<IVariableDef>>	m_VariablesDefs;
+		HashMap<HashString, Unique<IFunctionNode>>	m_Functions;
+		Vector<INode*>								m_Nodes;
+		Vector<IDataConnectionDef*>					m_DataConnections;
+		Vector<IExecutionConnectionDef>				m_ExecutionConnections;
 
 	protected:
 		// Internal Build Methods
 		HashMap<HashString, IFunctionNode*> BuildFunctions();
-		HashMap<HashString, IVariableDef*> BuildVariablesDefs();
-		Vector<INode*> BuildNodes(HashMap<HashString, IFunctionNode*>& functions);
-		Vector<IExecutionConnectionDef> BuildExecutionConnections(HashMap<HashString, IFunctionNode*>& functions);
-		Vector<IDataConnectionDef*> BuildDataConnections(HashMap<HashString, IFunctionNode*>& functions,
+		HashMap<HashString, IVariableDef*>	BuildVariablesDefs();
+		Vector<INode*>						BuildNodes(HashMap<HashString, IFunctionNode*>& functions);
+		Vector<IExecutionConnectionDef>		BuildExecutionConnections(HashMap<HashString, IFunctionNode*>& functions);
+		Vector<IDataConnectionDef*>			BuildDataConnections(HashMap<HashString, IFunctionNode*>& functions,
 			HashMap<HashString, IVariableDef*> variables);
 
-		INode* FindSocketNode(IDataSocketDef* socket);
-		void PrintNodeSockets(INode* node);
+		INode*	FindSocketNode(IDataSocketDef* socket);
+		void	PrintNodeSockets(INode* node);
 	};
 }
 #endif //GRAPHSCRIPT_GUARD_H
