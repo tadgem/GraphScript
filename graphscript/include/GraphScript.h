@@ -154,15 +154,17 @@ namespace gs
 	public:
 		virtual void Process() = 0;
 
-		HashMap<HashString, IDataSocketDef*> m_InputDataSockets;
-		HashMap<HashString, IDataSocketDef*> m_OutputDataSockets;
+		HashMap<HashString, IDataSocketDef*>				m_InputDataSockets;
+		HashMap<HashString, IDataSocketDef*>				m_OutputDataSockets;
+		HashMap<HashString, IExecutionSocket*>				m_InputExecutionSockets;
+		HashMap<HashString, IExecutionSocket*>				m_OutputExecutionSockets;
 	};
 
 	class ICustomNode : public INode
 	{
 	public:
 		template <typename T>
-		IDataSocketDefT<T>* AddInput(HashString variableName)
+		IDataSocketDefT<T>* AddDataInput(HashString variableName)
 		{
 			if (m_InputDataSockets.find(variableName) == m_InputDataSockets.end())
 			{
@@ -172,7 +174,7 @@ namespace gs
 		}
 
 		template <typename T>
-		IDataSocketDefT<T>* AddOutput(HashString variableName)
+		IDataSocketDefT<T>* AddDataOutput(HashString variableName)
 		{
 			if (m_OutputDataSockets.find(variableName) == m_OutputDataSockets.end())
 			{
@@ -181,13 +183,14 @@ namespace gs
 			return static_cast<IDataSocketDefT<T>*>(m_OutputDataSockets[variableName]);
 		}
 
+		IExecutionSocket*	AddExecutionInput(HashString name);
+		IExecutionSocket*	AddExecutionOutput(HashString name);
+
+		void Process() override;
 		void AddFunctionality(Procedure proc)
 		{
 			m_Proc = proc;
 		}
-
-		void Process() override;
-
 
 		Procedure m_Proc = NULL;
 	};
@@ -271,7 +274,6 @@ protected:
 	class GraphBuilder
 	{
 	public:
-
 		~GraphBuilder();
 
 		IFunctionNode&				AddFunction(HashString functionName);

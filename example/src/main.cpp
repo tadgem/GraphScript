@@ -19,9 +19,9 @@ int main() {
 	gs::IVariableDefT<float>* var = builder.AddVariable<float>("NameOfVariable");
 	// 
 	auto multiplyNodeBuilder = gs::CreateUnique<gs::ICustomNode>();
-	gs::IDataSocketDefT<float>* inputParam = multiplyNodeBuilder->AddInput<float>("input");
-	gs::IDataSocketDefT<float>* multipleParam = multiplyNodeBuilder->AddInput<float>("multiple");
-	gs::IDataSocketDefT<float>* resultDef = multiplyNodeBuilder->AddOutput<float>("result");
+	gs::IDataSocketDefT<float>* inputParam = multiplyNodeBuilder->AddDataInput<float>("input");
+	gs::IDataSocketDefT<float>* multipleParam = multiplyNodeBuilder->AddDataInput<float>("multiple");
+	gs::IDataSocketDefT<float>* resultDef = multiplyNodeBuilder->AddDataOutput<float>("result");
 	multiplyNodeBuilder->AddFunctionality([ & inputParam, &multipleParam, &resultDef]()
 	{
 			if (!inputParam->Get().has_value() || !multipleParam->Get().has_value())
@@ -33,7 +33,7 @@ int main() {
 	});
 
 	auto printFloatNodeBuilder = gs::CreateUnique<gs::ICustomNode>();
-	gs::IDataSocketDefT<float>* floatInputParam = multiplyNodeBuilder->AddInput<float>("input");
+	gs::IDataSocketDefT<float>* floatInputParam = multiplyNodeBuilder->AddDataInput<float>("input");
 	printFloatNodeBuilder->AddFunctionality([&floatInputParam]()
 		{
 			printf("GS : float : %f\n", floatInputParam->Get().value());

@@ -304,3 +304,21 @@ void IExecutionSocket::Execute()
 {
 	p_ShouldExecute = true;
 }
+
+IExecutionSocket* gs::ICustomNode::AddExecutionInput(HashString name)
+{
+	if (m_InputExecutionSockets.find(name) == m_InputExecutionSockets.end())
+	{
+		m_InputExecutionSockets[name] = new IExecutionSocket();
+	}
+	return m_InputExecutionSockets[name];
+}
+
+IExecutionSocket* gs::ICustomNode::AddExecutionOutput(HashString name)
+{
+	if (m_OutputExecutionSockets.find(name) == m_OutputExecutionSockets.end())
+	{
+		m_OutputExecutionSockets[name] = new IExecutionSocket();
+	}
+	return m_OutputExecutionSockets[name];
+}

@@ -21,13 +21,13 @@
 namespace gs
 {
 	using i8		= int8_t;
-	using u8		= uint8_t;
 	using i16		= int16_t;
-	using u16		= uint16_t;
 	using i32		= int32_t;
-	using u32		= uint32_t;
 	using i64		= int64_t;
-	using u64		= u64;
+	using u8		= uint8_t;
+	using u16		= uint16_t;
+	using u32		= uint32_t;
+	using u64		= uint64_t;
 	using String	= std::string;
 	using Any		= std::any;
 	using Procedure = std::function<void()>;
