@@ -290,7 +290,7 @@ protected:
 		}
 
 		template<typename T>
-		IDataConnectionDefT<T>*		ConnectSocket(IDataSocketDefT<T>* lhs, IDataSocketDefT<T>* rhs)
+		IDataConnectionDefT<T>*		ConnectDataSocket(IDataSocketDefT<T>* lhs, IDataSocketDefT<T>* rhs)
 		{
 			auto conn = new IDataConnectionDefT<T>(lhs, rhs);
 			m_DataConnections.emplace_back(conn);

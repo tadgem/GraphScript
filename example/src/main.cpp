@@ -36,15 +36,17 @@ int main() {
 	gs::IDataSocketDefT<float>* floatInputParam = multiplyNodeBuilder->AddDataInput<float>("input");
 	printFloatNodeBuilder->AddFunctionality([&floatInputParam]()
 		{
-			printf("GS : float : %f\n", floatInputParam->Get().value());
+			//printf("GS : float : %f\n", floatInputParam->Get().value());
+
+			std::cout << floatInputParam->Get().value() << std::endl;
 		});
 
 	builder.AddNode(multiplyNodeBuilder.get());
 	builder.AddNode(printFloatNodeBuilder.get());
 
-	gs::IDataConnectionDefT<float>* entryToInputDef = builder.ConnectSocket<float>(param1, inputParam);
-	gs::IDataConnectionDefT<float>* varToMultipleDef = builder.ConnectSocket<float>(&var->m_Socket, multipleParam);
-	gs::IDataConnectionDefT<float>* outputToPrintDef = builder.ConnectSocket<float>(resultDef, floatInputParam);
+	gs::IDataConnectionDefT<float>* entryToInputDef = builder.ConnectDataSocket<float>(param1, inputParam);
+	gs::IDataConnectionDefT<float>* varToMultipleDef = builder.ConnectDataSocket<float>(&var->m_Socket, multipleParam);
+	gs::IDataConnectionDefT<float>* outputToPrintDef = builder.ConnectDataSocket<float>(resultDef, floatInputParam);
 	
 	gs::IExecutionConnectionDef entryToMultiplyExecution = builder.ConnectNode(&entry, multiplyNodeBuilder.get());
 	gs::IExecutionConnectionDef multiplyToPrintExecution = builder.ConnectNode(multiplyNodeBuilder.get(), printFloatNodeBuilder.get());
@@ -96,7 +98,7 @@ int main() {
 	for (int i = 0; i < ITERATIONS; i++)
 	{
 		float x = 3.0 * 3.0;
-		printf("C : float : %f\n", x);
+		std::cout << x << std::endl;
 	}
 	cTimer.stop();
 	std::cout << "--\n-- RESULTS --\n--\n";
