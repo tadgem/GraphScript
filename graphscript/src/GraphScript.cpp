@@ -46,7 +46,7 @@ Graph GraphBuilder::Build()
 	return Graph(functions, variables, BuildNodes(functions), BuildExecutionConnections(functions), BuildDataConnections(functions, variables));
 }
 
-IExecutionConnectionDef GraphBuilder::ConnectNode(INode* lhs, INode* rhs)
+IExecutionConnectionDef gs::GraphBuilder::ConnectExecutionSocket(IExecutionSocket* lhs, IExecutionSocket* rhs)
 {
 	// TODO: insert return statement here
 	IExecutionConnectionDef conn{ lhs, rhs };
@@ -112,31 +112,48 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 
 	IFunctionNode* func = m_Functions[nameOfMethod];
 	PopulateParams(func, args);
-	INode* next = func;
+	//INode* next = func;
 
-	while (next != nullptr)
+	//while (next != nullptr)
+	//{
+	//	ProcessDataConnections();
+	//	next->Process();
+
+	//	// next = FindRHS(next);
+	//}
+
+	IExecutionSocket *lhs, *rhs = nullptr;
+	// get the first socket in the chain
+	lhs = func->m_OutputExecutionSockets["out"];
+	// is this right? lhs likely never to be null 
+	// so we can terminate the loop early by lhs = nullptr;
+	while (lhs != nullptr && rhs != nullptr)
 	{
-		ProcessDataConnections();
-		next->Process();
+		// find RHS of lhs
+		// find node of RHS
+		// process data connections
+		// Process()
+		// for each output pin (reverse)
+		//     if (socket.ShouldExecute())
+		//			lhs = socket.
+		// we need a stack to return to this node when dealing with multiple output pins
 
-		next = FindRHS(next);
 	}
-
 
 	return FunctionCallResult::Success;
 }
 
-INode* Graph::FindRHS(INode* lhs)
-{
-	for (int i = 0; i < m_ExecutionConnections.size(); i++)
-	{
-		if (m_ExecutionConnections[i].m_LHS == lhs)
-		{
-			return m_ExecutionConnections[i].m_RHS;
-		}
-	}
-	return nullptr;
-}
+//INode* Graph::FindRHS(INode* lhs)
+//{
+//	for (int i = 0; i < m_ExecutionConnections.size(); i++)
+//	{
+//		if (m_ExecutionConnections[i].m_LHS == lhs)
+//		{
+//			return m_ExecutionConnections[i].m_RHS;
+//		}
+//	}
+//	return nullptr;
+//}
 
 void Graph::ProcessDataConnections()
 {
@@ -233,6 +250,9 @@ Vector<IExecutionConnectionDef> GraphBuilder::BuildExecutionConnections(HashMap<
 		IExecutionConnectionDef connection = exec;
 		for (auto& [name, func] : m_Functions)
 		{
+			// this now needs to patch sockets on cloned nodes 
+			// rather than the nodes them selves
+			/*
 			if (connection.m_LHS == func.get())
 			{
 				connection.m_LHS = functions[name];
@@ -241,6 +261,7 @@ Vector<IExecutionConnectionDef> GraphBuilder::BuildExecutionConnections(HashMap<
 			{
 				connection.m_RHS = functions[name];
 			}
+			*/
 		}
 
 		executionConnections.push_back(connection);
@@ -321,4 +342,9 @@ IExecutionSocket* gs::ICustomNode::AddExecutionOutput(HashString name)
 		m_OutputExecutionSockets[name] = new IExecutionSocket();
 	}
 	return m_OutputExecutionSockets[name];
+}
+
+gs::IFunctionNode::IFunctionNode()
+{
+	m_OutputExecutionSockets["out"] = new IExecutionSocket();
 }

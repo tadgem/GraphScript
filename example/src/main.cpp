@@ -3,6 +3,7 @@
 #include "imnodes.h"
 #include "GraphScript.h"
 
+const int ITERATIONS = 100000;
 int main() {
 	gs::ExampleApp app;
 
@@ -14,14 +15,28 @@ int main() {
 	const int hardcoded_node_id = 1;
 
 	gs::GraphBuilder builder;
-	gs::IFunctionNode& entry = builder.AddFunction("NameOfEntry");
-	gs::IDataSocketDefT<float>* param1 = entry.AddArgument<float>("NameOfParameter");
+	// create a graph variable
 	gs::IVariableDefT<float>* var = builder.AddVariable<float>("NameOfVariable");
-	// 
+	
+	// Create a function entry point
+	gs::IFunctionNode& entry = builder.AddFunction("NameOfEntry");
+	// get a reference to the output execution socket, which is created by default for function nodes
+	gs::IExecutionSocket* entryExecutionSocket = entry.m_OutputExecutionSockets["out"];
+	// add an argument to the function
+	gs::IDataSocketDefT<float>* param1 = entry.AddArgument<float>("NameOfParameter");
+	
+	// create a multiply float node 
 	auto multiplyNodeBuilder = gs::CreateUnique<gs::ICustomNode>();
-	gs::IDataSocketDefT<float>* inputParam = multiplyNodeBuilder->AddDataInput<float>("input");
-	gs::IDataSocketDefT<float>* multipleParam = multiplyNodeBuilder->AddDataInput<float>("multiple");
-	gs::IDataSocketDefT<float>* resultDef = multiplyNodeBuilder->AddDataOutput<float>("result");
+	// in / out execution
+	gs::IExecutionSocket* multiplyInputExecution		= multiplyNodeBuilder->AddExecutionInput("in");
+	gs::IExecutionSocket* multiplyOutputExecution		= multiplyNodeBuilder->AddExecutionOutput("out");
+	// add an input parameter for the number to be multiplied
+	gs::IDataSocketDefT<float>* inputParam		= multiplyNodeBuilder->AddDataInput<float>("input");
+	// add an input parameter for the number to multiply by
+	gs::IDataSocketDefT<float>* multipleParam	= multiplyNodeBuilder->AddDataInput<float>("multiple");
+	// add an output parameter for the result
+	gs::IDataSocketDefT<float>* resultDef		= multiplyNodeBuilder->AddDataOutput<float>("result");
+	// define implementation
 	multiplyNodeBuilder->AddFunctionality([ & inputParam, &multipleParam, &resultDef]()
 	{
 			if (!inputParam->Get().has_value() || !multipleParam->Get().has_value())
@@ -32,7 +47,10 @@ int main() {
 	 
 	});
 
+	// Same as above
 	auto printFloatNodeBuilder = gs::CreateUnique<gs::ICustomNode>();
+	gs::IExecutionSocket* printInputExecution = printFloatNodeBuilder->AddExecutionInput("in");
+	gs::IExecutionSocket* printOutputExecution = printFloatNodeBuilder->AddExecutionInput("out");
 	gs::IDataSocketDefT<float>* floatInputParam = multiplyNodeBuilder->AddDataInput<float>("input");
 	printFloatNodeBuilder->AddFunctionality([&floatInputParam]()
 		{
@@ -41,76 +59,50 @@ int main() {
 			std::cout << floatInputParam->Get().value() << std::endl;
 		});
 
+	// make sure the builder knows about the nodes
 	builder.AddNode(multiplyNodeBuilder.get());
 	builder.AddNode(printFloatNodeBuilder.get());
 
+	// connect the function parameter socket to the input socket of the multiply node
 	gs::IDataConnectionDefT<float>* entryToInputDef = builder.ConnectDataSocket<float>(param1, inputParam);
+	// connect the graph variable socket to the multiple socket of the multiply node
 	gs::IDataConnectionDefT<float>* varToMultipleDef = builder.ConnectDataSocket<float>(&var->m_Socket, multipleParam);
+	// connect the result socket of the multiply node to the input socket of the print float node
 	gs::IDataConnectionDefT<float>* outputToPrintDef = builder.ConnectDataSocket<float>(resultDef, floatInputParam);
 	
-	gs::IExecutionConnectionDef entryToMultiplyExecution = builder.ConnectNode(&entry, multiplyNodeBuilder.get());
-	gs::IExecutionConnectionDef multiplyToPrintExecution = builder.ConnectNode(multiplyNodeBuilder.get(), printFloatNodeBuilder.get());
+	// connect execution sockets from function entry to mutiply in
+	gs::IExecutionConnectionDef entryToMultiplyExecution = builder.ConnectExecutionSocket(entryExecutionSocket, multiplyInputExecution);
+	// connect execution sockets from multiply out to print in
+	gs::IExecutionConnectionDef multiplyToPrintExecution = builder.ConnectExecutionSocket(multiplyOutputExecution, printInputExecution);
 	
-
-
-
-
-
-
-
-
-
-
-	// Benchmark
-	// GSGraph instance = builder.Build();
-	// GSObject object = context.AddGraph(instance);
-
+	// Build the graph to an executable object
 	gs::Graph g1 = builder.Build();
-	gs::Graph g2 = builder.Build();
+	// cache the function name we want to call
 	gs::HashString entryName("NameOfEntry");
 
+	// set the multiple variable for this graph instance
 	g1.SetVariable<float>("NameOfVariable", 3.0f);
+	// create an argument set to pass the function
 	gs::VariableSet args;
+	// create a named argument (must match the name of the function parameter socket)
 	args["NameOfParameter"] = 3.0f;
 
-	g2.SetVariable<float>("NameOfVariable", 4.0f);
-	gs::VariableSet args2;
-	args2["NameOfParameter"] = 4.0f;
-
-	const int ITERATIONS = 100000;
-	gs::Timer gsBuilderTimer, gsGraphTimer, cTimer;
-	gsBuilderTimer.start();
-	for (int i = 0; i < ITERATIONS; i++)
+	TIMER(GS_Timer,
 	{
-		g1.CallFunction(entryName, args);
-	}
-	gsBuilderTimer.stop();
+		for (int i = 0; i < ITERATIONS; i++)
+		{
+			g1.CallFunction(entryName, args);
+		}
+	})
 
-	gsGraphTimer.start();
-	for (int i = 0; i < ITERATIONS; i++)
+	TIMER(C_Timer,
 	{
-		g2.CallFunction(entryName, args2);
-	}
-	gsGraphTimer.stop();
-
-
-	cTimer.start();
-	for (int i = 0; i < ITERATIONS; i++)
-	{
-		float x = 3.0 * 3.0;
-		std::cout << x << std::endl;
-	}
-	cTimer.stop();
-	std::cout << "--\n-- RESULTS --\n--\n";
-	std::cout << "GS Builder Time : " << gsBuilderTimer.elapsedMilliseconds() << "ms \n";
-	std::cout << "GS Graph Time : " << gsGraphTimer.elapsedMilliseconds() << "ms \n";
-	std::cout << "C Time : " << cTimer.elapsedMilliseconds() << "ms \n";
-
-	// expected : 9.0f
-    // Getting : 3.0f
-	
-
-
+		for (int i = 0; i < ITERATIONS; i++)
+		{
+			float x = 3.0 * 3.0;
+			std::cout << "C : " << x << std::endl;
+		}
+	})
 
 	while (app.ShouldRun())
 	{

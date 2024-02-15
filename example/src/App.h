@@ -65,3 +65,11 @@ namespace gs
 		GLFWwindow* p_Window;
 	};
 }
+
+// Macros
+#define TIMER(NAME, CODE_TO_TIME) \
+gs::Timer _##NAME##_timer; \
+_##NAME##_timer.start(); \
+#CODE_TO_TIME ;\
+_##NAME##_timer.stop(); \
+std::cout << #NAME << " : " << _##NAME##_timer.elapsedMilliseconds() << "ms \n";
