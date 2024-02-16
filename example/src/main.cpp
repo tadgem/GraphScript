@@ -54,8 +54,6 @@ int main() {
 	gs::IDataSocketDefT<float>* floatInputParam = multiplyNodeBuilder->AddDataInput<float>("input");
 	printFloatNodeBuilder->AddFunctionality([&floatInputParam]()
 		{
-			//printf("GS : float : %f\n", floatInputParam->Get().value());
-
 			std::cout << floatInputParam->Get().value() << std::endl;
 		});
 
