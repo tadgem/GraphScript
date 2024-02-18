@@ -19,14 +19,16 @@ namespace gs
 	{
 	public:
 
-		IExecutionSocket(u32 loopCount = 0);
+		IExecutionSocket(HashString socketName, u32 loopCount = 0);
 
 		bool ShouldExecute();
 		void Execute();
 
+		const HashString m_SocketName;
 	protected:
 		bool		p_ShouldExecute;
 		const u32	p_LoopCount;
+		
 	};
 
 	class IDataSocketDef
@@ -156,8 +158,8 @@ namespace gs
 
 		HashMap<HashString, IDataSocketDef*>				m_InputDataSockets;
 		HashMap<HashString, IDataSocketDef*>				m_OutputDataSockets;
-		HashMap<HashString, IExecutionSocket*>				m_InputExecutionSockets;
-		HashMap<HashString, IExecutionSocket*>				m_OutputExecutionSockets;
+		Vector<IExecutionSocket*>				m_InputExecutionSockets;
+		Vector<IExecutionSocket*>				m_OutputExecutionSockets;
 	};
 
 	class ICustomNode : public INode

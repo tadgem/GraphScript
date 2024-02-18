@@ -90,7 +90,7 @@ INode* gs::Graph::GetNode(IExecutionSocket* socket)
 {
 	for (auto node : p_Nodes)
 	{
-		for (auto [socketName, inSocket] : node->m_InputExecutionSockets)
+		for (auto inSocket : node->m_InputExecutionSockets)
 		{
 			if (inSocket == socket)
 			{
@@ -98,7 +98,7 @@ INode* gs::Graph::GetNode(IExecutionSocket* socket)
 			}
 		}
 
-		for (auto [socketName, outSocket] : node->m_OutputExecutionSockets)
+		for (auto outSocket : node->m_OutputExecutionSockets)
 		{
 			if (outSocket == socket)
 			{
@@ -151,7 +151,8 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 	INode* currentNode = func;
 	IExecutionSocket *lhs, *rhs = nullptr;
 	// get the first socket in the chain
-	lhs = func->m_OutputExecutionSockets["out"];
+	lhs = func->m_OutputExecutionSockets.front();
+
 	// is this right? lhs likely never to be null 
 	// so we can terminate the loop early by lhs = nullptr;
 	while (lhs != nullptr || rhs != nullptr)
@@ -174,7 +175,7 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 		// dont have to worry about loops or branches
 		if (rhsNode->m_OutputExecutionSockets.size() == 1)
 		{
-			lhs = rhsNode->m_OutputExecutionSockets.begin()->second;
+			lhs = rhsNode->m_OutputExecutionSockets.front();
 			continue;
 		}
 
@@ -346,7 +347,7 @@ Vector<IDataConnectionDef*> GraphBuilder::BuildDataConnections(HashMap<HashStrin
 	return dataConnections;
 }
 
-IExecutionSocket::IExecutionSocket(u32 loopCount) : p_LoopCount(loopCount)
+IExecutionSocket::IExecutionSocket(HashString socketName, u32 loopCount) : m_SocketName(socketName), p_LoopCount(loopCount)
 {
 
 }
@@ -363,23 +364,15 @@ void IExecutionSocket::Execute()
 
 IExecutionSocket* gs::ICustomNode::AddExecutionInput(HashString name)
 {
-	if (m_InputExecutionSockets.find(name) == m_InputExecutionSockets.end())
-	{
-		m_InputExecutionSockets[name] = new IExecutionSocket();
-	}
-	return m_InputExecutionSockets[name];
+	return m_InputExecutionSockets.emplace_back(new IExecutionSocket(name));
 }
 
 IExecutionSocket* gs::ICustomNode::AddExecutionOutput(HashString name)
 {
-	if (m_OutputExecutionSockets.find(name) == m_OutputExecutionSockets.end())
-	{
-		m_OutputExecutionSockets[name] = new IExecutionSocket();
-	}
-	return m_OutputExecutionSockets[name];
+	return m_OutputExecutionSockets.emplace_back(new IExecutionSocket(name));
 }
 
 gs::IFunctionNode::IFunctionNode()
 {
-	m_OutputExecutionSockets["out"] = new IExecutionSocket();
+	m_OutputExecutionSockets.push_back(new IExecutionSocket("out"));
 }

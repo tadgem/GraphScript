@@ -21,7 +21,7 @@ int main() {
 	// Create a function entry point
 	gs::IFunctionNode& entry = builder.AddFunction("NameOfEntry");
 	// get a reference to the output execution socket, which is created by default for function nodes
-	gs::IExecutionSocket* entryExecutionSocket = entry.m_OutputExecutionSockets["out"];
+	gs::IExecutionSocket* entryExecutionSocket = entry.m_OutputExecutionSockets.front();
 	// add an argument to the function
 	gs::IDataSocketDefT<float>* param1 = entry.AddArgument<float>("NameOfParameter");
 	
