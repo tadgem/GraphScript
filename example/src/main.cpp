@@ -3,7 +3,7 @@
 #include "imnodes.h"
 #include "GraphScript.h"
 
-const int ITERATIONS = 10000;
+const int ITERATIONS = 3;
 int main() {
 	gs::ExampleApp app;
 
@@ -100,9 +100,9 @@ int main() {
 	// connect execution sockets from function entry to mutiply in
 	gs::IExecutionConnectionDef entryToMultiplyExecution = builder.ConnectExecutionSocket(entryExecutionSocket, multiplyInputExecution);
 	// connect multiply out to if in
+	gs::IExecutionConnectionDef multiplyToIfExecution = builder.ConnectExecutionSocket(multiplyOutputExecution, ifInExecutionSocket);
 	// connect true socket to print in
-	// connect execution sockets from multiply out to print in
-	gs::IExecutionConnectionDef multiplyToPrintExecution = builder.ConnectExecutionSocket(multiplyOutputExecution, printInputExecution);
+	gs::IExecutionConnectionDef trueToPrintExecution = builder.ConnectExecutionSocket(ifTrueExecutionSocket, printInputExecution);
 	
 	// Build the graph to an executable object
 	gs::Graph g1 = builder.Build();
@@ -111,6 +111,7 @@ int main() {
 
 	// set the multiple variable for this graph instance
 	g1.SetVariable<float>("NameOfVariable", 3.0f);
+	g1.SetVariable<bool>("ConditionVariable", true);
 	// create an argument set to pass the function
 	gs::VariableSet args;
 	// create a named argument (must match the name of the function parameter socket)

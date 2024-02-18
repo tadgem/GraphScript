@@ -19,7 +19,7 @@ namespace gs
 	{
 	public:
 
-		IExecutionSocket(HashString socketName, u32 loopCount = 0);
+		IExecutionSocket(HashString socketName, u32 loopCount = 1);
 
 		bool	ShouldExecute();
 		void	SetShouldExecute(bool shouldExecute);
@@ -244,7 +244,7 @@ namespace gs
 		{
 			INode*				Root;
 			IExecutionSocket*	Socket;
-			u32					Count;
+			u32					Count = 1;
 		};
 	public:
 

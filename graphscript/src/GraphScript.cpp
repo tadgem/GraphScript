@@ -173,7 +173,7 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 					continue;
 				}
 				// new lhs is top of the stack, decrement count
-				lhs = p_Stack.top().Socket;
+				rhs = FindRHS(p_Stack.top().Socket);
 				p_Stack.top().Count--;
 			}
 			else
@@ -184,6 +184,12 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 
 		// find node of RHS
 		INode* rhsNode = GetNode(rhs);
+
+		if (rhsNode == nullptr)
+		{
+			continue;
+		}
+
 		// process data connections
 		ProcessDataConnections();
 		// Process()
