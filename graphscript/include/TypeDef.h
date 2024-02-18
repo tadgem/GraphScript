@@ -11,6 +11,7 @@
 #include <optional>
 #include <memory>
 #include <vector>
+#include <stack>
 #include <type_traits>
 #include <iostream>
 
@@ -43,6 +44,9 @@ namespace gs
 
 	template<typename T>
 	using Vector	= std::vector<T>;
+
+	template<typename T>
+	using Stack = std::stack<T>;
 	
 	template<typename T>
 	std::ostream& operator<<(std::ostream& os, std::optional<T> const& opt)

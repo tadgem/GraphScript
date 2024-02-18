@@ -3,7 +3,7 @@
 #include "imnodes.h"
 #include "GraphScript.h"
 
-const int ITERATIONS = 100000;
+const int ITERATIONS = 10000;
 int main() {
 	gs::ExampleApp app;
 
@@ -84,6 +84,11 @@ int main() {
 	gs::VariableSet args;
 	// create a named argument (must match the name of the function parameter socket)
 	args["NameOfParameter"] = 3.0f;
+
+	for (int i = 0; i < ITERATIONS; i++)
+	{
+		g1.CallFunction(entryName, args);
+	}
 
 	TIMER(GS_Timer,
 	{

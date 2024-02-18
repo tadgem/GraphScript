@@ -74,6 +74,41 @@ void GraphBuilder::PrintNodeSockets(INode* node)
 {
 }
 
+IExecutionSocket* gs::Graph::FindRHS(IExecutionSocket* lhs)
+{
+	for (auto conn : p_ExecutionConnections)
+	{
+		if (conn.m_LHS == lhs)
+		{
+			return conn.m_RHS;
+		}
+	}
+	return nullptr;
+}
+
+INode* gs::Graph::GetNode(IExecutionSocket* socket)
+{
+	for (auto node : p_Nodes)
+	{
+		for (auto [socketName, inSocket] : node->m_InputExecutionSockets)
+		{
+			if (inSocket == socket)
+			{
+				return node;
+			}
+		}
+
+		for (auto [socketName, outSocket] : node->m_OutputExecutionSockets)
+		{
+			if (outSocket == socket)
+			{
+				return node;
+			}
+		}
+	}
+	return nullptr;
+}
+
 void ICustomNode::Process()
 {
 	m_Proc();
@@ -97,42 +132,54 @@ IDataSocketDef::~IDataSocketDef()
 }
 
 Graph::Graph(HashMap<HashString, IFunctionNode*> functions, HashMap<HashString, IVariableDef*> variablesDefs, Vector<INode*> nodes, Vector<IExecutionConnectionDef> executionConnections, Vector<IDataConnectionDef*> dataConnections) :
-	m_Functions(functions), m_VariablesDefs(variablesDefs), m_Nodes(nodes), m_ExecutionConnections(executionConnections), m_DataConnections(dataConnections)
+	p_Functions(functions), p_VariablesDefs(variablesDefs), p_Nodes(nodes), p_ExecutionConnections(executionConnections), p_DataConnections(dataConnections)
 {
 }
 
 FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args)
 {
-	if (m_Functions.find(nameOfMethod) == m_Functions.end())
+	if (p_Functions.find(nameOfMethod) == p_Functions.end())
 	{
 		return FunctionCallResult::Fail;
 	}
 
 	ResetSockets();
 
-	IFunctionNode* func = m_Functions[nameOfMethod];
+	IFunctionNode* func = p_Functions[nameOfMethod];
 	PopulateParams(func, args);
-	//INode* next = func;
 
-	//while (next != nullptr)
-	//{
-	//	ProcessDataConnections();
-	//	next->Process();
-
-	//	// next = FindRHS(next);
-	//}
-
+	INode* currentNode = func;
 	IExecutionSocket *lhs, *rhs = nullptr;
 	// get the first socket in the chain
 	lhs = func->m_OutputExecutionSockets["out"];
 	// is this right? lhs likely never to be null 
 	// so we can terminate the loop early by lhs = nullptr;
-	while (lhs != nullptr && rhs != nullptr)
+	while (lhs != nullptr || rhs != nullptr)
 	{
 		// find RHS of lhs
+		rhs = FindRHS(lhs);
+		if (rhs == nullptr)
+		{
+			lhs = nullptr;
+			continue;
+		}
+
 		// find node of RHS
+		INode* rhsNode = GetNode(rhs);
 		// process data connections
+		ProcessDataConnections();
 		// Process()
+		rhsNode->Process();
+
+		// dont have to worry about loops or branches
+		if (rhsNode->m_OutputExecutionSockets.size() == 1)
+		{
+			lhs = rhsNode->m_OutputExecutionSockets.begin()->second;
+			continue;
+		}
+
+		lhs = nullptr;
+		// we may have potentiall 
 		// for each output pin (reverse)
 		//     if (socket.ShouldExecute())
 		//			lhs = socket.
@@ -143,23 +190,11 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 	return FunctionCallResult::Success;
 }
 
-//INode* Graph::FindRHS(INode* lhs)
-//{
-//	for (int i = 0; i < m_ExecutionConnections.size(); i++)
-//	{
-//		if (m_ExecutionConnections[i].m_LHS == lhs)
-//		{
-//			return m_ExecutionConnections[i].m_RHS;
-//		}
-//	}
-//	return nullptr;
-//}
-
 void Graph::ProcessDataConnections()
 {
-	for (int i = 0; i < m_DataConnections.size(); i++)
+	for (int i = 0; i < p_DataConnections.size(); i++)
 	{
-		m_DataConnections[i]->Process();
+		p_DataConnections[i]->Process();
 	}
 }
 
@@ -176,7 +211,7 @@ void Graph::PopulateParams(IFunctionNode* functionNode, VariableSet params)
 
 void Graph::ResetSockets()
 {
-	for (INode* node : m_Nodes)
+	for (INode* node : p_Nodes)
 	{
 		for (auto& [name, socket] : node->m_InputDataSockets)
 		{
