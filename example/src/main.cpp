@@ -17,6 +17,7 @@ int main() {
 	gs::GraphBuilder builder;
 	// create a graph variable
 	gs::IVariableDefT<float>* var = builder.AddVariable<float>("NameOfVariable");
+	gs::IVariableDefT<bool>* boolVar = builder.AddVariable<bool>("ConditionVariable");
 	
 	// Create a function entry point
 	gs::IFunctionNode& entry = builder.AddFunction("NameOfEntry");
@@ -47,6 +48,31 @@ int main() {
 	 
 	});
 
+	auto ifBuilderNode = gs::CreateUnique<gs::ICustomNode>();
+	gs::IExecutionSocket* ifInExecutionSocket = ifBuilderNode->AddExecutionInput("in");
+	gs::IExecutionSocket* ifTrueExecutionSocket = ifBuilderNode->AddExecutionOutput("true");
+	gs::IExecutionSocket* ifFalseExecutionSocket = ifBuilderNode->AddExecutionOutput("false");
+	// add an input parameter for the condition
+	gs::IDataSocketDefT<bool>* ifInputParam = ifBuilderNode->AddDataInput<bool>("condition");
+	ifBuilderNode->AddFunctionality([&ifInputParam, &ifTrueExecutionSocket, &ifFalseExecutionSocket]()
+	{
+			if (!ifInputParam->Get().has_value())
+			{
+				return;
+			}
+			bool condition = ifInputParam->Get().value();
+			if (condition)
+			{
+				ifTrueExecutionSocket->SetShouldExecute(true);
+				ifFalseExecutionSocket->SetShouldExecute(false);
+			}
+			else
+			{
+				ifTrueExecutionSocket->SetShouldExecute(false);
+				ifFalseExecutionSocket->SetShouldExecute(true);
+			}
+	});
+
 	// Same as above
 	auto printFloatNodeBuilder = gs::CreateUnique<gs::ICustomNode>();
 	gs::IExecutionSocket* printInputExecution = printFloatNodeBuilder->AddExecutionInput("in");
@@ -59,6 +85,7 @@ int main() {
 
 	// make sure the builder knows about the nodes
 	builder.AddNode(multiplyNodeBuilder.get());
+	builder.AddNode(ifBuilderNode.get());
 	builder.AddNode(printFloatNodeBuilder.get());
 
 	// connect the function parameter socket to the input socket of the multiply node
@@ -67,9 +94,13 @@ int main() {
 	gs::IDataConnectionDefT<float>* varToMultipleDef = builder.ConnectDataSocket<float>(&var->m_Socket, multipleParam);
 	// connect the result socket of the multiply node to the input socket of the print float node
 	gs::IDataConnectionDefT<float>* outputToPrintDef = builder.ConnectDataSocket<float>(resultDef, floatInputParam);
-	
+	// connect bool variable to the if node
+	gs::IDataConnectionDefT<bool>* boolToIfDef = builder.ConnectDataSocket<bool>(&boolVar->m_Socket, ifInputParam);
+
 	// connect execution sockets from function entry to mutiply in
 	gs::IExecutionConnectionDef entryToMultiplyExecution = builder.ConnectExecutionSocket(entryExecutionSocket, multiplyInputExecution);
+	// connect multiply out to if in
+	// connect true socket to print in
 	// connect execution sockets from multiply out to print in
 	gs::IExecutionConnectionDef multiplyToPrintExecution = builder.ConnectExecutionSocket(multiplyOutputExecution, printInputExecution);
 	

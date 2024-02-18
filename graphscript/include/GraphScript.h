@@ -21,8 +21,10 @@ namespace gs
 
 		IExecutionSocket(HashString socketName, u32 loopCount = 0);
 
-		bool ShouldExecute();
-		void Execute();
+		bool	ShouldExecute();
+		void	SetShouldExecute(bool shouldExecute);
+		void	Execute();
+		u32		LoopCount() { return p_LoopCount; }
 
 		const HashString m_SocketName;
 	protected:
@@ -241,7 +243,7 @@ namespace gs
 		struct StackEntry
 		{
 			INode*				Root;
-			HashString			Socket;
+			IExecutionSocket*	Socket;
 			u32					Count;
 		};
 	public:

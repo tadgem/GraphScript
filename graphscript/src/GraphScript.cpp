@@ -159,10 +159,27 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 	{
 		// find RHS of lhs
 		rhs = FindRHS(lhs);
+		lhs = nullptr;
+	
 		if (rhs == nullptr)
 		{
-			lhs = nullptr;
-			continue;
+			// if we have elements on the stack
+			if (!p_Stack.empty())
+			{
+				// should we still be executing this entry on the stack
+				if (p_Stack.top().Count == 0)
+				{
+					p_Stack.pop();
+					continue;
+				}
+				// new lhs is top of the stack, decrement count
+				lhs = p_Stack.top().Socket;
+				p_Stack.top().Count--;
+			}
+			else
+			{
+				continue;
+			}			
 		}
 
 		// find node of RHS
@@ -179,13 +196,26 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 			continue;
 		}
 
-		lhs = nullptr;
-		// we may have potentiall 
 		// for each output pin (reverse)
+		for (auto socket : rhsNode->m_OutputExecutionSockets)
+		{
+			if (socket->ShouldExecute())
+			{
+				lhs = socket;
+				break;
+			}
+		}
+
+		if (lhs)
+		{
+			// read: the current node, the current output socket, and that sockets loop count
+			p_Stack.push(StackEntry{ rhsNode, lhs, lhs->LoopCount() });
+		}
 		//     if (socket.ShouldExecute())
 		//			lhs = socket.
 		// we need a stack to return to this node when dealing with multiple output pins
 
+		lhs = nullptr;
 	}
 
 	return FunctionCallResult::Success;
@@ -355,6 +385,11 @@ IExecutionSocket::IExecutionSocket(HashString socketName, u32 loopCount) : m_Soc
 bool IExecutionSocket::ShouldExecute()
 {
 	return p_ShouldExecute;
+}
+
+void IExecutionSocket::SetShouldExecute(bool shouldExecute)
+{
+	p_ShouldExecute = shouldExecute;
 }
 
 void IExecutionSocket::Execute()
