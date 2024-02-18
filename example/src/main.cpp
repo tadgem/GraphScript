@@ -74,18 +74,27 @@ int main() {
 			}
 	});
 
-	// need to change this up
-	// the socket needs to be fed a loop count from the node
-	// negating need to keep count on the stack, just need the socket
-	// also gives us a way to get index in the loop e.g. i = Count - (Socket.Count)
-
+	// need to rethink this a bit..
+	// probably need to clone nodes too
+	// we have nowhere to store the current index in the node 
+	// need to be able to store the count in the socket per for loop
+	// with this we can then set the execution socket based on the loop count
+	// and also provide the 
 	// FOR node
 	auto forNodeBuilder = gs::CreateUnique<gs::ICustomNode>();
-	gs::IExecutionSocket* forInExecutionSocket = forNodeBuilder->AddExecutionInput("in");
-	gs::IExecutionSocket* forOutExecutionSocket = forNodeBuilder->AddExecutionOutput("out");
-	gs::IExecutionSocket* forLoopExecutionSocket = forNodeBuilder->AddExecutionOutput("each");
-	gs::IDataSocketDefT<gs::u32>* forCountInputSocket = forNodeBuilder->AddDataInput<gs::u32>("count");
-
+	gs::IExecutionSocket*			forInExecutionSocket	= forNodeBuilder->AddExecutionInput("in");
+	gs::IExecutionSocket*			forOutExecutionSocket	= forNodeBuilder->AddExecutionOutput("out");
+	gs::IExecutionSocket*			forLoopExecutionSocket	= forNodeBuilder->AddExecutionOutput("each");
+	gs::IDataSocketDefT<gs::u32>*	forCountInputSocket		= forNodeBuilder->AddDataInput<gs::u32>("count");
+	forNodeBuilder->AddFunctionality([&forOutExecutionSocket, &forLoopExecutionSocket, &forCountInputSocket]()
+		{
+			if (!forCountInputSocket->Get().has_value())
+			{
+				return;
+			}
+			forOutExecutionSocket->SetShouldExecute(false);
+			forLoopExecutionSocket->SetShouldExecute(true);
+		});
 
 	// print float node
 	auto printFloatNodeBuilder = gs::CreateUnique<gs::ICustomNode>();
