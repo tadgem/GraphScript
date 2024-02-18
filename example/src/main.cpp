@@ -48,13 +48,14 @@ int main() {
 	 
 	});
 
-	auto ifBuilderNode = gs::CreateUnique<gs::ICustomNode>();
-	gs::IExecutionSocket* ifInExecutionSocket = ifBuilderNode->AddExecutionInput("in");
-	gs::IExecutionSocket* ifTrueExecutionSocket = ifBuilderNode->AddExecutionOutput("true");
-	gs::IExecutionSocket* ifFalseExecutionSocket = ifBuilderNode->AddExecutionOutput("false");
+	// IF node
+	auto ifNodeBuilder = gs::CreateUnique<gs::ICustomNode>();
+	gs::IExecutionSocket* ifInExecutionSocket = ifNodeBuilder->AddExecutionInput("in");
+	gs::IExecutionSocket* ifTrueExecutionSocket = ifNodeBuilder->AddExecutionOutput("true");
+	gs::IExecutionSocket* ifFalseExecutionSocket = ifNodeBuilder->AddExecutionOutput("false");
 	// add an input parameter for the condition
-	gs::IDataSocketDefT<bool>* ifInputParam = ifBuilderNode->AddDataInput<bool>("condition");
-	ifBuilderNode->AddFunctionality([&ifInputParam, &ifTrueExecutionSocket, &ifFalseExecutionSocket]()
+	gs::IDataSocketDefT<bool>* ifInputParam = ifNodeBuilder->AddDataInput<bool>("condition");
+	ifNodeBuilder->AddFunctionality([&ifInputParam, &ifTrueExecutionSocket, &ifFalseExecutionSocket]()
 	{
 			if (!ifInputParam->Get().has_value())
 			{
@@ -73,7 +74,20 @@ int main() {
 			}
 	});
 
-	// Same as above
+	// need to change this up
+	// the socket needs to be fed a loop count from the node
+	// negating need to keep count on the stack, just need the socket
+	// also gives us a way to get index in the loop e.g. i = Count - (Socket.Count)
+
+	// FOR node
+	auto forNodeBuilder = gs::CreateUnique<gs::ICustomNode>();
+	gs::IExecutionSocket* forInExecutionSocket = forNodeBuilder->AddExecutionInput("in");
+	gs::IExecutionSocket* forOutExecutionSocket = forNodeBuilder->AddExecutionOutput("out");
+	gs::IExecutionSocket* forLoopExecutionSocket = forNodeBuilder->AddExecutionOutput("each");
+	gs::IDataSocketDefT<gs::u32>* forCountInputSocket = forNodeBuilder->AddDataInput<gs::u32>("count");
+
+
+	// print float node
 	auto printFloatNodeBuilder = gs::CreateUnique<gs::ICustomNode>();
 	gs::IExecutionSocket* printInputExecution = printFloatNodeBuilder->AddExecutionInput("in");
 	gs::IExecutionSocket* printOutputExecution = printFloatNodeBuilder->AddExecutionInput("out");
@@ -85,7 +99,7 @@ int main() {
 
 	// make sure the builder knows about the nodes
 	builder.AddNode(multiplyNodeBuilder.get());
-	builder.AddNode(ifBuilderNode.get());
+	builder.AddNode(ifNodeBuilder.get());
 	builder.AddNode(printFloatNodeBuilder.get());
 
 	// connect the function parameter socket to the input socket of the multiply node
