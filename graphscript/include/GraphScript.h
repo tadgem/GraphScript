@@ -24,12 +24,13 @@ namespace gs
 		bool	ShouldExecute();
 		void	SetShouldExecute(bool shouldExecute);
 		void	Execute();
-		u32		LoopCount() { return p_LoopCount; }
 
+		u32			m_LoopCount;
 		const HashString m_SocketName;
 	protected:
+		friend class Graph;
+		friend class GraphBuilder;
 		bool		p_ShouldExecute;
-		const u32	p_LoopCount;
 		
 	};
 
@@ -185,18 +186,6 @@ namespace gs
 		HashMap<HashString, IDataSocketDef*>				m_OutputDataSockets;
 		Vector<IExecutionSocket*>				m_InputExecutionSockets;
 		Vector<IExecutionSocket*>				m_OutputExecutionSockets;
-	};
-
-	class ICustomNode : public INode
-	{
-	public:
-		void Process() override;
-		void AddFunctionality(Procedure proc)
-		{
-			m_Proc = proc;
-		}
-
-		Procedure m_Proc = NULL;
 	};
 
 	class IFunctionNode : public INode

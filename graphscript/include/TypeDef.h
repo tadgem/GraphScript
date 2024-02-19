@@ -31,7 +31,6 @@ namespace gs
 	using u64		= uint64_t;
 	using String	= std::string;
 	using Any		= std::any;
-	using Procedure = std::function<void()>;
 
 	template<typename T>
 	using Optional	= std::optional<T>;

@@ -108,12 +108,6 @@ INode* gs::Graph::GetNode(IExecutionSocket* socket)
 	}
 	return nullptr;
 }
-
-void ICustomNode::Process()
-{
-	m_Proc();
-}
-
 GraphBuilder::~GraphBuilder()
 {
 	for (int i = 0; i < m_DataConnections.size(); i++)
@@ -143,30 +137,37 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 		return FunctionCallResult::Fail;
 	}
 
+	// reset sockets so no lingering data from previous invoke
 	ResetSockets();
 
+	// Get the function entry node
 	IFunctionNode* func = p_Functions[nameOfMethod];
+
+	// populate the args as params
 	PopulateParams(func, args);
 
 	INode* currentNode = func;
 	IExecutionSocket *lhs, *rhs = nullptr;
+	
 	// get the first socket in the chain
 	lhs = func->m_OutputExecutionSockets.front();
 
-	// is this right? lhs likely never to be null 
-	// so we can terminate the loop early by lhs = nullptr;
+	// while there is something in the chain to process
 	while (lhs != nullptr || rhs != nullptr)
 	{
 		// find RHS of lhs
 		rhs = FindRHS(lhs);
+		// invalidate lhs
 		lhs = nullptr;
-	
+
 		if (rhs == nullptr)
 		{
 			// if we have elements on the stack
 			if (!p_Stack.empty())
 			{
-				// should we still be executing this entry on the stack
+				// this needs to change
+				// we need to just process the node on the stack I think
+				// // should we still be executing this entry on the stack
 				if (p_Stack.top().Count == 0)
 				{
 					p_Stack.pop();
@@ -176,6 +177,7 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 				rhs = FindRHS(p_Stack.top().Socket);
 				p_Stack.top().Count--;
 			}
+			// otherwise finished
 			else
 			{
 				continue;
@@ -215,11 +217,8 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 		if (lhs)
 		{
 			// read: the current node, the current output socket, and that sockets loop count
-			p_Stack.push(StackEntry{ rhsNode, lhs, lhs->LoopCount() });
+			p_Stack.push(StackEntry{ rhsNode, lhs, lhs->m_LoopCount });
 		}
-		//     if (socket.ShouldExecute())
-		//			lhs = socket.
-		// we need a stack to return to this node when dealing with multiple output pins
 
 		lhs = nullptr;
 	}
@@ -383,7 +382,7 @@ Vector<IDataConnectionDef*> GraphBuilder::BuildDataConnections(HashMap<HashStrin
 	return dataConnections;
 }
 
-IExecutionSocket::IExecutionSocket(HashString socketName, u32 loopCount) : m_SocketName(socketName), p_LoopCount(loopCount)
+IExecutionSocket::IExecutionSocket(HashString socketName, u32 loopCount) : m_SocketName(socketName), m_LoopCount(loopCount)
 {
 
 }
