@@ -157,25 +157,19 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 	{
 		// find RHS of lhs
 		rhs = FindRHS(lhs);
+
 		// invalidate lhs
 		lhs = nullptr;
+
+		INode* rhsNode = nullptr;
 
 		if (rhs == nullptr)
 		{
 			// if we have elements on the stack
 			if (!p_Stack.empty())
 			{
-				// this needs to change
-				// we need to just process the node on the stack I think
-				// // should we still be executing this entry on the stack
-				if (p_Stack.top().Count == 0)
-				{
-					p_Stack.pop();
-					continue;
-				}
-				// new lhs is top of the stack, decrement count
-				rhs = FindRHS(p_Stack.top().Socket);
-				p_Stack.top().Count--;
+				rhsNode = p_Stack.top();
+				p_Stack.pop();
 			}
 			// otherwise finished
 			else
@@ -183,9 +177,11 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 				continue;
 			}			
 		}
+		else
+		{
+			rhsNode = GetNode(rhs);
+		}
 
-		// find node of RHS
-		INode* rhsNode = GetNode(rhs);
 
 		if (rhsNode == nullptr)
 		{
@@ -217,10 +213,8 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 		if (lhs)
 		{
 			// read: the current node, the current output socket, and that sockets loop count
-			p_Stack.push(StackEntry{ rhsNode, lhs, lhs->m_LoopCount });
+			p_Stack.push( rhsNode);
 		}
-
-		lhs = nullptr;
 	}
 
 	return FunctionCallResult::Success;
@@ -395,11 +389,6 @@ bool IExecutionSocket::ShouldExecute()
 void IExecutionSocket::SetShouldExecute(bool shouldExecute)
 {
 	p_ShouldExecute = shouldExecute;
-}
-
-void IExecutionSocket::Execute()
-{
-	p_ShouldExecute = true;
 }
 
 IExecutionSocket* gs::INode::AddExecutionInput(HashString name)

@@ -23,7 +23,6 @@ namespace gs
 
 		bool	ShouldExecute();
 		void	SetShouldExecute(bool shouldExecute);
-		void	Execute();
 
 		u32			m_LoopCount;
 		const HashString m_SocketName;
@@ -228,13 +227,7 @@ namespace gs
 		Vector<INode*>						p_Nodes;
 		Vector<IExecutionConnectionDef>		p_ExecutionConnections;
 		Vector<IDataConnectionDef*>			p_DataConnections;
-
-		struct StackEntry
-		{
-			INode*				Root;
-			IExecutionSocket*	Socket;
-			u32					Count = 1;
-		};
+		
 	public:
 
 		Graph(
@@ -264,7 +257,7 @@ protected:
 		void				PopulateParams(IFunctionNode* functionNode, VariableSet params);
 		void				ResetSockets();
 
-		Stack<StackEntry>	p_Stack;
+		Stack<INode*>	p_Stack;
 	};
 
 	class GraphBuilder
