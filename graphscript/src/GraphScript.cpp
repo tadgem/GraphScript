@@ -403,12 +403,12 @@ void IExecutionSocket::Execute()
 	p_ShouldExecute = true;
 }
 
-IExecutionSocket* gs::ICustomNode::AddExecutionInput(HashString name)
+IExecutionSocket* gs::INode::AddExecutionInput(HashString name)
 {
 	return m_InputExecutionSockets.emplace_back(new IExecutionSocket(name));
 }
 
-IExecutionSocket* gs::ICustomNode::AddExecutionOutput(HashString name)
+IExecutionSocket* gs::INode::AddExecutionOutput(HashString name)
 {
 	return m_OutputExecutionSockets.emplace_back(new IExecutionSocket(name));
 }

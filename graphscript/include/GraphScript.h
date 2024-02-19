@@ -158,15 +158,6 @@ namespace gs
 	public:
 		virtual void Process() = 0;
 
-		HashMap<HashString, IDataSocketDef*>				m_InputDataSockets;
-		HashMap<HashString, IDataSocketDef*>				m_OutputDataSockets;
-		Vector<IExecutionSocket*>				m_InputExecutionSockets;
-		Vector<IExecutionSocket*>				m_OutputExecutionSockets;
-	};
-
-	class ICustomNode : public INode
-	{
-	public:
 		template <typename T>
 		IDataSocketDefT<T>* AddDataInput(HashString variableName)
 		{
@@ -187,9 +178,18 @@ namespace gs
 			return static_cast<IDataSocketDefT<T>*>(m_OutputDataSockets[variableName]);
 		}
 
-		IExecutionSocket*	AddExecutionInput(HashString name);
-		IExecutionSocket*	AddExecutionOutput(HashString name);
+		IExecutionSocket* AddExecutionInput(HashString name);
+		IExecutionSocket* AddExecutionOutput(HashString name);
 
+		HashMap<HashString, IDataSocketDef*>				m_InputDataSockets;
+		HashMap<HashString, IDataSocketDef*>				m_OutputDataSockets;
+		Vector<IExecutionSocket*>				m_InputExecutionSockets;
+		Vector<IExecutionSocket*>				m_OutputExecutionSockets;
+	};
+
+	class ICustomNode : public INode
+	{
+	public:
 		void Process() override;
 		void AddFunctionality(Procedure proc)
 		{

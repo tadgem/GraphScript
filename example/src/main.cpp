@@ -2,6 +2,7 @@
 #include <imgui.h>
 #include "imnodes.h"
 #include "GraphScript.h"
+#include "BuiltInNodes.h"
 
 const int ITERATIONS = 3;
 int main() {
@@ -27,26 +28,7 @@ int main() {
 	gs::IDataSocketDefT<float>* param1 = entry.AddArgument<float>("NameOfParameter");
 	
 	// create a multiply float node 
-	auto multiplyNodeBuilder = gs::CreateUnique<gs::ICustomNode>();
-	// in / out execution
-	gs::IExecutionSocket* multiplyInputExecution		= multiplyNodeBuilder->AddExecutionInput("in");
-	gs::IExecutionSocket* multiplyOutputExecution		= multiplyNodeBuilder->AddExecutionOutput("out");
-	// add an input parameter for the number to be multiplied
-	gs::IDataSocketDefT<float>* inputParam		= multiplyNodeBuilder->AddDataInput<float>("input");
-	// add an input parameter for the number to multiply by
-	gs::IDataSocketDefT<float>* multipleParam	= multiplyNodeBuilder->AddDataInput<float>("multiple");
-	// add an output parameter for the result
-	gs::IDataSocketDefT<float>* resultDef		= multiplyNodeBuilder->AddDataOutput<float>("result");
-	// define implementation
-	multiplyNodeBuilder->AddFunctionality([ & inputParam, &multipleParam, &resultDef]()
-	{
-			if (!inputParam->Get().has_value() || !multipleParam->Get().has_value())
-			{
-				return;
-			}
-			resultDef->Set(inputParam->Get().value() * multipleParam->Get().value());
-	 
-	});
+	auto multiplyNodeBuilder = gs::CreateUnique<gs::MutliplyNodeT<float>>();
 
 	// IF node
 	auto ifNodeBuilder = gs::CreateUnique<gs::ICustomNode>();
@@ -112,18 +94,18 @@ int main() {
 	builder.AddNode(printFloatNodeBuilder.get());
 
 	// connect the function parameter socket to the input socket of the multiply node
-	gs::IDataConnectionDefT<float>* entryToInputDef = builder.ConnectDataSocket<float>(param1, inputParam);
+	gs::IDataConnectionDefT<float>* entryToInputDef = builder.ConnectDataSocket<float>(param1, (IDataSocketDefT<float>*) multiplyNodeBuilder->m_InputDataSockets["input"]);
 	// connect the graph variable socket to the multiple socket of the multiply node
-	gs::IDataConnectionDefT<float>* varToMultipleDef = builder.ConnectDataSocket<float>(&var->m_Socket, multipleParam);
+	gs::IDataConnectionDefT<float>* varToMultipleDef = builder.ConnectDataSocket<float>(&var->m_Socket, (IDataSocketDefT<float>*) multiplyNodeBuilder->m_InputDataSockets["multiple"]);
 	// connect the result socket of the multiply node to the input socket of the print float node
-	gs::IDataConnectionDefT<float>* outputToPrintDef = builder.ConnectDataSocket<float>(resultDef, floatInputParam);
+	gs::IDataConnectionDefT<float>* outputToPrintDef = builder.ConnectDataSocket<float>((IDataSocketDefT<float>*) multiplyNodeBuilder->m_OutputDataSockets["result"], floatInputParam);
 	// connect bool variable to the if node
 	gs::IDataConnectionDefT<bool>* boolToIfDef = builder.ConnectDataSocket<bool>(&boolVar->m_Socket, ifInputParam);
 
 	// connect execution sockets from function entry to mutiply in
-	gs::IExecutionConnectionDef entryToMultiplyExecution = builder.ConnectExecutionSocket(entryExecutionSocket, multiplyInputExecution);
+	gs::IExecutionConnectionDef entryToMultiplyExecution = builder.ConnectExecutionSocket(entryExecutionSocket, multiplyNodeBuilder->m_InputExecutionSockets.front());
 	// connect multiply out to if in
-	gs::IExecutionConnectionDef multiplyToIfExecution = builder.ConnectExecutionSocket(multiplyOutputExecution, ifInExecutionSocket);
+	gs::IExecutionConnectionDef multiplyToIfExecution = builder.ConnectExecutionSocket(multiplyNodeBuilder->m_OutputExecutionSockets.front(), ifInExecutionSocket);
 	// connect true socket to print in
 	gs::IExecutionConnectionDef trueToPrintExecution = builder.ConnectExecutionSocket(ifTrueExecutionSocket, printInputExecution);
 	
