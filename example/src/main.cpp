@@ -4,7 +4,7 @@
 #include "GraphScript.h"
 #include "BuiltInNodes.h"
 
-const int ITERATIONS = 1;
+const int ITERATIONS = 2;
 int main() {
 	gs::ExampleApp app;
 

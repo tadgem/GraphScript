@@ -30,6 +30,11 @@ namespace gs {
 
 			resultSocket->Set(inputSocket->Get().value() * multipleSocket->Get().value());
 		}
+
+		INode* Clone() override
+		{
+			return new MutliplyNodeT<T>();
+		}
 	};
 
 	template<typename T>
@@ -53,6 +58,11 @@ namespace gs {
 			}
 
 			std::cout << inputSocket->Get().value() << std::endl;
+		}
+
+		INode* Clone() override
+		{
+			return new PrintNodeT<T>();
 		}
 	};
 
@@ -89,6 +99,11 @@ namespace gs {
 				ifTrueExecutionSocket->SetShouldExecute(false);
 				ifFalseExecutionSocket->SetShouldExecute(true);
 			}
+		}
+
+		INode* Clone() override
+		{
+			return new IfNode();
 		}
 	};
 
@@ -133,6 +148,11 @@ namespace gs {
 				}
 			}
 
+		}
+
+		INode* Clone() override
+		{
+			return new ForNode();
 		}
 	};
 

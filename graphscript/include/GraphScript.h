@@ -24,8 +24,13 @@ namespace gs
 		bool	ShouldExecute();
 		void	SetShouldExecute(bool shouldExecute);
 
-		u32			m_LoopCount;
-		const HashString m_SocketName;
+		u32					m_LoopCount;
+		const HashString	m_SocketName;
+
+		IExecutionSocket Clone()
+		{
+			return {m_SocketName, m_LoopCount};
+		}
 	protected:
 		friend class Graph;
 		friend class GraphBuilder;
@@ -41,6 +46,7 @@ namespace gs
 		IDataSocketDef() = default;
 		IDataSocketDef(IDataSocketDef& other) = default;
 		virtual ~IDataSocketDef();
+		virtual IDataSocketDef* Clone() = 0;
 	};
 
 	template <typename T>
@@ -59,6 +65,10 @@ namespace gs
 		{
 			m_Value = other;
 		}
+		IDataSocketDef* Clone() override
+		{
+			return new IDataSocketDefT<T>();
+		}
 	};
 
 	class IDataConnectionDef
@@ -68,8 +78,8 @@ namespace gs
 		virtual void Print() = 0;
 		virtual IDataConnectionDef* Clone() = 0;
 
-		IDataSocketDef* m_LHS;
-		IDataSocketDef* m_RHS;
+		IDataSocketDef* m_LHS = nullptr;
+		IDataSocketDef* m_RHS = nullptr;
 	};
 
 	template<typename T>
@@ -156,7 +166,8 @@ namespace gs
 	class INode
 	{
 	public:
-		virtual void Process() = 0;
+		virtual void	Process() = 0;
+		virtual INode*	Clone() = 0;
 
 		template <typename T>
 		IDataSocketDefT<T>* AddDataInput(HashString variableName)
@@ -205,7 +216,7 @@ namespace gs
 
 		void Process() override {};
 
-		IFunctionNode* Clone()
+		INode* Clone() override
 		{
 			return new IFunctionNode(*this);
 		}

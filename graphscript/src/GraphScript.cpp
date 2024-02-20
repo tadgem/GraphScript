@@ -267,7 +267,7 @@ HashMap<HashString, IFunctionNode*> GraphBuilder::BuildFunctions()
 	HashMap<HashString, IFunctionNode*> functions;
 	for (auto& [name, func] : m_Functions)
 	{
-		functions[name] = func->Clone();
+		functions[name] = (IFunctionNode*) func->Clone();
 	}
 	return functions;
 }
