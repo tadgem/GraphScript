@@ -116,7 +116,7 @@ namespace gs {
 			u32 loopCount = loopCountSocket->Get().value();
 			u32 iterExecutionCount = iterExecutionSocket->m_LoopCount;
 
-			if (iterExecutionCount == 0)
+			if (iterExecutionCount <= 1)
 			{
 				iterExecutionSocket->SetShouldExecute(true);
 				outExecutionSocket->SetShouldExecute(false);
