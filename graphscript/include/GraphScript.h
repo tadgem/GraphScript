@@ -134,7 +134,7 @@ namespace gs
 	{
 	public:
 		Any m_Value;
-		virtual Variable* Clone() = 0;
+		virtual Variable*	Clone() = 0;
 		virtual DataSocket* GetSocket() = 0;
 	};
 
@@ -150,13 +150,13 @@ namespace gs
 		{
 			T val = std::any_cast<T>(m_Value);
 		}
-		void Set(const T& other)
+		void	Set(const T& other)
 		{
 			m_Value = other;
 			m_Socket.Set(other);
 		}
 
-		Variable* Clone() override
+		Variable*	Clone() override
 		{
 			return new VariableT<T>(*this);
 		}
@@ -176,7 +176,7 @@ namespace gs
 		virtual Node*	Clone() = 0;
 
 		template <typename T>
-		DataSocketT<T>* AddDataInput(HashString variableName)
+		DataSocketT<T>*		AddDataInput(HashString variableName)
 		{
 			if (m_InputDataSockets.find(variableName) == m_InputDataSockets.end())
 			{
@@ -186,7 +186,7 @@ namespace gs
 		}
 
 		template <typename T>
-		DataSocketT<T>* AddDataOutput(HashString variableName)
+		DataSocketT<T>*		AddDataOutput(HashString variableName)
 		{
 			if (m_OutputDataSockets.find(variableName) == m_OutputDataSockets.end())
 			{
@@ -195,8 +195,8 @@ namespace gs
 			return static_cast<DataSocketT<T>*>(m_OutputDataSockets[variableName]);
 		}
 
-		ExecutionSocket* AddExecutionInput(HashString name);
-		ExecutionSocket* AddExecutionOutput(HashString name);
+		ExecutionSocket*	AddExecutionInput(HashString name);
+		ExecutionSocket*	AddExecutionOutput(HashString name);
 
 		HashMap<HashString, DataSocket*>				m_InputDataSockets;
 		HashMap<HashString, DataSocket*>				m_OutputDataSockets;
@@ -220,9 +220,9 @@ namespace gs
 			return static_cast<DataSocketT<T>*>(m_OutputDataSockets[variableName]);
 		}
 
-		void Process() override {};
+		void	Process() override {};
 
-		Node* Clone() override
+		Node*	Clone() override
 		{
 			return new FunctionNode(*this);
 		}
@@ -240,10 +240,10 @@ namespace gs
 	{
 	protected:
 		HashMap<HashString, FunctionNode*>	p_Functions;
-		HashMap<HashString, Variable*>	p_VariablesDefs;
+		HashMap<HashString, Variable*>		p_VariablesDefs;
 		Vector<Node*>						p_Nodes;
 		Vector<ExecutionConnectionDef>		p_ExecutionConnections;
-		Vector<DataConnection*>			p_DataConnections;
+		Vector<DataConnection*>				p_DataConnections;
 		
 	public:
 
@@ -286,7 +286,7 @@ protected:
 		void						AddNode(Node* node);
 
 		template <typename T>
-		VariableT<T>*			AddVariable(HashString variableName)
+		VariableT<T>*				AddVariable(HashString variableName)
 		{
 			if (m_VariablesDefs.find(variableName) == m_VariablesDefs.end())
 			{
@@ -296,7 +296,7 @@ protected:
 		}
 
 		template<typename T>
-		DataConnectionT<T>*		ConnectDataSocket(DataSocketT<T>* lhs, DataSocketT<T>* rhs)
+		DataConnectionT<T>*			ConnectDataSocket(DataSocketT<T>* lhs, DataSocketT<T>* rhs)
 		{
 			auto conn = new DataConnectionT<T>(lhs, rhs);
 			m_DataConnections.emplace_back(conn);
@@ -305,7 +305,7 @@ protected:
 
 		Graph						Build();
 
-		ExecutionConnectionDef	ConnectExecutionSocket(ExecutionSocket* lhs, ExecutionSocket* rhs);
+		ExecutionConnectionDef		ConnectExecutionSocket(ExecutionSocket* lhs, ExecutionSocket* rhs);
 
 		HashMap<HashString, Unique<Variable>>	m_VariablesDefs;
 		HashMap<HashString, Unique<FunctionNode>>	m_Functions;
@@ -315,11 +315,11 @@ protected:
 
 	protected:
 		// Internal Build Methods
-		HashMap<HashString, FunctionNode*> BuildFunctions();
-		HashMap<HashString, Variable*>	BuildVariablesDefs();
+		HashMap<HashString, FunctionNode*>	BuildFunctions();
+		HashMap<HashString, Variable*>		BuildVariablesDefs();
 		Vector<Node*>						BuildNodes(HashMap<HashString, FunctionNode*>& functions);
 		Vector<ExecutionConnectionDef>		BuildExecutionConnections(HashMap<HashString, FunctionNode*>& functions);
-		Vector<DataConnection*>			BuildDataConnections(HashMap<HashString, FunctionNode*>& functions,
+		Vector<DataConnection*>				BuildDataConnections(HashMap<HashString, FunctionNode*>& functions,
 			HashMap<HashString, Variable*> variables);
 
 		Node*				FindSocketNode(DataSocket* socket);

@@ -7,7 +7,8 @@
 const int ITERATIONS = 2;
 int main() {
 	
-	const int hardcoded_node_id = 1;
+	// gs::ExampleApp app;
+	// const int hardcoded_node_id = 1;
 
 	gs::GraphBuilder builder;
 	// create a graph variable

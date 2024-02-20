@@ -40,8 +40,14 @@ void GraphBuilder::AddNode(Node* node)
 
 Graph GraphBuilder::Build()
 {
+	// clone functions
 	HashMap<HashString, FunctionNode*> functions = BuildFunctions();
+	// clone variable defs
 	HashMap<HashString, Variable*> variables = BuildVariablesDefs();
+	// clone all non function nodes
+	// map execution connections from builder to cloned node sockets
+	// clone all data connections and map builder lhs and rhs to cloned node sockets
+
 
 	return { functions, variables, BuildNodes(functions), BuildExecutionConnections(functions), BuildDataConnections(functions, variables) };
 }
