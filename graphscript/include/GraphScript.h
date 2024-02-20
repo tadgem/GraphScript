@@ -15,19 +15,25 @@ namespace gs
 		Fail
 	};
 
-	class IExecutionSocket
+	class ExecutionSocket
 	{
 	public:
 
-		IExecutionSocket(HashString socketName, u32 loopCount = 1);
+		ExecutionSocket(HashString socketName, u32 loopCount = 1);
 
-		bool	ShouldExecute();
-		void	SetShouldExecute(bool shouldExecute);
+		bool	ShouldExecute()
+		{
+			return p_ShouldExecute;
+		}
+		void	SetShouldExecute(bool shouldExecute)
+		{
+			p_ShouldExecute = shouldExecute;
+		}
 
 		u32					m_LoopCount;
 		const HashString	m_SocketName;
 
-		IExecutionSocket Clone()
+		ExecutionSocket Clone()
 		{
 			return {m_SocketName, m_LoopCount};
 		}
@@ -38,19 +44,19 @@ namespace gs
 		
 	};
 
-	class IDataSocketDef
+	class DataSocket
 	{
 	public:
 		Any m_Value;
 
-		IDataSocketDef() = default;
-		IDataSocketDef(IDataSocketDef& other) = default;
-		virtual ~IDataSocketDef();
-		virtual IDataSocketDef* Clone() = 0;
+		DataSocket() = default;
+		DataSocket(DataSocket& other) = default;
+		virtual ~DataSocket();
+		virtual DataSocket* Clone() = 0;
 	};
 
 	template <typename T>
-	class IDataSocketDefT : public IDataSocketDef
+	class DataSocketT : public DataSocket
 	{
 	public:
 		Optional<T>		Get()
@@ -65,28 +71,28 @@ namespace gs
 		{
 			m_Value = other;
 		}
-		IDataSocketDef* Clone() override
+		DataSocket* Clone() override
 		{
-			return new IDataSocketDefT<T>();
+			return new DataSocketT<T>();
 		}
 	};
 
-	class IDataConnectionDef
+	class DataConnection
 	{
 	public:
 		virtual void Process() = 0;
 		virtual void Print() = 0;
-		virtual IDataConnectionDef* Clone() = 0;
+		virtual DataConnection* Clone() = 0;
 
-		IDataSocketDef* m_LHS = nullptr;
-		IDataSocketDef* m_RHS = nullptr;
+		DataSocket* m_LHS = nullptr;
+		DataSocket* m_RHS = nullptr;
 	};
 
 	template<typename T>
-	class IDataConnectionDefT : public IDataConnectionDef
+	class DataConnectionT : public DataConnection
 	{
 	public:
-		IDataConnectionDefT(IDataSocketDefT<T>* lhs, IDataSocketDefT<T>* rhs)
+		DataConnectionT(DataSocketT<T>* lhs, DataSocketT<T>* rhs)
 		{
 			m_LHS = lhs;
 			m_RHS = rhs;
@@ -106,39 +112,39 @@ namespace gs
 			std::cout << "LHS : " << GetLHS()->Get() << ", RHS : " << GetRHS()->Get() << std::endl;
 		}
 
-		IDataConnectionDef* Clone() override
+		DataConnection* Clone() override
 		{
-			return new IDataConnectionDefT<T>(*this);
+			return new DataConnectionT<T>(*this);
 		}
 
-		IDataSocketDefT<T>* GetLHS()
+		DataSocketT<T>* GetLHS()
 		{
-			return (IDataSocketDefT<T>*) m_LHS;
+			return (DataSocketT<T>*) m_LHS;
 		}
 
-		IDataSocketDefT<T>* GetRHS()
+		DataSocketT<T>* GetRHS()
 		{
-			return (IDataSocketDefT<T>*) m_RHS;
+			return (DataSocketT<T>*) m_RHS;
 		}
 		
 	protected:
 	};
 
-	class IVariableDef
+	class Variable
 	{
 	public:
 		Any m_Value;
-		virtual IVariableDef* Clone() = 0;
-		virtual IDataSocketDef* GetSocket() = 0;
+		virtual Variable* Clone() = 0;
+		virtual DataSocket* GetSocket() = 0;
 	};
 
 	template <typename T>
-	class IVariableDefT : public IVariableDef
+	class VariableT : public Variable
 	{
 	public:
 
-		IVariableDefT() = default;
-		IVariableDefT(IVariableDefT<T>& other) = default;
+		VariableT() = default;
+		VariableT(VariableT<T>& other) = default;
 
 		T		Get()
 		{
@@ -150,103 +156,103 @@ namespace gs
 			m_Socket.Set(other);
 		}
 
-		IVariableDef* Clone() override
+		Variable* Clone() override
 		{
-			return new IVariableDefT<T>(*this);
+			return new VariableT<T>(*this);
 		}
 
-		IDataSocketDef* GetSocket() override
+		DataSocket* GetSocket() override
 		{
 			return &m_Socket;
 		}
 
-		IDataSocketDefT<T> m_Socket;
+		DataSocketT<T> m_Socket;
 	};
 
-	class INode
+	class Node
 	{
 	public:
 		virtual void	Process() = 0;
-		virtual INode*	Clone() = 0;
+		virtual Node*	Clone() = 0;
 
 		template <typename T>
-		IDataSocketDefT<T>* AddDataInput(HashString variableName)
+		DataSocketT<T>* AddDataInput(HashString variableName)
 		{
 			if (m_InputDataSockets.find(variableName) == m_InputDataSockets.end())
 			{
-				m_InputDataSockets.emplace(variableName, new IDataSocketDefT<T>());
+				m_InputDataSockets.emplace(variableName, new DataSocketT<T>());
 			}
-			return static_cast<IDataSocketDefT<T>*>(m_InputDataSockets[variableName]);
+			return static_cast<DataSocketT<T>*>(m_InputDataSockets[variableName]);
 		}
 
 		template <typename T>
-		IDataSocketDefT<T>* AddDataOutput(HashString variableName)
+		DataSocketT<T>* AddDataOutput(HashString variableName)
 		{
 			if (m_OutputDataSockets.find(variableName) == m_OutputDataSockets.end())
 			{
-				m_OutputDataSockets.emplace(variableName, new IDataSocketDefT<T>());
+				m_OutputDataSockets.emplace(variableName, new DataSocketT<T>());
 			}
-			return static_cast<IDataSocketDefT<T>*>(m_OutputDataSockets[variableName]);
+			return static_cast<DataSocketT<T>*>(m_OutputDataSockets[variableName]);
 		}
 
-		IExecutionSocket* AddExecutionInput(HashString name);
-		IExecutionSocket* AddExecutionOutput(HashString name);
+		ExecutionSocket* AddExecutionInput(HashString name);
+		ExecutionSocket* AddExecutionOutput(HashString name);
 
-		HashMap<HashString, IDataSocketDef*>				m_InputDataSockets;
-		HashMap<HashString, IDataSocketDef*>				m_OutputDataSockets;
-		Vector<IExecutionSocket*>				m_InputExecutionSockets;
-		Vector<IExecutionSocket*>				m_OutputExecutionSockets;
+		HashMap<HashString, DataSocket*>				m_InputDataSockets;
+		HashMap<HashString, DataSocket*>				m_OutputDataSockets;
+		Vector<ExecutionSocket*>				m_InputExecutionSockets;
+		Vector<ExecutionSocket*>				m_OutputExecutionSockets;
 	};
 
-	class IFunctionNode : public INode
+	class FunctionNode : public Node
 	{
 	public:
-		IFunctionNode();
-		IFunctionNode(IFunctionNode& other) = default;
+		FunctionNode();
+		FunctionNode(FunctionNode& other) = default;
 
 		template <typename T>
-		IDataSocketDefT<T>* AddArgument(HashString variableName)
+		DataSocketT<T>* AddArgument(HashString variableName)
 		{
 			if (m_OutputDataSockets.find(variableName) == m_OutputDataSockets.end())
 			{
-				m_OutputDataSockets.emplace(variableName, new IDataSocketDefT<T>());
+				m_OutputDataSockets.emplace(variableName, new DataSocketT<T>());
 			}
-			return static_cast<IDataSocketDefT<T>*>(m_OutputDataSockets[variableName]);
+			return static_cast<DataSocketT<T>*>(m_OutputDataSockets[variableName]);
 		}
 
 		void Process() override {};
 
-		INode* Clone() override
+		Node* Clone() override
 		{
-			return new IFunctionNode(*this);
+			return new FunctionNode(*this);
 		}
 	};
 
-	class IExecutionConnectionDef
+	class ExecutionConnectionDef
 	{
 	public:
-		IExecutionSocket* m_LHS = nullptr;
-		IExecutionSocket* m_RHS = nullptr;
+		ExecutionSocket* m_LHS = nullptr;
+		ExecutionSocket* m_RHS = nullptr;
 	};
 		
 
 	class Graph
 	{
 	protected:
-		HashMap<HashString, IFunctionNode*>	p_Functions;
-		HashMap<HashString, IVariableDef*>	p_VariablesDefs;
-		Vector<INode*>						p_Nodes;
-		Vector<IExecutionConnectionDef>		p_ExecutionConnections;
-		Vector<IDataConnectionDef*>			p_DataConnections;
+		HashMap<HashString, FunctionNode*>	p_Functions;
+		HashMap<HashString, Variable*>	p_VariablesDefs;
+		Vector<Node*>						p_Nodes;
+		Vector<ExecutionConnectionDef>		p_ExecutionConnections;
+		Vector<DataConnection*>			p_DataConnections;
 		
 	public:
 
 		Graph(
-			HashMap<HashString, IFunctionNode*> functions,
-			HashMap<HashString, IVariableDef*>	variablesDefs,
-			Vector<INode*>						nodes,
-			Vector<IExecutionConnectionDef>		executionConnections,
-			Vector<IDataConnectionDef*>			dataConnections
+			HashMap<HashString, FunctionNode*> functions,
+			HashMap<HashString, Variable*>	variablesDefs,
+			Vector<Node*>						nodes,
+			Vector<ExecutionConnectionDef>		executionConnections,
+			Vector<DataConnection*>			dataConnections
 		);
 
 		template<typename T>
@@ -254,7 +260,7 @@ namespace gs
 		{
 			if (p_VariablesDefs.find(variableName) != p_VariablesDefs.end())
 			{
-				auto varDef = (IVariableDefT<T>*)p_VariablesDefs[variableName];
+				auto varDef = (VariableT<T>*)p_VariablesDefs[variableName];
 				varDef->Set(other);
 			}
 		}
@@ -262,13 +268,13 @@ namespace gs
 		FunctionCallResult CallFunction(HashString nameOfMethod, VariableSet args);
 	
 protected:
-		IExecutionSocket*	FindRHS(IExecutionSocket* lhs);
-		INode*				GetNode(IExecutionSocket* socket);
+		ExecutionSocket*	FindRHS(ExecutionSocket* lhs);
+		Node*				GetNode(ExecutionSocket* socket);
 		void				ProcessDataConnections();
-		void				PopulateParams(IFunctionNode* functionNode, VariableSet params);
+		void				PopulateParams(FunctionNode* functionNode, VariableSet params);
 		void				ResetSockets();
 
-		Stack<INode*>	p_Stack;
+		Stack<Node*>	p_Stack;
 	};
 
 	class GraphBuilder
@@ -276,48 +282,48 @@ protected:
 	public:
 		~GraphBuilder();
 
-		IFunctionNode&				AddFunction(HashString functionName);
-		void						AddNode(INode* node);
+		FunctionNode&				AddFunction(HashString functionName);
+		void						AddNode(Node* node);
 
 		template <typename T>
-		IVariableDefT<T>*			AddVariable(HashString variableName)
+		VariableT<T>*			AddVariable(HashString variableName)
 		{
 			if (m_VariablesDefs.find(variableName) == m_VariablesDefs.end())
 			{
-				m_VariablesDefs.emplace(variableName, CreateUnique<IVariableDefT<T>>());
+				m_VariablesDefs.emplace(variableName, CreateUnique<VariableT<T>>());
 			}
-			return static_cast<IVariableDefT<T>*>(m_VariablesDefs[variableName].get());
+			return static_cast<VariableT<T>*>(m_VariablesDefs[variableName].get());
 		}
 
 		template<typename T>
-		IDataConnectionDefT<T>*		ConnectDataSocket(IDataSocketDefT<T>* lhs, IDataSocketDefT<T>* rhs)
+		DataConnectionT<T>*		ConnectDataSocket(DataSocketT<T>* lhs, DataSocketT<T>* rhs)
 		{
-			auto conn = new IDataConnectionDefT<T>(lhs, rhs);
+			auto conn = new DataConnectionT<T>(lhs, rhs);
 			m_DataConnections.emplace_back(conn);
 			return conn;
 		}
 
 		Graph						Build();
 
-		IExecutionConnectionDef	ConnectExecutionSocket(IExecutionSocket* lhs, IExecutionSocket* rhs);
+		ExecutionConnectionDef	ConnectExecutionSocket(ExecutionSocket* lhs, ExecutionSocket* rhs);
 
-		HashMap<HashString, Unique<IVariableDef>>	m_VariablesDefs;
-		HashMap<HashString, Unique<IFunctionNode>>	m_Functions;
-		Vector<INode*>								m_Nodes;
-		Vector<IDataConnectionDef*>					m_DataConnections;
-		Vector<IExecutionConnectionDef>				m_ExecutionConnections;
+		HashMap<HashString, Unique<Variable>>	m_VariablesDefs;
+		HashMap<HashString, Unique<FunctionNode>>	m_Functions;
+		Vector<Node*>								m_Nodes;
+		Vector<DataConnection*>					m_DataConnections;
+		Vector<ExecutionConnectionDef>				m_ExecutionConnections;
 
 	protected:
 		// Internal Build Methods
-		HashMap<HashString, IFunctionNode*> BuildFunctions();
-		HashMap<HashString, IVariableDef*>	BuildVariablesDefs();
-		Vector<INode*>						BuildNodes(HashMap<HashString, IFunctionNode*>& functions);
-		Vector<IExecutionConnectionDef>		BuildExecutionConnections(HashMap<HashString, IFunctionNode*>& functions);
-		Vector<IDataConnectionDef*>			BuildDataConnections(HashMap<HashString, IFunctionNode*>& functions,
-			HashMap<HashString, IVariableDef*> variables);
+		HashMap<HashString, FunctionNode*> BuildFunctions();
+		HashMap<HashString, Variable*>	BuildVariablesDefs();
+		Vector<Node*>						BuildNodes(HashMap<HashString, FunctionNode*>& functions);
+		Vector<ExecutionConnectionDef>		BuildExecutionConnections(HashMap<HashString, FunctionNode*>& functions);
+		Vector<DataConnection*>			BuildDataConnections(HashMap<HashString, FunctionNode*>& functions,
+			HashMap<HashString, Variable*> variables);
 
-		INode*				FindSocketNode(IDataSocketDef* socket);
-		void				PrintNodeSockets(INode* node);
+		Node*				FindSocketNode(DataSocket* socket);
+		void				PrintNodeSockets(Node* node);
 	};
 }
 #endif //GRAPHSCRIPT_GUARD_H

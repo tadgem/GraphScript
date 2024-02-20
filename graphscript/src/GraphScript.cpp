@@ -21,40 +21,40 @@ u64 HashString::Hash(const String& input) {
 	return r;
 }
 
-IFunctionNode& GraphBuilder::AddFunction(HashString functionName)
+FunctionNode& GraphBuilder::AddFunction(HashString functionName)
 {
 	// TODO: insert return statement here
 	if (m_Functions.find(functionName) == m_Functions.end())
 	{
-		m_Functions[functionName] = CreateUnique<IFunctionNode>();
+		m_Functions[functionName] = CreateUnique<FunctionNode>();
 		m_Nodes.push_back(m_Functions[functionName].get());
 	}
 
 	return *m_Functions[functionName];
 }
 
-void GraphBuilder::AddNode(INode* node)
+void GraphBuilder::AddNode(Node* node)
 {
 	m_Nodes.push_back(node);
 }
 
 Graph GraphBuilder::Build()
 {
-	HashMap<HashString, IFunctionNode*> functions = BuildFunctions();
-	HashMap<HashString, IVariableDef*> variables = BuildVariablesDefs();
+	HashMap<HashString, FunctionNode*> functions = BuildFunctions();
+	HashMap<HashString, Variable*> variables = BuildVariablesDefs();
 
-	return Graph(functions, variables, BuildNodes(functions), BuildExecutionConnections(functions), BuildDataConnections(functions, variables));
+	return { functions, variables, BuildNodes(functions), BuildExecutionConnections(functions), BuildDataConnections(functions, variables) };
 }
 
-IExecutionConnectionDef gs::GraphBuilder::ConnectExecutionSocket(IExecutionSocket* lhs, IExecutionSocket* rhs)
+ExecutionConnectionDef gs::GraphBuilder::ConnectExecutionSocket(ExecutionSocket* lhs, ExecutionSocket* rhs)
 {
 	// TODO: insert return statement here
-	IExecutionConnectionDef conn{ lhs, rhs };
+	ExecutionConnectionDef conn{ lhs, rhs };
 	m_ExecutionConnections.push_back(conn);
 	return conn;
 }
 
-INode* GraphBuilder::FindSocketNode(IDataSocketDef* socket)
+Node* GraphBuilder::FindSocketNode(DataSocket* socket)
 {
 	for (int i = 0; i < m_Nodes.size(); i++)
 	{
@@ -70,11 +70,11 @@ INode* GraphBuilder::FindSocketNode(IDataSocketDef* socket)
 	return nullptr;
 }
 
-void GraphBuilder::PrintNodeSockets(INode* node)
+void GraphBuilder::PrintNodeSockets(Node* node)
 {
 }
 
-IExecutionSocket* gs::Graph::FindRHS(IExecutionSocket* lhs)
+ExecutionSocket* gs::Graph::FindRHS(ExecutionSocket* lhs)
 {
 	for (auto conn : p_ExecutionConnections)
 	{
@@ -86,7 +86,145 @@ IExecutionSocket* gs::Graph::FindRHS(IExecutionSocket* lhs)
 	return nullptr;
 }
 
-INode* gs::Graph::GetNode(IExecutionSocket* socket)
+GraphBuilder::~GraphBuilder()
+{
+	for (int i = 0; i < m_DataConnections.size(); i++)
+	{
+		delete m_DataConnections[i];
+	}
+	m_DataConnections.clear();
+	m_Functions.clear();
+	m_Nodes.clear();
+	m_VariablesDefs.clear();
+}
+
+HashMap<HashString, FunctionNode*> GraphBuilder::BuildFunctions()
+{
+	// Clone function defs
+	HashMap<HashString, FunctionNode*> functions;
+	for (auto& [name, func] : m_Functions)
+	{
+		functions[name] = (FunctionNode*) func->Clone();
+	}
+	return functions;
+}
+
+HashMap<HashString, Variable*> GraphBuilder::BuildVariablesDefs()
+{
+	// Clone variable defs
+	HashMap<HashString, Variable*> variables;
+	for (auto& [name, var] : m_VariablesDefs)
+	{
+		variables[name] = var->Clone();
+	}
+	return variables;
+}
+
+Vector<Node*> GraphBuilder::BuildNodes(HashMap<HashString, FunctionNode*>& functions)
+{
+	// Copy Nodes
+	// Patch nodes removing function nodes replacing with clones
+	Vector<Node*> nodes;
+	for (Node* node : m_Nodes)
+	{
+		bool pushed = false;
+		for (auto& [name, func] : m_Functions)
+		{
+			// Replace the function nodes with updated clones
+			if (func.get() == node)
+			{
+				nodes.push_back(functions[name]);
+				pushed = true;
+				continue;
+			}
+		}
+		if (pushed)
+		{
+			continue;
+		}
+
+		nodes.push_back(node);
+	}
+	return nodes;
+}
+
+Vector<ExecutionConnectionDef> GraphBuilder::BuildExecutionConnections(HashMap<HashString, FunctionNode*>& functions)
+{
+	// Copy Execution Connections
+	// Patch Execution connection removing function nodes replacing with clones
+	Vector<ExecutionConnectionDef> executionConnections;
+	for (ExecutionConnectionDef& exec : m_ExecutionConnections)
+	{
+		ExecutionConnectionDef connection = exec;
+		for (auto& [name, func] : m_Functions)
+		{
+			// this now needs to patch sockets on cloned nodes 
+			// rather than the nodes them selves
+			/*
+			if (connection.m_LHS == func.get())
+			{
+				connection.m_LHS = functions[name];
+			}
+			if (connection.m_RHS == func.get())
+			{
+				connection.m_RHS = functions[name];
+			}
+			*/
+		}
+
+		executionConnections.push_back(connection);
+
+	}
+	return executionConnections;
+}
+
+Vector<DataConnection*> GraphBuilder::BuildDataConnections(HashMap<HashString, FunctionNode*>& functions,HashMap<HashString, Variable*> variables)
+{
+	// Copy Data Connections
+	// Patch data connection removing function nodes replacing with clones
+	Vector<DataConnection*> dataConnections;
+	for (DataConnection* dataConn : m_DataConnections)
+	{
+		DataConnection* clone = dataConn->Clone();
+		for (auto& [name, func] : m_Functions)
+		{
+			for (auto& [outputName, output] : func->m_OutputDataSockets)
+			{
+				if (clone->m_LHS == output)
+				{
+					clone->m_LHS = functions[name]->m_OutputDataSockets[outputName];
+				}
+
+				if (clone->m_RHS == output)
+				{
+					clone->m_RHS = functions[name]->m_OutputDataSockets[outputName];
+				}
+			}
+		}
+
+		for (auto& [name, var] : m_VariablesDefs)
+		{
+			if (clone->m_LHS == var->GetSocket())
+			{
+				clone->m_LHS = variables[name]->GetSocket();
+			}
+
+			if (clone->m_RHS == var->GetSocket())
+			{
+				clone->m_RHS = variables[name]->GetSocket();
+			}
+		}
+		dataConnections.push_back(clone);
+	}
+	return dataConnections;
+}
+
+DataSocket::~DataSocket()
+{
+	m_Value.reset();
+}
+
+Node* gs::Graph::GetNode(ExecutionSocket* socket)
 {
 	for (auto node : p_Nodes)
 	{
@@ -108,24 +246,8 @@ INode* gs::Graph::GetNode(IExecutionSocket* socket)
 	}
 	return nullptr;
 }
-GraphBuilder::~GraphBuilder()
-{
-	for (int i = 0; i < m_DataConnections.size(); i++)
-	{
-		delete m_DataConnections[i];
-	}
-	m_DataConnections.clear();
-	m_Functions.clear();
-	m_Nodes.clear();
-	m_VariablesDefs.clear();
-}
 
-IDataSocketDef::~IDataSocketDef()
-{
-	m_Value.reset();
-}
-
-Graph::Graph(HashMap<HashString, IFunctionNode*> functions, HashMap<HashString, IVariableDef*> variablesDefs, Vector<INode*> nodes, Vector<IExecutionConnectionDef> executionConnections, Vector<IDataConnectionDef*> dataConnections) :
+Graph::Graph(HashMap<HashString, FunctionNode*> functions, HashMap<HashString, Variable*> variablesDefs, Vector<Node*> nodes, Vector<ExecutionConnectionDef> executionConnections, Vector<DataConnection*> dataConnections) :
 	p_Functions(functions), p_VariablesDefs(variablesDefs), p_Nodes(nodes), p_ExecutionConnections(executionConnections), p_DataConnections(dataConnections)
 {
 }
@@ -141,13 +263,13 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 	ResetSockets();
 
 	// Get the function entry node
-	IFunctionNode* func = p_Functions[nameOfMethod];
+	FunctionNode* func = p_Functions[nameOfMethod];
 
 	// populate the args as params
 	PopulateParams(func, args);
 
-	INode* currentNode = func;
-	IExecutionSocket *lhs, *rhs = nullptr;
+	Node* currentNode = func;
+	ExecutionSocket *lhs, *rhs = nullptr;
 	
 	// get the first socket in the chain
 	lhs = func->m_OutputExecutionSockets.front();
@@ -161,7 +283,7 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 		// invalidate lhs
 		lhs = nullptr;
 
-		INode* rhsNode = nullptr;
+		Node* rhsNode = nullptr;
 
 		if (rhs == nullptr)
 		{
@@ -230,7 +352,7 @@ void Graph::ProcessDataConnections()
 	}
 }
 
-void Graph::PopulateParams(IFunctionNode* functionNode, VariableSet params)
+void Graph::PopulateParams(FunctionNode* functionNode, VariableSet params)
 {
 	for (auto& [name, socket] : functionNode->m_OutputDataSockets)
 	{
@@ -243,7 +365,7 @@ void Graph::PopulateParams(IFunctionNode* functionNode, VariableSet params)
 
 void Graph::ResetSockets()
 {
-	for (INode* node : p_Nodes)
+	for (Node* node : p_Nodes)
 	{
 		for (auto& [name, socket] : node->m_InputDataSockets)
 		{
@@ -261,153 +383,20 @@ void Graph::ResetSockets()
 	}
 }
 
-HashMap<HashString, IFunctionNode*> GraphBuilder::BuildFunctions()
+
+ExecutionSocket::ExecutionSocket(HashString socketName, u32 loopCount) : m_SocketName(socketName), m_LoopCount(loopCount), p_ShouldExecute(true){}
+
+ExecutionSocket* gs::Node::AddExecutionInput(HashString name)
 {
-	// Clone function defs
-	HashMap<HashString, IFunctionNode*> functions;
-	for (auto& [name, func] : m_Functions)
-	{
-		functions[name] = (IFunctionNode*) func->Clone();
-	}
-	return functions;
+	return m_InputExecutionSockets.emplace_back(new ExecutionSocket(name));
 }
 
-HashMap<HashString, IVariableDef*> GraphBuilder::BuildVariablesDefs()
+ExecutionSocket* gs::Node::AddExecutionOutput(HashString name)
 {
-	// Clone variable defs
-	HashMap<HashString, IVariableDef*> variables;
-	for (auto& [name, var] : m_VariablesDefs)
-	{
-		variables[name] = var->Clone();
-	}
-	return variables;
+	return m_OutputExecutionSockets.emplace_back(new ExecutionSocket(name));
 }
 
-Vector<INode*> GraphBuilder::BuildNodes(HashMap<HashString, IFunctionNode*>& functions)
+gs::FunctionNode::FunctionNode()
 {
-	// Copy Nodes
-	// Patch nodes removing function nodes replacing with clones
-	Vector<INode*> nodes;
-	for (INode* node : m_Nodes)
-	{
-		bool pushed = false;
-		for (auto& [name, func] : m_Functions)
-		{
-			// Replace the function nodes with updated clones
-			if (func.get() == node)
-			{
-				nodes.push_back(functions[name]);
-				pushed = true;
-				continue;
-			}
-		}
-		if (pushed)
-		{
-			continue;
-		}
-
-		nodes.push_back(node);
-	}
-	return nodes;
-}
-
-Vector<IExecutionConnectionDef> GraphBuilder::BuildExecutionConnections(HashMap<HashString, IFunctionNode*>& functions)
-{
-	// Copy Execution Connections
-	// Patch Execution connection removing function nodes replacing with clones
-	Vector<IExecutionConnectionDef> executionConnections;
-	for (IExecutionConnectionDef& exec : m_ExecutionConnections)
-	{
-		IExecutionConnectionDef connection = exec;
-		for (auto& [name, func] : m_Functions)
-		{
-			// this now needs to patch sockets on cloned nodes 
-			// rather than the nodes them selves
-			/*
-			if (connection.m_LHS == func.get())
-			{
-				connection.m_LHS = functions[name];
-			}
-			if (connection.m_RHS == func.get())
-			{
-				connection.m_RHS = functions[name];
-			}
-			*/
-		}
-
-		executionConnections.push_back(connection);
-
-	}
-	return executionConnections;
-}
-
-Vector<IDataConnectionDef*> GraphBuilder::BuildDataConnections(HashMap<HashString, IFunctionNode*>& functions,HashMap<HashString, IVariableDef*> variables)
-{
-	// Copy Data Connections
-	// Patch data connection removing function nodes replacing with clones
-	Vector<IDataConnectionDef*> dataConnections;
-	for (IDataConnectionDef* dataConn : m_DataConnections)
-	{
-		IDataConnectionDef* clone = dataConn->Clone();
-		for (auto& [name, func] : m_Functions)
-		{
-			for (auto& [outputName, output] : func->m_OutputDataSockets)
-			{
-				if (clone->m_LHS == output)
-				{
-					clone->m_LHS = functions[name]->m_OutputDataSockets[outputName];
-				}
-
-				if (clone->m_RHS == output)
-				{
-					clone->m_RHS = functions[name]->m_OutputDataSockets[outputName];
-				}
-			}
-		}
-
-		for (auto& [name, var] : m_VariablesDefs)
-		{
-			if (clone->m_LHS == var->GetSocket())
-			{
-				clone->m_LHS = variables[name]->GetSocket();
-			}
-
-			if (clone->m_RHS == var->GetSocket())
-			{
-				clone->m_RHS = variables[name]->GetSocket();
-			}
-		}
-		dataConnections.push_back(clone);
-	}
-	return dataConnections;
-}
-
-IExecutionSocket::IExecutionSocket(HashString socketName, u32 loopCount) : m_SocketName(socketName), m_LoopCount(loopCount)
-{
-
-}
-
-bool IExecutionSocket::ShouldExecute()
-{
-	return p_ShouldExecute;
-}
-
-void IExecutionSocket::SetShouldExecute(bool shouldExecute)
-{
-	p_ShouldExecute = shouldExecute;
-}
-
-IExecutionSocket* gs::INode::AddExecutionInput(HashString name)
-{
-	return m_InputExecutionSockets.emplace_back(new IExecutionSocket(name));
-}
-
-IExecutionSocket* gs::INode::AddExecutionOutput(HashString name)
-{
-	return m_OutputExecutionSockets.emplace_back(new IExecutionSocket(name));
-}
-
-gs::IFunctionNode::IFunctionNode()
-{
-	m_OutputExecutionSockets.push_back(new IExecutionSocket("out"));
+	m_OutputExecutionSockets.push_back(new ExecutionSocket("out"));
 }

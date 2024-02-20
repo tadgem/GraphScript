@@ -5,7 +5,7 @@ using namespace gs;
 
 namespace gs {
 	template<typename T>
-	class MutliplyNodeT : public INode
+	class MutliplyNodeT : public Node
 	{
 	public:
 		MutliplyNodeT()
@@ -19,9 +19,9 @@ namespace gs {
 
 		void Process() override
 		{
-			IDataSocketDefT<T>* inputSocket = (IDataSocketDefT<T>*) m_InputDataSockets["input"];
-			IDataSocketDefT<T>* multipleSocket = (IDataSocketDefT<T>*) m_InputDataSockets["multiple"];
-			IDataSocketDefT<T>* resultSocket = (IDataSocketDefT<T>*) m_OutputDataSockets["result"];
+			DataSocketT<T>* inputSocket = (DataSocketT<T>*) m_InputDataSockets["input"];
+			DataSocketT<T>* multipleSocket = (DataSocketT<T>*) m_InputDataSockets["multiple"];
+			DataSocketT<T>* resultSocket = (DataSocketT<T>*) m_OutputDataSockets["result"];
 
 			if (!inputSocket->Get().has_value() || !multipleSocket->Get().has_value())
 			{
@@ -31,14 +31,14 @@ namespace gs {
 			resultSocket->Set(inputSocket->Get().value() * multipleSocket->Get().value());
 		}
 
-		INode* Clone() override
+		Node* Clone() override
 		{
 			return new MutliplyNodeT<T>();
 		}
 	};
 
 	template<typename T>
-	class PrintNodeT : public INode
+	class PrintNodeT : public Node
 	{
 	public:
 		PrintNodeT()
@@ -50,7 +50,7 @@ namespace gs {
 
 		void Process() override
 		{
-			IDataSocketDefT<T>* inputSocket = (IDataSocketDefT<T>*) m_InputDataSockets["input"];
+			DataSocketT<T>* inputSocket = (DataSocketT<T>*) m_InputDataSockets["input"];
 
 			if (!inputSocket->Get().has_value())
 			{
@@ -60,13 +60,13 @@ namespace gs {
 			std::cout << inputSocket->Get().value() << std::endl;
 		}
 
-		INode* Clone() override
+		Node* Clone() override
 		{
 			return new PrintNodeT<T>();
 		}
 	};
 
-	class IfNode : public INode
+	class IfNode : public Node
 	{
 	public:
 		IfNode()
@@ -79,9 +79,9 @@ namespace gs {
 
 		void Process() override
 		{
-			IDataSocketDefT<bool>* conditionSocket = (IDataSocketDefT<bool>*) m_InputDataSockets["condition"];
-			gs::IExecutionSocket* ifTrueExecutionSocket = m_OutputExecutionSockets[0];
-			gs::IExecutionSocket* ifFalseExecutionSocket = m_OutputExecutionSockets[1];
+			DataSocketT<bool>* conditionSocket = (DataSocketT<bool>*) m_InputDataSockets["condition"];
+			gs::ExecutionSocket* ifTrueExecutionSocket = m_OutputExecutionSockets[0];
+			gs::ExecutionSocket* ifFalseExecutionSocket = m_OutputExecutionSockets[1];
 
 			if (!conditionSocket->Get().has_value())
 			{
@@ -101,13 +101,13 @@ namespace gs {
 			}
 		}
 
-		INode* Clone() override
+		Node* Clone() override
 		{
 			return new IfNode();
 		}
 	};
 
-	class ForNode : public INode 
+	class ForNode : public Node 
 	{
 	public:
 		ForNode()
@@ -120,9 +120,9 @@ namespace gs {
 
 		void Process() override
 		{
-			IDataSocketDefT<u32>* loopCountSocket = (IDataSocketDefT<u32>*) m_InputDataSockets["count"];
-			gs::IExecutionSocket* outExecutionSocket = m_OutputExecutionSockets[0];
-			gs::IExecutionSocket* iterExecutionSocket = m_OutputExecutionSockets[1];
+			DataSocketT<u32>* loopCountSocket = (DataSocketT<u32>*) m_InputDataSockets["count"];
+			gs::ExecutionSocket* outExecutionSocket = m_OutputExecutionSockets[0];
+			gs::ExecutionSocket* iterExecutionSocket = m_OutputExecutionSockets[1];
 
 			if (!loopCountSocket->Get().has_value())
 			{
@@ -150,7 +150,7 @@ namespace gs {
 
 		}
 
-		INode* Clone() override
+		Node* Clone() override
 		{
 			return new ForNode();
 		}

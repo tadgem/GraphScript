@@ -6,27 +6,21 @@
 
 const int ITERATIONS = 2;
 int main() {
-	gs::ExampleApp app;
-
-	if (!app.Init())
-	{
-		return -1;
-	}
-
+	
 	const int hardcoded_node_id = 1;
 
 	gs::GraphBuilder builder;
 	// create a graph variable
-	gs::IVariableDefT<float>* var = builder.AddVariable<float>("NameOfVariable");
-	gs::IVariableDefT<bool>* boolVar = builder.AddVariable<bool>("ConditionVariable");
-	gs::IVariableDefT<u32>* countVar = builder.AddVariable<u32>("LoopCount");
+	gs::VariableT<float>* var = builder.AddVariable<float>("NameOfVariable");
+	gs::VariableT<bool>* boolVar = builder.AddVariable<bool>("ConditionVariable");
+	gs::VariableT<u32>* countVar = builder.AddVariable<u32>("LoopCount");
 
 	// Create a function entry point
-	gs::IFunctionNode& entry = builder.AddFunction("NameOfEntry");
+	gs::FunctionNode& entry = builder.AddFunction("NameOfEntry");
 	// get a reference to the output execution socket, which is created by default for function nodes
-	gs::IExecutionSocket* entryExecutionSocket = entry.m_OutputExecutionSockets.front();
+	gs::ExecutionSocket* entryExecutionSocket = entry.m_OutputExecutionSockets.front();
 	// add an argument to the function
-	gs::IDataSocketDefT<float>* param1 = entry.AddArgument<float>("NameOfParameter");
+	gs::DataSocketT<float>* param1 = entry.AddArgument<float>("NameOfParameter");
 	
 	// for node 
 	auto forNodeBuilder = gs::CreateUnique<gs::ForNode>();
@@ -45,24 +39,24 @@ int main() {
 	builder.AddNode(printFloatNodeBuilder.get());
 
 	// connect the function parameter socket to the input socket of the multiply node
-	gs::IDataConnectionDefT<float>* entryToInputDef = builder.ConnectDataSocket<float>(param1, (IDataSocketDefT<float>*) multiplyNodeBuilder->m_InputDataSockets["input"]);
+	gs::DataConnectionT<float>* entryToInputDef = builder.ConnectDataSocket<float>(param1, (DataSocketT<float>*) multiplyNodeBuilder->m_InputDataSockets["input"]);
 	// connect int count to loop count
-	gs::IDataConnectionDefT<u32>* loopCountConn = builder.ConnectDataSocket<u32>(&countVar->m_Socket, (IDataSocketDefT<u32>*)forNodeBuilder->m_InputDataSockets["count"]);
+	gs::DataConnectionT<u32>* loopCountConn = builder.ConnectDataSocket<u32>(&countVar->m_Socket, (DataSocketT<u32>*)forNodeBuilder->m_InputDataSockets["count"]);
 	// connect the graph variable socket to the multiple socket of the multiply node
-	gs::IDataConnectionDefT<float>* varToMultipleDef = builder.ConnectDataSocket<float>(&var->m_Socket, (IDataSocketDefT<float>*) multiplyNodeBuilder->m_InputDataSockets["multiple"]);
+	gs::DataConnectionT<float>* varToMultipleDef = builder.ConnectDataSocket<float>(&var->m_Socket, (DataSocketT<float>*) multiplyNodeBuilder->m_InputDataSockets["multiple"]);
 	// connect the result socket of the multiply node to the input socket of the print float node
-	gs::IDataConnectionDefT<float>* outputToPrintDef = builder.ConnectDataSocket<float>((IDataSocketDefT<float>*) multiplyNodeBuilder->m_OutputDataSockets["result"], (IDataSocketDefT<float>*)printFloatNodeBuilder->m_InputDataSockets["input"]);
+	gs::DataConnectionT<float>* outputToPrintDef = builder.ConnectDataSocket<float>((DataSocketT<float>*) multiplyNodeBuilder->m_OutputDataSockets["result"], (DataSocketT<float>*)printFloatNodeBuilder->m_InputDataSockets["input"]);
 	// connect bool variable to the if node
-	gs::IDataConnectionDefT<bool>* boolToIfDef = builder.ConnectDataSocket<bool>(&boolVar->m_Socket, (IDataSocketDefT<bool>*) ifNodeBuilder->m_InputDataSockets["condition"]);
+	gs::DataConnectionT<bool>* boolToIfDef = builder.ConnectDataSocket<bool>(&boolVar->m_Socket, (DataSocketT<bool>*) ifNodeBuilder->m_InputDataSockets["condition"]);
 
 	// connect execution sockets from function entry to mutiply in
-	gs::IExecutionConnectionDef entryToForExecution = builder.ConnectExecutionSocket(entryExecutionSocket, forNodeBuilder->m_InputExecutionSockets.front());
+	gs::ExecutionConnectionDef entryToForExecution = builder.ConnectExecutionSocket(entryExecutionSocket, forNodeBuilder->m_InputExecutionSockets.front());
 	// connect for out to multiply in
-	gs::IExecutionConnectionDef forToMultiplyExecution = builder.ConnectExecutionSocket(forNodeBuilder->m_OutputExecutionSockets[1], multiplyNodeBuilder->m_InputExecutionSockets.front());
+	gs::ExecutionConnectionDef forToMultiplyExecution = builder.ConnectExecutionSocket(forNodeBuilder->m_OutputExecutionSockets[1], multiplyNodeBuilder->m_InputExecutionSockets.front());
 	// connect multiply out to if in
-	gs::IExecutionConnectionDef multiplyToIfExecution = builder.ConnectExecutionSocket(multiplyNodeBuilder->m_OutputExecutionSockets.front(), ifNodeBuilder->m_InputExecutionSockets.front());
+	gs::ExecutionConnectionDef multiplyToIfExecution = builder.ConnectExecutionSocket(multiplyNodeBuilder->m_OutputExecutionSockets.front(), ifNodeBuilder->m_InputExecutionSockets.front());
 	// connect true socket to print in
-	gs::IExecutionConnectionDef trueToPrintExecution = builder.ConnectExecutionSocket(ifNodeBuilder->m_OutputExecutionSockets.front(), printFloatNodeBuilder->m_InputExecutionSockets.front());
+	gs::ExecutionConnectionDef trueToPrintExecution = builder.ConnectExecutionSocket(ifNodeBuilder->m_OutputExecutionSockets.front(), printFloatNodeBuilder->m_InputExecutionSockets.front());
 	
 
 	// Build the graph to an executable object
