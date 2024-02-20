@@ -210,6 +210,8 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 			}
 		}
 
+		// seem to be hitting out here as executable before iter
+		// is the process happening when we think it is?
 		if (lhs && lhs->m_LoopCount > 1)
 		{
 			// read: the current node, the current output socket, and that sockets loop count
