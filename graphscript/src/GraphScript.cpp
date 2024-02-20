@@ -210,7 +210,7 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 			}
 		}
 
-		if (lhs)
+		if (lhs && lhs->m_LoopCount > 1)
 		{
 			// read: the current node, the current output socket, and that sockets loop count
 			p_Stack.push( rhsNode);
@@ -245,11 +245,15 @@ void Graph::ResetSockets()
 	{
 		for (auto& [name, socket] : node->m_InputDataSockets)
 		{
-			socket->m_Value.reset();
+			if (!socket) continue;
+			
+			socket->m_Value.reset();	
 		}
 
 		for (auto& [name, socket] : node->m_OutputDataSockets)
 		{
+			if (!socket) continue;
+			
 			socket->m_Value.reset();
 		}
 	}
