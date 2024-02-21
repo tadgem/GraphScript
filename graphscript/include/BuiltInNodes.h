@@ -124,6 +124,7 @@ namespace gs {
 			gs::ExecutionSocket* outExecutionSocket = m_OutputExecutionSockets[0];
 			gs::ExecutionSocket* iterExecutionSocket = m_OutputExecutionSockets[1];
 
+			// fails here, data connections are fucked.
 			if (!loopCountSocket->Get().has_value())
 			{
 				return;

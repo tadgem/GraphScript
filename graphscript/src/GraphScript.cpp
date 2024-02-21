@@ -47,10 +47,11 @@ Graph GraphBuilder::Build()
 	// clone all non function nodes
 	Vector<Node*> nodes = BuildNodes(functions);
 	// map execution connections from builder to cloned node sockets
+	Vector<ExecutionConnectionDef> executionConns = BuildExecutionConnections(functions, nodes);
 	// clone all data connections and map builder lhs and rhs to cloned node sockets
+	Vector<DataConnection*> dataConns = BuildDataConnections(functions, variables, nodes);
 
-
-	return { functions, variables, nodes, BuildExecutionConnections(functions, nodes), BuildDataConnections(functions, variables, nodes) };
+	return { functions, variables, nodes, executionConns, dataConns };
 }
 
 ExecutionConnectionDef gs::GraphBuilder::ConnectExecutionSocket(ExecutionSocket* lhs, ExecutionSocket* rhs)
@@ -221,18 +222,32 @@ Vector<DataConnection*> GraphBuilder::BuildDataConnections(HashMap<HashString, F
 	for (DataConnection* dataConn : m_DataConnections)
 	{
 		DataConnection* clone = dataConn->Clone();
-		for (auto& [name, func] : m_Functions)
+
+		for (int i = 0; i < m_Nodes.size(); i++)
 		{
-			for (auto& [outputName, output] : func->m_OutputDataSockets)
+			Node* node = m_Nodes[i];
+			
+			for (auto& [outputName, output] : node->m_InputDataSockets)
 			{
 				if (clone->m_LHS == output)
 				{
-					clone->m_LHS = functions[name]->m_OutputDataSockets[outputName];
+					clone->m_LHS = nodes[i]->m_InputDataSockets[outputName];
 				}
-
 				if (clone->m_RHS == output)
 				{
-					clone->m_RHS = functions[name]->m_OutputDataSockets[outputName];
+					clone->m_RHS = nodes[i]->m_InputDataSockets[outputName];
+				}
+			}
+			
+			for (auto& [outputName, output] : node->m_OutputDataSockets)
+			{
+				if (clone->m_LHS == output)
+				{
+					clone->m_LHS = nodes[i]->m_OutputDataSockets[outputName];
+				}
+				if (clone->m_RHS == output)
+				{
+					clone->m_RHS = nodes[i]->m_OutputDataSockets[outputName];
 				}
 			}
 		}
@@ -367,8 +382,7 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 			}
 		}
 
-		// seem to be hitting out here as executable before iter
-		// is the process happening when we think it is?
+		// this condition fails at the loop now
 		if (lhs && lhs->m_LoopCount > 1)
 		{
 			// read: the current node, the current output socket, and that sockets loop count
