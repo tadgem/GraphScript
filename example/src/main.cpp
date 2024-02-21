@@ -61,6 +61,10 @@ int main() {
 	
 
 	// Build the graph to an executable object
+	// need to rework build function completely
+	// to map cloned nodes and sockets to their builder equivalents
+	// types shouldnt be an issue as the clone method will handle type deduction
+	// we just need to set new raw lhs / rhs pointers.
 	gs::Graph g1 = builder.Build();
 	// cache the function name we want to call
 	gs::HashString entryName("NameOfEntry");
