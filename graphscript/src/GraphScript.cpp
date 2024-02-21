@@ -43,13 +43,14 @@ Graph GraphBuilder::Build()
 	// clone functions
 	HashMap<HashString, FunctionNode*> functions = BuildFunctions();
 	// clone variable defs
-	HashMap<HashString, Variable*> variables = BuildVariablesDefs();
+	HashMap<HashString, Variable*> variables = BuildVariables();
 	// clone all non function nodes
+	Vector<Node*> nodes = BuildNodes(functions);
 	// map execution connections from builder to cloned node sockets
 	// clone all data connections and map builder lhs and rhs to cloned node sockets
 
 
-	return { functions, variables, BuildNodes(functions), BuildExecutionConnections(functions), BuildDataConnections(functions, variables) };
+	return { functions, variables, nodes, BuildExecutionConnections(functions, nodes), BuildDataConnections(functions, variables, nodes) };
 }
 
 ExecutionConnectionDef gs::GraphBuilder::ConnectExecutionSocket(ExecutionSocket* lhs, ExecutionSocket* rhs)
@@ -115,7 +116,7 @@ HashMap<HashString, FunctionNode*> GraphBuilder::BuildFunctions()
 	return functions;
 }
 
-HashMap<HashString, Variable*> GraphBuilder::BuildVariablesDefs()
+HashMap<HashString, Variable*> GraphBuilder::BuildVariables()
 {
 	// Clone variable defs
 	HashMap<HashString, Variable*> variables;
@@ -149,12 +150,12 @@ Vector<Node*> GraphBuilder::BuildNodes(HashMap<HashString, FunctionNode*>& funct
 			continue;
 		}
 
-		nodes.push_back(node);
+		nodes.push_back(node->Clone());
 	}
 	return nodes;
 }
 
-Vector<ExecutionConnectionDef> GraphBuilder::BuildExecutionConnections(HashMap<HashString, FunctionNode*>& functions)
+Vector<ExecutionConnectionDef> GraphBuilder::BuildExecutionConnections(HashMap<HashString, FunctionNode*>& functions, Vector<Node*> nodes)
 {
 	// Copy Execution Connections
 	// Patch Execution connection removing function nodes replacing with clones
@@ -164,18 +165,46 @@ Vector<ExecutionConnectionDef> GraphBuilder::BuildExecutionConnections(HashMap<H
 		ExecutionConnectionDef connection = exec;
 		for (auto& [name, func] : m_Functions)
 		{
-			// this now needs to patch sockets on cloned nodes 
-			// rather than the nodes them selves
-			/*
-			if (connection.m_LHS == func.get())
+			for (int i = 0; i < func->m_OutputExecutionSockets.size(); i++)
 			{
-				connection.m_LHS = functions[name];
+				if (connection.m_LHS == func->m_OutputExecutionSockets[i])
+				{
+					connection.m_LHS = functions[name]->m_OutputExecutionSockets[i];
+				}
+				if (connection.m_RHS == func->m_OutputExecutionSockets[i])
+				{
+					connection.m_RHS = functions[name]->m_OutputExecutionSockets[i];
+				}
 			}
-			if (connection.m_RHS == func.get())
+		}
+
+		for (int i = 0; i < m_Nodes.size(); i++)
+		{
+			for (int s = 0; s < m_Nodes[i]->m_InputExecutionSockets.size(); s++)
 			{
-				connection.m_RHS = functions[name];
+				if (connection.m_LHS == m_Nodes[i]->m_InputExecutionSockets[s])
+				{
+					connection.m_LHS = nodes[i]->m_InputExecutionSockets[s];
+				}
+
+				if (connection.m_RHS == m_Nodes[i]->m_InputExecutionSockets[s])
+				{
+					connection.m_RHS = nodes[i]->m_InputExecutionSockets[s];
+				}
 			}
-			*/
+
+			for (int s = 0; s < m_Nodes[i]->m_OutputExecutionSockets.size(); s++)
+			{
+				if (connection.m_LHS == m_Nodes[i]->m_OutputExecutionSockets[s])
+				{
+					connection.m_LHS = nodes[i]->m_OutputExecutionSockets[s];
+				}
+
+				if (connection.m_RHS == m_Nodes[i]->m_OutputExecutionSockets[s])
+				{
+					connection.m_RHS = nodes[i]->m_OutputExecutionSockets[s];
+				}
+			}
 		}
 
 		executionConnections.push_back(connection);
@@ -184,7 +213,7 @@ Vector<ExecutionConnectionDef> GraphBuilder::BuildExecutionConnections(HashMap<H
 	return executionConnections;
 }
 
-Vector<DataConnection*> GraphBuilder::BuildDataConnections(HashMap<HashString, FunctionNode*>& functions,HashMap<HashString, Variable*> variables)
+Vector<DataConnection*> GraphBuilder::BuildDataConnections(HashMap<HashString, FunctionNode*>& functions,HashMap<HashString, Variable*> variables, Vector<Node*> nodes)
 {
 	// Copy Data Connections
 	// Patch data connection removing function nodes replacing with clones
@@ -318,7 +347,7 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 
 		// process data connections
 		ProcessDataConnections();
-		// Process()
+
 		rhsNode->Process();
 
 		// dont have to worry about loops or branches

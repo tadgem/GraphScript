@@ -316,11 +316,11 @@ protected:
 	protected:
 		// Internal Build Methods
 		HashMap<HashString, FunctionNode*>	BuildFunctions();
-		HashMap<HashString, Variable*>		BuildVariablesDefs();
+		HashMap<HashString, Variable*>		BuildVariables();
 		Vector<Node*>						BuildNodes(HashMap<HashString, FunctionNode*>& functions);
-		Vector<ExecutionConnectionDef>		BuildExecutionConnections(HashMap<HashString, FunctionNode*>& functions);
+		Vector<ExecutionConnectionDef>		BuildExecutionConnections(HashMap<HashString, FunctionNode*>& functions, Vector<Node*> nodes);
 		Vector<DataConnection*>				BuildDataConnections(HashMap<HashString, FunctionNode*>& functions,
-			HashMap<HashString, Variable*> variables);
+			HashMap<HashString, Variable*> variables, Vector<Node*> nodes);
 
 		Node*				FindSocketNode(DataSocket* socket);
 		void				PrintNodeSockets(Node* node);
