@@ -172,8 +172,15 @@ namespace gs
 	class Node
 	{
 	public:
+
+		Node(HashString nodeName) : m_NodeName(nodeName)
+		{
+		}
+
 		virtual void	Process() = 0;
 		virtual Node*	Clone() = 0;
+
+		const HashString m_NodeName;
 
 		template <typename T>
 		DataSocketT<T>*		AddDataInput(HashString variableName)
@@ -207,7 +214,7 @@ namespace gs
 	class FunctionNode : public Node
 	{
 	public:
-		FunctionNode();
+		FunctionNode(HashString name);
 		FunctionNode(FunctionNode& other) = default;
 
 		template <typename T>

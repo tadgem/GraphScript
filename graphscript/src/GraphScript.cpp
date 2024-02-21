@@ -26,7 +26,7 @@ FunctionNode& GraphBuilder::AddFunction(HashString functionName)
 	// TODO: insert return statement here
 	if (m_Functions.find(functionName) == m_Functions.end())
 	{
-		m_Functions[functionName] = CreateUnique<FunctionNode>();
+		m_Functions[functionName] = CreateUnique<FunctionNode>(functionName);
 		m_Nodes.push_back(m_Functions[functionName].get());
 	}
 
@@ -445,7 +445,7 @@ ExecutionSocket* gs::Node::AddExecutionOutput(HashString name)
 	return m_OutputExecutionSockets.emplace_back(new ExecutionSocket(name));
 }
 
-gs::FunctionNode::FunctionNode()
+gs::FunctionNode::FunctionNode(HashString name) : gs::Node(name)
 {
 	m_OutputExecutionSockets.push_back(new ExecutionSocket("out"));
 }

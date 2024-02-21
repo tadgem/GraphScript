@@ -8,7 +8,7 @@ namespace gs {
 	class MutliplyNodeT : public Node
 	{
 	public:
-		MutliplyNodeT()
+		MutliplyNodeT() : Node("Multiply")
 		{
 			AddExecutionInput("in");
 			AddExecutionOutput("out");
@@ -41,7 +41,7 @@ namespace gs {
 	class PrintNodeT : public Node
 	{
 	public:
-		PrintNodeT()
+		PrintNodeT() : Node("Print")
 		{
 			AddExecutionInput("in");
 			AddExecutionOutput("out");
@@ -69,7 +69,7 @@ namespace gs {
 	class IfNode : public Node
 	{
 	public:
-		IfNode()
+		IfNode() : Node("If")
 		{
 			AddExecutionInput("in");
 			AddExecutionOutput("true");
@@ -110,7 +110,7 @@ namespace gs {
 	class ForNode : public Node 
 	{
 	public:
-		ForNode()
+		ForNode() : Node("For")
 		{
 			AddExecutionInput("in");
 			AddExecutionOutput("out");

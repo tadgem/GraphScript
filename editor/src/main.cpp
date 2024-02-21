@@ -11,9 +11,9 @@ int main() {
 
 	gs::GraphBuilder builder;
 	// create a graph variable
-	gs::VariableT<float>* var = builder.AddVariable<float>("NameOfVariable");
-	gs::VariableT<bool>* boolVar = builder.AddVariable<bool>("ConditionVariable");
-	gs::VariableT<u32>* countVar = builder.AddVariable<u32>("LoopCount");
+	gs::VariableT<float>* var		= builder.AddVariable<float>("NameOfVariable");
+	gs::VariableT<bool>* boolVar	= builder.AddVariable<bool>("ConditionVariable");
+	gs::VariableT<u32>* countVar	= builder.AddVariable<u32>("LoopCount");
 
 	// Create a function entry point
 	gs::FunctionNode& entry = builder.AddFunction("NameOfEntry");
