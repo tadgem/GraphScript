@@ -7,7 +7,9 @@ add_executable(GraphScript-Editor
         "${LIBRARIES_DIR}/imgui/src/imgui_impl_opengl3.cpp"
         "src/main.cpp"
         "src/App.cpp"
-        "src/App.h")
+        "src/App.h"
+        "include/GraphScriptEditor.h"
+        )
 
 # glad
 target_include_directories(${PROJECT_NAME} PRIVATE "${GLAD_DIR}/include")
@@ -24,5 +26,5 @@ target_link_libraries(${PROJECT_NAME} "imgui" "${CMAKE_DL_LIBS}")
 
 # graphscript
 target_link_libraries(${PROJECT_NAME} GraphScript)
-target_include_directories(${PROJECT_NAME} PRIVATE "${ROOT_DIR}/graphscript/include")
+target_include_directories(${PROJECT_NAME} PRIVATE "${ROOT_DIR}/graphscript/include" "include")
 
