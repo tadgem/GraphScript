@@ -1,6 +1,7 @@
 #pragma once
 #include <chrono>
 #include <ctime>
+#include "TypeDef.h"
 struct GLFWwindow;
 
 namespace gs
@@ -21,7 +22,7 @@ namespace gs
 			m_bRunning = false;
 		}
 
-		double elapsedMilliseconds()
+		u64 elapsedMilliseconds()
 		{
 			std::chrono::time_point<std::chrono::system_clock> endTime;
 
@@ -37,9 +38,9 @@ namespace gs
 			return std::chrono::duration_cast<std::chrono::milliseconds>(endTime - m_StartTime).count();
 		}
 
-		double elapsedSeconds()
+		u64 elapsedSeconds()
 		{
-			return elapsedMilliseconds() / 1000.0;
+			return elapsedMilliseconds() / 1000ll;
 		}
 
 	private:
@@ -51,6 +52,8 @@ namespace gs
 	class ExampleApp
 	{
 	public:
+		ExampleApp(const gs::String& name);
+
 		bool Init();
 
 		bool ShouldRun();
@@ -60,7 +63,7 @@ namespace gs
 		void Shutdown();
 
 	protected:
-
+		const gs::String p_Name;
 		void Dockspace();
 		GLFWwindow* p_Window;
 	};

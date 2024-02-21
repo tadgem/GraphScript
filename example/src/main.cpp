@@ -1,6 +1,3 @@
-#include "App.h"
-#include <imgui.h>
-#include "imnodes.h"
 #include "GraphScript.h"
 #include "BuiltInNodes.h"
 

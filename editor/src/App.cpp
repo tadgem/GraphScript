@@ -7,8 +7,8 @@
 #include "imnodes.h"
 #include <glad/glad.h>
 
-#include "../vendor/imgui_impl_glfw.h"
-#include "../vendor/imgui_impl_opengl3.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
 #define GLSL_VERSION "#version 330"
 
@@ -88,6 +88,11 @@ void DarkTheme()
 	style.GrabRounding = 3;
 	style.LogSliderDeadzone = 4;
 	style.TabRounding = 4;
+}
+
+gs::ExampleApp::ExampleApp(const gs::String& name) : p_Name(name)
+{
+	Init();
 }
 
 bool gs::ExampleApp::Init()
