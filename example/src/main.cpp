@@ -66,6 +66,7 @@ int main() {
 	// types shouldnt be an issue as the clone method will handle type deduction
 	// we just need to set new raw lhs / rhs pointers.
 	gs::Graph g1 = builder.Build();
+	gs::Graph g2 = builder.Build();
 	// cache the function name we want to call
 	gs::HashString entryName("NameOfEntry");
 
@@ -73,7 +74,11 @@ int main() {
 	// set the multiple variable for this graph instance
 	g1.SetVariable<float>("NameOfVariable", 3.0f);
 	g1.SetVariable<bool>("ConditionVariable", true);
-	g1.SetVariable<u32>("LoopCount", 5);
+	g1.SetVariable<u32>("LoopCount", 2);
+
+	g2.SetVariable<float>("NameOfVariable", 4.0f);
+	g2.SetVariable<bool>("ConditionVariable", true);
+	g2.SetVariable<u32>("LoopCount", 3);
 	// create an argument set to pass the function
 	gs::VariableSet args;
 	// create a named argument (must match the name of the function parameter socket)
@@ -82,6 +87,7 @@ int main() {
 	for (int i = 0; i < ITERATIONS; i++)
 	{
 		g1.CallFunction(entryName, args);
+		g2.CallFunction(entryName, args);
 	}
 	/*
 	while (app.ShouldRun())
