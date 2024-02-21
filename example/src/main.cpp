@@ -3,10 +3,6 @@
 
 const int ITERATIONS = 2;
 int main() {
-	
-	// gs::ExampleApp app;
-	// const int hardcoded_node_id = 1;
-
 	gs::GraphBuilder builder;
 	// create a graph variable
 	gs::VariableT<float>* var = builder.AddVariable<float>("NameOfVariable");
@@ -86,22 +82,4 @@ int main() {
 		g1.CallFunction(entryName, args);
 		g2.CallFunction(entryName, args);
 	}
-	/*
-	while (app.ShouldRun())
-	{
-		if(ImGui::Begin("Hello"))
-		{
-			ImNodes::BeginNodeEditor();
-
-			ImNodes::BeginNode(hardcoded_node_id);
-			ImGui::Dummy(ImVec2(80.0f, 45.0f));
-			ImNodes::EndNode();
-
-			ImNodes::EndNodeEditor();
-		}
-		ImGui::End();
-
-		app.PostFrame();
-	}
-	*/
 }
