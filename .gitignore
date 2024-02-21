@@ -1,3 +1,5 @@
 build/*
 *.vscode
 */vs22
+vs22
+*./vs22

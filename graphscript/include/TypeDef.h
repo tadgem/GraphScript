@@ -11,6 +11,7 @@
 #include <optional>
 #include <memory>
 #include <vector>
+#include <stack>
 #include <type_traits>
 #include <iostream>
 
@@ -30,7 +31,6 @@ namespace gs
 	using u64		= uint64_t;
 	using String	= std::string;
 	using Any		= std::any;
-	using Procedure = std::function<void()>;
 
 	template<typename T>
 	using Optional	= std::optional<T>;
@@ -43,6 +43,9 @@ namespace gs
 
 	template<typename T>
 	using Vector	= std::vector<T>;
+
+	template<typename T>
+	using Stack = std::stack<T>;
 	
 	template<typename T>
 	std::ostream& operator<<(std::ostream& os, std::optional<T> const& opt)
