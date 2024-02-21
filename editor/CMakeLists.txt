@@ -8,6 +8,7 @@ add_executable(GraphScript-Editor
         "src/main.cpp"
         "src/App.cpp"
         "src/App.h"
+        "src/GraphScriptEditor.cpp"
         "include/GraphScriptEditor.h"
         )
 
