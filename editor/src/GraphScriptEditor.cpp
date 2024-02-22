@@ -15,9 +15,17 @@ void gs::GraphScriptEditor::OnImGui()
 	for (auto& [name, var] : m_Builder->m_VariablesDefs)
 	{
 		ImNodes::BeginNode(idCounter);
-		counterMap.emplace(var.get()->GetSocket(), idCounter);
+		counterMap.emplace(var.get(), idCounter);
 		idCounter++;
+
+		ImNodes::BeginOutputAttribute(idCounter, ImNodesPinShape_QuadFilled);
+
+		counterMap.emplace(var->GetSocket(), idCounter);
+		idCounter++;
+
 		ImGui::Text(name.m_Original.c_str());
+		ImNodes::EndOutputAttribute();
+
 		ImNodes::EndNode();
 	}
 
