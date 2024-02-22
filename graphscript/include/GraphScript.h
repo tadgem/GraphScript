@@ -287,6 +287,7 @@ protected:
 	class GraphBuilder
 	{
 	public:
+		GraphBuilder();
 		~GraphBuilder();
 
 		FunctionNode&				AddFunction(HashString functionName);
@@ -331,6 +332,16 @@ protected:
 
 		Node*				FindSocketNode(DataSocket* socket);
 		void				PrintNodeSockets(Node* node);
+		friend class Context;
+	};
+
+	class Context
+	{
+	public:
+		GraphBuilder* CreateBuilder();
+
+	protected:
+		Vector<Unique<GraphBuilder>> p_Builders;
 	};
 }
 #endif //GRAPHSCRIPT_GUARD_H

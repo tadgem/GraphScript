@@ -106,6 +106,10 @@ GraphBuilder::~GraphBuilder()
 	m_VariablesDefs.clear();
 }
 
+gs::GraphBuilder::GraphBuilder()
+{
+}
+
 HashMap<HashString, FunctionNode*> GraphBuilder::BuildFunctions()
 {
 	// Clone function defs
@@ -448,4 +452,10 @@ ExecutionSocket* gs::Node::AddExecutionOutput(HashString name)
 gs::FunctionNode::FunctionNode(HashString name) : gs::Node(name)
 {
 	m_OutputExecutionSockets.push_back(new ExecutionSocket("out"));
+}
+
+GraphBuilder* gs::Context::CreateBuilder()
+{
+	p_Builders.push_back(CreateUnique<GraphBuilder>());
+	return p_Builders[p_Builders.size() - 1].get();
 }
