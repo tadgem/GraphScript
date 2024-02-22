@@ -126,7 +126,7 @@ bool gs::ExampleApp::Init()
 	ImGui_ImplGlfw_InitForOpenGL(p_Window, true);
 	ImGui_ImplOpenGL3_Init(GLSL_VERSION);
 
-	ImFont* font = io.Fonts->AddFontFromMemoryTTF((void*) & OpenSans[0], 529700, 22.0f);
+	ImFont* font = io.Fonts->AddFontFromMemoryTTF((void*)&OpenSans[0], 529700, 18.0f);
 
 	DarkTheme();
 
