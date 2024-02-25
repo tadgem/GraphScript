@@ -377,9 +377,13 @@ protected:
 	class Context
 	{
 	public:
-		GraphBuilder* CreateBuilder();
+		GraphBuilder*	CreateBuilder();
+
+		void			AddNode(Node* node);
+		Node*			GetNode(HashString name);
 
 	protected:
+		Vector<Node*> p_Nodes;
 		Vector<Unique<GraphBuilder>> p_Builders;
 	};
 }

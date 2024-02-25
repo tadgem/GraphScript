@@ -460,6 +460,28 @@ GraphBuilder* gs::Context::CreateBuilder()
 	return p_Builders[p_Builders.size() - 1].get();
 }
 
+void gs::Context::AddNode(Node* node)
+{
+	if (node == nullptr)
+	{
+		return;
+	}
+
+	p_Nodes.push_back(node);
+}
+
+gs::Node* gs::Context::GetNode(HashString name)
+{
+	for (auto& node : p_Nodes)
+	{
+		if (node->m_NodeName == name)
+		{
+			return node;
+		}
+	}
+	return nullptr;
+}
+
 gs::Type::Type(const HashString& hash) : m_TypeHash(hash)
 {
 }
