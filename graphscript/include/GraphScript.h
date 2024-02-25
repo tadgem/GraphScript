@@ -382,9 +382,19 @@ protected:
 		void			AddNode(Node* node);
 		Node*			GetNode(HashString name);
 
+		template<typename T>
+		void RegisterType()
+		{
+
+		}
+
 	protected:
-		Vector<Node*> p_Nodes;
-		Vector<Unique<GraphBuilder>> p_Builders;
+		Vector<Node*>					p_Nodes;
+		Vector<Unique<GraphBuilder>>	p_Builders;
+		Vector<Unique<Variable>>				p_Variables;
+		Vector<Unique<DataSocket>>				p_Sockets;
+		Vector<Unique<DataConnection>>			p_DataConnections;
+
 	};
 }
 #endif //GRAPHSCRIPT_GUARD_H
