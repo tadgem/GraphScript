@@ -26,10 +26,7 @@ namespace gs
 	class TypeT : public Type
 	{
 	public:
-		TypeT() : Type(GetTypeHash<T>())
-		{
-
-		}
+		TypeT() : Type(GetTypeHash<T>()){}
 	};
 
 	template<typename T>
@@ -74,10 +71,7 @@ namespace gs
 		Any m_Value;
 		const Type& m_Type;
 
-		DataSocket(const Type& type) : m_Type(type)
-		{
-			
-		}
+		DataSocket(const Type& type) : m_Type(type){}
 		DataSocket(DataSocket& other) = default;
 		virtual ~DataSocket();
 		virtual DataSocket* Clone() = 0;
@@ -88,10 +82,7 @@ namespace gs
 	{
 	public:
 
-		DataSocketT() : DataSocket(GetTypeT<T>::s_TypeInstance)
-		{
-
-		}
+		DataSocketT() : DataSocket(GetTypeT<T>::s_TypeInstance){}
 
 		Optional<T>		Get()
 		{
@@ -115,10 +106,7 @@ namespace gs
 	{
 	public:
 
-		DataConnection(const Type& type) : m_Type(type)
-		{
-
-		}
+		DataConnection(const Type& type) : m_Type(type){}
 		virtual void Process() = 0;
 		virtual void Print() = 0;
 		virtual DataConnection* Clone() = 0;
