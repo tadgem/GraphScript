@@ -15,6 +15,30 @@ namespace gs
 		Fail
 	};
 
+	class Type
+	{
+	public:
+		Type(const HashString& hash);
+		const HashString m_TypeHash;
+	};
+
+	template<typename T>
+	class TypeT : public Type
+	{
+	public:
+		TypeT() : Type(GetTypeHash<T>())
+		{
+
+		}
+	};
+
+	template<typename T>
+	class GetTypeT
+	{
+	public:
+		inline static const TypeT<T> s_TypeInstance = TypeT<T>();
+	};
+
 	class ExecutionSocket
 	{
 	public:
@@ -48,8 +72,12 @@ namespace gs
 	{
 	public:
 		Any m_Value;
+		const Type& m_Type;
 
-		DataSocket() = default;
+		DataSocket(const Type& type) : m_Type(type)
+		{
+			
+		}
 		DataSocket(DataSocket& other) = default;
 		virtual ~DataSocket();
 		virtual DataSocket* Clone() = 0;
@@ -59,6 +87,12 @@ namespace gs
 	class DataSocketT : public DataSocket
 	{
 	public:
+
+		DataSocketT() : DataSocket(GetTypeT<T>::s_TypeInstance)
+		{
+
+		}
+
 		Optional<T>		Get()
 		{
 			if (m_Value.has_value())
@@ -80,19 +114,26 @@ namespace gs
 	class DataConnection
 	{
 	public:
+
+		DataConnection(const Type& type) : m_Type(type)
+		{
+
+		}
 		virtual void Process() = 0;
 		virtual void Print() = 0;
 		virtual DataConnection* Clone() = 0;
 
 		DataSocket* m_LHS = nullptr;
 		DataSocket* m_RHS = nullptr;
+
+		const Type& m_Type;
 	};
 
 	template<typename T>
 	class DataConnectionT : public DataConnection
 	{
 	public:
-		DataConnectionT(DataSocketT<T>* lhs, DataSocketT<T>* rhs)
+		DataConnectionT(DataSocketT<T>* lhs, DataSocketT<T>* rhs) : DataConnection(GetTypeT<T>::s_TypeInstance)
 		{
 			m_LHS = lhs;
 			m_RHS = rhs;
@@ -133,7 +174,15 @@ namespace gs
 	class Variable
 	{
 	public:
+
+		Variable(const Type& type) : m_Type(type)
+		{
+
+		}
+
 		Any m_Value;
+		const Type& m_Type;
+		
 		virtual Variable*	Clone() = 0;
 		virtual DataSocket* GetSocket() = 0;
 	};
@@ -143,7 +192,9 @@ namespace gs
 	{
 	public:
 
-		VariableT() = default;
+		VariableT() : Variable(GetTypeT<T>::s_TypeInstance)
+		{
+		}
 		VariableT(VariableT<T>& other) = default;
 
 		T		Get()
@@ -315,10 +366,10 @@ protected:
 
 		ExecutionConnectionDef		ConnectExecutionSocket(ExecutionSocket* lhs, ExecutionSocket* rhs);
 
-		HashMap<HashString, Unique<Variable>>	m_VariablesDefs;
+		HashMap<HashString, Unique<Variable>>		m_VariablesDefs;
 		HashMap<HashString, Unique<FunctionNode>>	m_Functions;
 		Vector<Node*>								m_Nodes;
-		Vector<DataConnection*>					m_DataConnections;
+		Vector<DataConnection*>						m_DataConnections;
 		Vector<ExecutionConnectionDef>				m_ExecutionConnections;
 
 	protected:

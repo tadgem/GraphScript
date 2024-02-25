@@ -9,6 +9,8 @@ const int ITERATIONS = 2;
 int main() {
 	gs::ExampleApp app("Editor");
 
+	gs::TypeT<float> type = gs::TypeT<float>();
+
 	gs::Context context;
 	gs::GraphBuilder& builder = *context.CreateBuilder();
 	// create a graph variable
@@ -90,7 +92,7 @@ int main() {
 		g2.CallFunction(entryName, args);
 	}
 
-	gs::GraphScriptEditor editor(&builder);
+	gs::GraphScriptEditor editor(&context, &builder);
 
 	while (app.ShouldRun())
 	{

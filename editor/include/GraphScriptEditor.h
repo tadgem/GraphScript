@@ -6,11 +6,13 @@ namespace gs
 	class GraphScriptEditor
 	{
 	public:
-		GraphScriptEditor(GraphBuilder* builder);
+		GraphScriptEditor(Context* context, GraphBuilder* builder);
 
 		void OnImGui();
 
-		GraphBuilder* m_Builder;
+	protected:
+		Context* p_Context;
+		GraphBuilder* p_Builder;
 	};
 }
 

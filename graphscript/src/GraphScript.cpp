@@ -459,3 +459,7 @@ GraphBuilder* gs::Context::CreateBuilder()
 	p_Builders.push_back(CreateUnique<GraphBuilder>());
 	return p_Builders[p_Builders.size() - 1].get();
 }
+
+gs::Type::Type(const HashString& hash) : m_TypeHash(hash)
+{
+}

@@ -19,6 +19,21 @@
 // TODO: should be a compile definition
 #define GRAPH_SCRIPT_DEBUG_HASH_STRING
 
+namespace typehash_internal
+{
+	static const unsigned int FRONT_SIZE = sizeof("typehash_internal::GetTypeNameHelper<") - 1u;
+	static const unsigned int BACK_SIZE = sizeof(">::GetTypeName") - 1u;
+
+	template <typename T>
+	struct GetTypeNameHelper {
+		static constexpr std::string GetTypeName(void) {
+			static const size_t size = sizeof(__FUNCTION__) - FRONT_SIZE - BACK_SIZE;
+			std::string typeString = std::string(__FUNCTION__ + FRONT_SIZE, size - 1u);
+			return typeString;
+		}
+	};
+}
+
 namespace gs
 {
 	using i8		= int8_t;
@@ -78,6 +93,17 @@ namespace gs
 	protected:
 		static u64 Hash(const String& input);
 	};
+
+	template <typename T>
+	constexpr std::string GetTypeName(void) {
+		return typehash_internal::GetTypeNameHelper<T>::GetTypeName();
+	}
+
+	template<typename T>
+	constexpr HashString GetTypeHash() {
+		return HashString(GetTypeName<T>());
+	}
+
 }
 
 #endif

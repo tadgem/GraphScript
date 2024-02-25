@@ -1,9 +1,10 @@
 #include "GraphScriptEditor.h"
 #include "imnodes.h"
 #include "imgui.h"
-gs::GraphScriptEditor::GraphScriptEditor(GraphBuilder* builder)
+gs::GraphScriptEditor::GraphScriptEditor(Context* context, GraphBuilder* graphBuilder)
 {
-	m_Builder = builder;
+	p_Context = context;
+	p_Builder = graphBuilder;
 }
 
 void gs::GraphScriptEditor::OnImGui()
@@ -12,7 +13,7 @@ void gs::GraphScriptEditor::OnImGui()
 	HashMap<void*, int> counterMap;
 
 	ImNodes::BeginNodeEditor();
-	for (auto& [name, var] : m_Builder->m_VariablesDefs)
+	for (auto& [name, var] : p_Builder->m_VariablesDefs)
 	{
 		ImNodes::BeginNode(idCounter);
 		counterMap.emplace(var.get(), idCounter);
@@ -29,7 +30,7 @@ void gs::GraphScriptEditor::OnImGui()
 		ImNodes::EndNode();
 	}
 
-	for (Node* node : m_Builder->m_Nodes)
+	for (Node* node : p_Builder->m_Nodes)
 	{
 		ImNodes::BeginNode(idCounter);
 
@@ -80,12 +81,12 @@ void gs::GraphScriptEditor::OnImGui()
 		ImNodes::EndNode();
 	}
 
-	for (auto& conn : m_Builder->m_ExecutionConnections)
+	for (auto& conn : p_Builder->m_ExecutionConnections)
 	{
 		ImNodes::Link(idCounter++, counterMap[conn.m_RHS], counterMap[conn.m_LHS]);
 	}
 
-	for (auto& conn : m_Builder->m_DataConnections)
+	for (auto& conn : p_Builder->m_DataConnections)
 	{
 		ImNodes::Link(idCounter++, counterMap[conn->m_RHS], counterMap[conn->m_LHS]);
 	}
