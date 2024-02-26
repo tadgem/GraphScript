@@ -59,9 +59,9 @@ namespace gs
 			return {m_SocketName, m_LoopCount};
 		}
 	protected:
-		friend class Graph;
-		friend class GraphBuilder;
-		bool		p_ShouldExecute;
+		friend class	Graph;
+		friend class	GraphBuilder;
+		bool			p_ShouldExecute;
 		
 	};
 
@@ -81,7 +81,6 @@ namespace gs
 	class DataSocketT : public DataSocket
 	{
 	public:
-
 		DataSocketT() : DataSocket(GetTypeT<T>::s_TypeInstance){}
 
 		Optional<T>		Get()
@@ -350,7 +349,6 @@ protected:
 			return conn;
 		}
 
-		Graph						Build();
 
 		ExecutionConnectionDef		ConnectExecutionSocket(ExecutionSocket* lhs, ExecutionSocket* rhs);
 
@@ -371,6 +369,8 @@ protected:
 
 		Node*				FindSocketNode(DataSocket* socket);
 		void				PrintNodeSockets(Node* node);
+		Graph*				Build();
+		
 		friend class Context;
 	};
 
@@ -378,6 +378,8 @@ protected:
 	{
 	public:
 		GraphBuilder*	CreateBuilder();
+
+		Graph*			BuildGraph(GraphBuilder* builder);
 
 		void			AddNode(Node* node);
 		Node*			GetNode(HashString name);
@@ -391,11 +393,15 @@ protected:
 		}
 
 	protected:
-		Vector<Node*>					p_Nodes;
-		Vector<Unique<GraphBuilder>>	p_Builders;
+		// Templates for other types
+		Vector<Node*>							p_Nodes;
+		Vector<Unique<GraphBuilder>>			p_Builders;
 		Vector<Unique<Variable>>				p_Variables;
 		Vector<Unique<DataSocket>>				p_Sockets;
 		Vector<Unique<DataConnection>>			p_DataConnections;
+
+		// instances
+		Vector<Graph*> p_ActiveGraphs;
 	};
 }
 #endif //GRAPHSCRIPT_GUARD_H

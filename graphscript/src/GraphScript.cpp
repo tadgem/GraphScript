@@ -38,7 +38,7 @@ void GraphBuilder::AddNode(Node* node)
 	m_Nodes.push_back(node);
 }
 
-Graph GraphBuilder::Build()
+Graph* GraphBuilder::Build()
 {
 	// clone functions
 	HashMap<HashString, FunctionNode*> functions = BuildFunctions();
@@ -51,7 +51,7 @@ Graph GraphBuilder::Build()
 	// clone all data connections and map builder lhs and rhs to cloned node sockets
 	Vector<DataConnection*> dataConns = BuildDataConnections(functions, variables, nodes);
 
-	return { functions, variables, nodes, executionConns, dataConns };
+	return new Graph{ functions, variables, nodes, executionConns, dataConns };
 }
 
 ExecutionConnectionDef gs::GraphBuilder::ConnectExecutionSocket(ExecutionSocket* lhs, ExecutionSocket* rhs)
@@ -458,6 +458,15 @@ GraphBuilder* gs::Context::CreateBuilder()
 {
 	p_Builders.push_back(CreateUnique<GraphBuilder>());
 	return p_Builders[p_Builders.size() - 1].get();
+}
+
+Graph* gs::Context::BuildGraph(GraphBuilder* builder)
+{
+	Graph* g = builder->Build();
+
+	p_ActiveGraphs.push_back(g);
+
+	return g;
 }
 
 void gs::Context::AddNode(Node* node)
