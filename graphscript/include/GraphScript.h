@@ -385,7 +385,9 @@ protected:
 		template<typename T>
 		void RegisterType()
 		{
-
+			p_Variables.push_back(CreateUnique<VariableT<T>>());
+			p_Sockets.push_back(CreateUnique<DataSocketT<T>>());
+			p_DataConnections.push_back(CreateUnique<DataConnectionT<T>>(nullptr, nullptr));
 		}
 
 	protected:
@@ -394,7 +396,6 @@ protected:
 		Vector<Unique<Variable>>				p_Variables;
 		Vector<Unique<DataSocket>>				p_Sockets;
 		Vector<Unique<DataConnection>>			p_DataConnections;
-
 	};
 }
 #endif //GRAPHSCRIPT_GUARD_H

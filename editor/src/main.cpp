@@ -8,10 +8,11 @@
 const int ITERATIONS = 2;
 int main() {
 	gs::ExampleApp app("Editor");
-
-	gs::TypeT<float> type = gs::TypeT<float>();
-
 	gs::Context context;
+
+	context.RegisterType<float>();
+	context.RegisterType<u32>();
+
 	gs::GraphBuilder& builder = *context.CreateBuilder();
 	// create a graph variable
 	gs::VariableT<float>* var		= builder.AddVariable<float>("NameOfVariable");
