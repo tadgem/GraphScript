@@ -1,0 +1,30 @@
+BeginFunctions
+    NameOfEntry,NameOfParameter:45304
+EndFunctions
+BeginNodes
+    NameOfEntry
+    For
+    Multiply
+    If
+    Print
+EndNodes
+BeginVariables
+    NameOfVariable,45304
+    ConditionVariable,12422
+    LoopCount,47098
+EndVariables
+BeginNodeDataConns
+    0,NameOfParameter,45304:0,input,45304
+    2,result,45304:2,input,45304
+EndNodeDataConns
+BeginVariableDataConns
+    LoopCount,47098:1,count,47098
+    NameOfVariable,45304:2,multiple,45304
+    ConditionVariable,12422:3,condition,12422
+EndVariableDataConns
+BeginExeConns
+    0,out:1,in
+    1,iter:2,in
+    2,out:3,in
+    3,true:4,in
+EndExeConns

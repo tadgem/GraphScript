@@ -3,8 +3,8 @@
 
 const int ITERATIONS = 2;
 int main() {
-	gs::GraphBuilder builder;
 	gs::Context context;
+	gs::GraphBuilder& builder = *context.CreateBuilder();
 	// create a graph variable
 	gs::VariableT<float>* var = builder.AddVariable<float>("NameOfVariable");
 	gs::VariableT<bool>* boolVar = builder.AddVariable<bool>("ConditionVariable");

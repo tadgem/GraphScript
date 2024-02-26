@@ -35,3 +35,4 @@ add_subdirectory(graphscript)
 
 add_subdirectory(example)
 add_subdirectory(editor)
+add_subdirectory(deserialize)

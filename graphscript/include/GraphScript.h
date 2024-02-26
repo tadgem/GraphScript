@@ -385,6 +385,7 @@ protected:
 	{
 	public:
 		GraphBuilder*	CreateBuilder();
+		GraphBuilder*	DeserializeGraph(String& source);
 
 		Graph*			BuildGraph(GraphBuilder* builder);
 

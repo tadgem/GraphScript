@@ -2,6 +2,22 @@
 
 using namespace gs;
 
+Vector<String> SplitStringByNewline(const String& str)
+{
+	auto result = Vector<String>{};
+	auto ss = SStream{ str };
+
+	for (String line; std::getline(ss, line, '\n');)
+		result.push_back(line);
+
+	return result;
+}
+
+void Trim(String& s, char c) {
+
+	s.erase(std::remove_if(s.begin(), s.end(), isspace), s.end());
+}
+
 HashString::HashString(const String& input) : m_Value(Hash(input)), m_Original(input) {
 }
 
@@ -65,8 +81,6 @@ ExecutionConnectionDef gs::GraphBuilder::ConnectExecutionSocket(ExecutionSocket*
 String gs::GraphBuilder::Serialize()
 {
 	SStream stream;
-	// Serialize function nodes
-	// funcName(str), outputDataSockets{name(str), type(hash)}[]
 	stream << "BeginFunctions\n";
 	for (auto& [name, func] : m_Functions)
 	{
@@ -78,7 +92,6 @@ String gs::GraphBuilder::Serialize()
 		stream << "\n";
 	}
 
-	// serialize nodes
 	stream << "EndFunctions\nBeginNodes\n";
 	for (int i = 0; i < m_Nodes.size(); i++)
 	{
@@ -86,16 +99,12 @@ String gs::GraphBuilder::Serialize()
 	}
 	
 	stream << "EndNodes\nBeginVariables\n";
-	// serialize variables
-	// name(str), type(hash)
 	for (auto& [name, var] : m_VariablesDefs)
 	{
 		stream << "    " << name.m_Original << "," << var->m_Type.m_TypeHash.m_Value << "\n";
 	}
-	stream << "EndVariables\n";
-
-	// serialize data conns (nodes + variables)
-	stream << "BeginNodeDataConns\n";
+	
+	stream << "EndVariables\nBeginNodeDataConns\n";
 	for (int i = 0; i < m_DataConnections.size(); i++)
 	{
 		DataSocket* lhs = m_DataConnections[i]->m_LHS;
@@ -114,6 +123,7 @@ String gs::GraphBuilder::Serialize()
 			<< "," << rhs->m_Type.m_TypeHash.m_Value << "\n";
 
 	}
+
 	stream << "EndNodeDataConns\nBeginVariableDataConns\n";
 	for (int i = 0; i < m_DataConnections.size(); i++)
 	{
@@ -134,9 +144,6 @@ String gs::GraphBuilder::Serialize()
 
 	}
 
-	// serialize exe conns
-	// lhs + rhs = {nodeIndex(int), socketName(str)}
-
 	stream << "EndVariableDataConns\nBeginExeConns\n";
 	for (int i = 0; i < m_ExecutionConnections.size(); i++)
 	{
@@ -145,8 +152,8 @@ String gs::GraphBuilder::Serialize()
 		stream << "    " << GetNodeIndex(FindExeSocketNode(lhs)) << "," << lhs->m_SocketName.m_Original << ":";
 		stream << GetNodeIndex(FindExeSocketNode(rhs)) << "," << rhs->m_SocketName.m_Original << "\n";
 	}
-	stream << "EndExeConns\n";
 
+	stream << "EndExeConns\n";
 	return stream.str();
 }
 
@@ -656,6 +663,19 @@ GraphBuilder* gs::Context::CreateBuilder()
 {
 	p_Builders.push_back(CreateUnique<GraphBuilder>());
 	return p_Builders[p_Builders.size() - 1].get();
+}
+
+GraphBuilder* gs::Context::DeserializeGraph(String& source)
+{
+	Vector<String> lines = SplitStringByNewline(source);
+
+	for (String& l : lines)
+	{
+		Trim(l, ' ');
+		std::cout << l << std::endl;
+	}
+
+	return nullptr;
 }
 
 Graph* gs::Context::BuildGraph(GraphBuilder* builder)
