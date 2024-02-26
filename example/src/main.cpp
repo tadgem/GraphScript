@@ -4,6 +4,7 @@
 const int ITERATIONS = 2;
 int main() {
 	gs::GraphBuilder builder;
+	gs::Context context;
 	// create a graph variable
 	gs::VariableT<float>* var = builder.AddVariable<float>("NameOfVariable");
 	gs::VariableT<bool>* boolVar = builder.AddVariable<bool>("ConditionVariable");
@@ -58,8 +59,8 @@ int main() {
 	// to map cloned nodes and sockets to their builder equivalents
 	// types shouldnt be an issue as the clone method will handle type deduction
 	// we just need to set new raw lhs / rhs pointers.
-	gs::Graph g1 = builder.Build();
-	gs::Graph g2 = builder.Build();
+	gs::Graph& g1 = *context.BuildGraph(&builder);
+	gs::Graph& g2 = *context.BuildGraph(&builder);
 	// cache the function name we want to call
 	gs::HashString entryName("NameOfEntry");
 

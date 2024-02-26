@@ -19,9 +19,9 @@ namespace gs {
 
 		void Process() override
 		{
-			DataSocketT<T>* inputSocket = (DataSocketT<T>*) m_InputDataSockets["input"];
-			DataSocketT<T>* multipleSocket = (DataSocketT<T>*) m_InputDataSockets["multiple"];
-			DataSocketT<T>* resultSocket = (DataSocketT<T>*) m_OutputDataSockets["result"];
+			DataSocketT<T>* inputSocket		= (DataSocketT<T>*) m_InputDataSockets["input"];
+			DataSocketT<T>* multipleSocket	= (DataSocketT<T>*) m_InputDataSockets["multiple"];
+			DataSocketT<T>* resultSocket	= (DataSocketT<T>*) m_OutputDataSockets["result"];
 
 			if (!inputSocket->Get().has_value() || !multipleSocket->Get().has_value())
 			{

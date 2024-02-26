@@ -5,6 +5,8 @@
 #ifndef TYPEDEF_GUARD_H
 #define TYPEDEF_GUARD_H
 #include <string>
+#include <sstream>
+#include <fstream>
 #include <any>
 #include <map>
 #include <functional>
@@ -45,6 +47,8 @@ namespace gs
 	using u32		= uint32_t;
 	using u64		= uint64_t;
 	using String	= std::string;
+	using SStream	= std::stringstream;
+	using FStream	= std::ofstream;
 	using Any		= std::any;
 
 	template<typename T>

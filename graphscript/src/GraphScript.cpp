@@ -62,7 +62,95 @@ ExecutionConnectionDef gs::GraphBuilder::ConnectExecutionSocket(ExecutionSocket*
 	return conn;
 }
 
-Node* GraphBuilder::FindSocketNode(DataSocket* socket)
+String gs::GraphBuilder::Serialize()
+{
+	SStream stream;
+	// Serialize function nodes
+	// funcName(str), outputDataSockets{name(str), type(hash)}[]
+	stream << "BeginFunctions\n";
+	for (auto& [name, func] : m_Functions)
+	{
+		stream << "    " << name.m_Original;
+		for (auto& [name, socket] : func->m_OutputDataSockets)
+		{
+			stream << "," << name.m_Original << ":" << socket->m_Type.m_TypeHash;
+		}
+		stream << "\n";
+	}
+
+	// serialize nodes
+	stream << "EndFunctions\nBeginNodes\n";
+	for (int i = 0; i < m_Nodes.size(); i++)
+	{
+		stream << "    " << m_Nodes[i]->m_NodeName.m_Original << "\n";
+	}
+	
+	stream << "EndNodes\nBeginVariables\n";
+	// serialize variables
+	// name(str), type(hash)
+	for (auto& [name, var] : m_VariablesDefs)
+	{
+		stream << "    " << name.m_Original << "," << var->m_Type.m_TypeHash.m_Value << "\n";
+	}
+	stream << "EndVariables\n";
+
+	// serialize data conns (nodes + variables)
+	stream << "BeginNodeDataConns\n";
+	for (int i = 0; i < m_DataConnections.size(); i++)
+	{
+		DataSocket* lhs = m_DataConnections[i]->m_LHS;
+		DataSocket* rhs = m_DataConnections[i]->m_RHS;
+		i32 lhsNodeIndex = GetNodeIndex(FindDataSocketNode(lhs));
+		i32 rhsNodeIndex = GetNodeIndex(FindDataSocketNode(lhs));
+
+		if (lhsNodeIndex < 0 || rhsNodeIndex < 0)
+		{
+			continue;
+		}
+
+		stream << "    " << lhsNodeIndex << "," << FindDataSocketName(lhs).m_Original
+			<< "," << lhs->m_Type.m_TypeHash.m_Value << ":";
+		stream << rhsNodeIndex << "," << FindDataSocketName(rhs).m_Original
+			<< "," << rhs->m_Type.m_TypeHash.m_Value << "\n";
+
+	}
+	stream << "EndNodeDataConns\nBeginVariableDataConns\n";
+	for (int i = 0; i < m_DataConnections.size(); i++)
+	{
+		DataSocket* lhs = m_DataConnections[i]->m_LHS;
+
+		HashString lhsVariableName = FindSocketVariableName(lhs);
+		if (lhsVariableName.m_Value == 0)
+		{
+			continue;
+		}
+
+		DataSocket* rhs = m_DataConnections[i]->m_RHS;
+		i32 rhsNodeIndex = GetNodeIndex(FindDataSocketNode(rhs));
+
+		stream << "    " << lhsVariableName.m_Original << "," << lhs->m_Type.m_TypeHash.m_Value << ":";
+		stream << rhsNodeIndex << "," << FindDataSocketName(rhs).m_Original
+			<< "," << rhs->m_Type.m_TypeHash.m_Value << "\n";
+
+	}
+
+	// serialize exe conns
+	// lhs + rhs = {nodeIndex(int), socketName(str)}
+
+	stream << "EndVariableDataConns\nBeginExeConns\n";
+	for (int i = 0; i < m_ExecutionConnections.size(); i++)
+	{
+		ExecutionSocket* lhs = m_ExecutionConnections[i].m_LHS;
+		ExecutionSocket* rhs = m_ExecutionConnections[i].m_RHS;
+		stream << "    " << GetNodeIndex(FindExeSocketNode(lhs)) << "," << lhs->m_SocketName.m_Original << ":";
+		stream << GetNodeIndex(FindExeSocketNode(rhs)) << "," << rhs->m_SocketName.m_Original << "\n";
+	}
+	stream << "EndExeConns\n";
+
+	return stream.str();
+}
+
+Node* GraphBuilder::FindDataSocketNode(DataSocket* socket)
 {
 	for (int i = 0; i < m_Nodes.size(); i++)
 	{
@@ -73,9 +161,92 @@ Node* GraphBuilder::FindSocketNode(DataSocket* socket)
 				return m_Nodes[i];
 			}
 		}
+
+		for (auto& [name, s] : m_Nodes[i]->m_OutputDataSockets)
+		{
+			if (s == socket)
+			{
+				return m_Nodes[i];
+			}
+		}
 	}
 
 	return nullptr;
+}
+
+Node* gs::GraphBuilder::FindExeSocketNode(ExecutionSocket* socket)
+{
+	for (int i = 0; i < m_Nodes.size(); i++)
+	{
+		for (auto& s : m_Nodes[i]->m_InputExecutionSockets)
+		{
+			if (s == socket)
+			{
+				return m_Nodes[i];
+			}
+		}
+
+		for (auto& s : m_Nodes[i]->m_OutputExecutionSockets)
+		{
+			if (s == socket)
+			{
+				return m_Nodes[i];
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+HashString gs::GraphBuilder::FindSocketVariableName(DataSocket* socket)
+{
+	for (auto& [name, var] : m_VariablesDefs)
+	{
+		if (var->GetSocket() == socket)
+		{
+			return name;
+		}
+	}
+	return HashString();
+}
+
+HashString gs::GraphBuilder::FindDataSocketName(DataSocket* socket)
+{
+	Node* n = FindDataSocketNode(socket);
+	if (!n)
+	{
+		return HashString();
+	}
+
+	for (auto& [name, s] : n->m_InputDataSockets)
+	{
+		if (s == socket)
+		{
+			return name;
+		}
+	}
+
+	for (auto& [name, s] : n->m_OutputDataSockets)
+	{
+		if (s == socket)
+		{
+			return name;
+		}
+	}
+
+	return HashString();
+}
+
+i32 gs::GraphBuilder::GetNodeIndex(Node* node)
+{
+	for (int i = 0; i < m_Nodes.size(); i++)
+	{
+		if (m_Nodes[i] == node)
+		{
+			return i;
+		}
+	}
+	return -1;
 }
 
 void GraphBuilder::PrintNodeSockets(Node* node)
@@ -438,6 +609,33 @@ void Graph::ResetSockets()
 
 
 ExecutionSocket::ExecutionSocket(HashString socketName, u32 loopCount) : m_SocketName(socketName), m_LoopCount(loopCount), p_ShouldExecute(true){}
+
+gs::Node::~Node()
+{
+	for (auto& [name, socket] : m_InputDataSockets)
+	{
+		delete socket;
+	}
+	m_InputDataSockets.clear();
+
+	for (auto& [name, socket] : m_OutputDataSockets)
+	{
+		delete socket;
+	}
+	m_OutputDataSockets.clear();
+
+	for (int i = 0; i < m_InputExecutionSockets.size(); i++)
+	{
+		delete m_InputExecutionSockets[i];
+	}
+	m_InputExecutionSockets.clear();
+
+	for (int i = 0; i < m_OutputExecutionSockets.size(); i++)
+	{
+		delete m_OutputExecutionSockets[i];
+	}
+	m_OutputExecutionSockets.clear();
+}
 
 ExecutionSocket* gs::Node::AddExecutionInput(HashString name)
 {

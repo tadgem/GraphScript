@@ -214,6 +214,7 @@ namespace gs
 		Node(HashString nodeName) : m_NodeName(nodeName)
 		{
 		}
+		virtual ~Node();
 
 		virtual void	Process() = 0;
 		virtual Node*	Clone() = 0;
@@ -349,8 +350,10 @@ protected:
 			return conn;
 		}
 
-
 		ExecutionConnectionDef		ConnectExecutionSocket(ExecutionSocket* lhs, ExecutionSocket* rhs);
+
+		String						Serialize();
+
 
 		HashMap<HashString, Unique<Variable>>		m_VariablesDefs;
 		HashMap<HashString, Unique<FunctionNode>>	m_Functions;
@@ -367,7 +370,11 @@ protected:
 		Vector<DataConnection*>				BuildDataConnections(HashMap<HashString, FunctionNode*>& functions,
 			HashMap<HashString, Variable*> variables, Vector<Node*> nodes);
 
-		Node*				FindSocketNode(DataSocket* socket);
+		Node*				FindDataSocketNode(DataSocket* socket);
+		Node*				FindExeSocketNode(ExecutionSocket* socket);
+		HashString			FindSocketVariableName(DataSocket* socket);
+		HashString			FindDataSocketName(DataSocket* socket);
+		i32					GetNodeIndex(Node* node);
 		void				PrintNodeSockets(Node* node);
 		Graph*				Build();
 		
