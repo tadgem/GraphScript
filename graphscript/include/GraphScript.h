@@ -337,11 +337,11 @@ protected:
 		template <typename T>
 		VariableT<T>*				AddVariable(HashString variableName)
 		{
-			if (m_VariablesDefs.find(variableName) == m_VariablesDefs.end())
+			if (m_Variables.find(variableName) == m_Variables.end())
 			{
-				m_VariablesDefs.emplace(variableName, CreateUnique<VariableT<T>>());
+				m_Variables.emplace(variableName, CreateUnique<VariableT<T>>());
 			}
-			return static_cast<VariableT<T>*>(m_VariablesDefs[variableName].get());
+			return static_cast<VariableT<T>*>(m_Variables[variableName].get());
 		}
 
 		template<typename T>
@@ -357,7 +357,7 @@ protected:
 		String						Serialize();
 
 
-		HashMap<HashString, Unique<Variable>>		m_VariablesDefs;
+		HashMap<HashString, Unique<Variable>>		m_Variables;
 		HashMap<HashString, Unique<FunctionNode>>	m_Functions;
 		Vector<Node*>								m_Nodes;
 		Vector<DataConnection*>						m_DataConnections;
@@ -404,6 +404,11 @@ protected:
 
 	protected:
 
+		DataSocket*			GetSocketFromHash(u64 typeHash);
+		Variable*			GetVariableFromHash(u64 typeHash);
+		DataConnection*		GetDataConnectionFromHash(u64 typeHash);
+
+		friend class Parser;
 		class Parser
 		{
 		public:
@@ -436,7 +441,9 @@ protected:
 			void ParseNodeDataConnection(GraphBuilder* builder, String& line);
 			void ParseVariableDataConnection(GraphBuilder* builder, String& line);
 			void ParseExecutionConnection(GraphBuilder* builder, String& line);
-			const Context& p_Context;
+
+			void AddOutputDataSocket(Node* node, String name, u64 typeHash);
+			Context& p_Context;
 			
 
 		};

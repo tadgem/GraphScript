@@ -99,7 +99,7 @@ String gs::GraphBuilder::Serialize()
 	}
 	
 	stream << "EndNodes\nBeginVariables\n";
-	for (auto& [name, var] : m_VariablesDefs)
+	for (auto& [name, var] : m_Variables)
 	{
 		stream << "    " << name.m_Original << "," << var->m_Type.m_TypeHash.m_Value << "\n";
 	}
@@ -207,7 +207,7 @@ Node* gs::GraphBuilder::FindExeSocketNode(ExecutionSocket* socket)
 
 HashString gs::GraphBuilder::FindSocketVariableName(DataSocket* socket)
 {
-	for (auto& [name, var] : m_VariablesDefs)
+	for (auto& [name, var] : m_Variables)
 	{
 		if (var->GetSocket() == socket)
 		{
@@ -281,7 +281,7 @@ GraphBuilder::~GraphBuilder()
 	m_DataConnections.clear();
 	m_Functions.clear();
 	m_Nodes.clear();
-	m_VariablesDefs.clear();
+	m_Variables.clear();
 }
 
 gs::GraphBuilder::GraphBuilder()
@@ -303,7 +303,7 @@ HashMap<HashString, Variable*> GraphBuilder::BuildVariables()
 {
 	// Clone variable defs
 	HashMap<HashString, Variable*> variables;
-	for (auto& [name, var] : m_VariablesDefs)
+	for (auto& [name, var] : m_Variables)
 	{
 		variables[name] = var->Clone();
 	}
@@ -434,7 +434,7 @@ Vector<DataConnection*> GraphBuilder::BuildDataConnections(HashMap<HashString, F
 			}
 		}
 
-		for (auto& [name, var] : m_VariablesDefs)
+		for (auto& [name, var] : m_Variables)
 		{
 			if (clone->m_LHS == var->GetSocket())
 			{
@@ -832,7 +832,7 @@ void gs::Context::Parser::ParseFunction(GraphBuilder* builder, String& line)
 {
 	Vector<String> lineContents = SplitStringByChar(line, ',');
 	GS_ASSERT(lineContents.size() >= 1, "Too few elements in line to be a function")
-	builder->AddFunction(lineContents[0]);
+	FunctionNode& fn = builder->AddFunction(lineContents[0]);
 
 	if (lineContents.size() == 1)
 	{
@@ -845,8 +845,7 @@ void gs::Context::Parser::ParseFunction(GraphBuilder* builder, String& line)
 		GS_ASSERT(paramParts.size() == 2, "Variable definition should have 2 parts, a name and a type hash")
 		String name = paramParts[0];
 		u64 typeHash = std::stoull(paramParts[1]);
-		std::cout << "Adding Variable " << name << " with type hash : " << typeHash << std::endl;
-
+		AddOutputDataSocket(&fn, name, typeHash);
 	}
 
 	std::cout << "Parsing Function Line : " << line << std::endl;
@@ -877,6 +876,17 @@ void gs::Context::Parser::ParseExecutionConnection(GraphBuilder* builder, String
 	std::cout << "Parsing Execution Connection Line : " << line << std::endl;
 }
 
+void gs::Context::Parser::AddOutputDataSocket(Node* node, String name, u64 typeHash)
+{
+	DataSocket* proto = p_Context.GetSocketFromHash(typeHash);
+	if (proto == nullptr)
+	{
+		return;
+	}
+	
+	node->m_OutputDataSockets.emplace(name, proto->Clone());
+}
+
 gs::Node* gs::Context::GetNode(HashString name)
 {
 	for (auto& node : p_Nodes)
@@ -884,6 +894,42 @@ gs::Node* gs::Context::GetNode(HashString name)
 		if (node->m_NodeName == name)
 		{
 			return node;
+		}
+	}
+	return nullptr;
+}
+
+DataSocket* gs::Context::GetSocketFromHash(u64 typeHash)
+{
+	for (auto& socket : p_Sockets)
+	{
+		if (socket->m_Type.m_TypeHash.m_Value == typeHash)
+		{
+			return socket.get();
+		}
+	}
+	return nullptr;
+}
+
+Variable* gs::Context::GetVariableFromHash(u64 typeHash)
+{
+	for (auto& var : p_Variables)
+	{
+		if (var->m_Type.m_TypeHash.m_Value == typeHash)
+		{
+			return var.get();
+		}
+	}
+	return nullptr;
+}
+
+DataConnection* gs::Context::GetDataConnectionFromHash(u64 typeHash)
+{
+	for (auto& conn : p_DataConnections)
+	{
+		if (conn->m_Type.m_TypeHash.m_Value == typeHash)
+		{
+			return conn.get();
 		}
 	}
 	return nullptr;

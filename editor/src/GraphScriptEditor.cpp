@@ -13,7 +13,7 @@ void gs::GraphScriptEditor::OnImGui()
 	HashMap<void*, int> counterMap;
 
 	ImNodes::BeginNodeEditor();
-	for (auto& [name, var] : p_Builder->m_VariablesDefs)
+	for (auto& [name, var] : p_Builder->m_Variables)
 	{
 		ImNodes::BeginNode(idCounter);
 		counterMap.emplace(var.get(), idCounter);
