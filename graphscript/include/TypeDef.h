@@ -16,10 +16,12 @@
 #include <stack>
 #include <type_traits>
 #include <iostream>
-
+#include <cassert>
 
 // TODO: should be a compile definition
 #define GRAPH_SCRIPT_DEBUG_HASH_STRING
+
+#define GS_ASSERT(cond, msg) assert((void(msg), cond));
 
 namespace typehash_internal
 {

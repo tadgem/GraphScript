@@ -2,12 +2,12 @@
 
 using namespace gs;
 
-Vector<String> SplitStringByNewline(const String& str)
+Vector<String> SplitStringByChar(const String& str, char c)
 {
 	auto result = Vector<String>{};
 	auto ss = SStream{ str };
 
-	for (String line; std::getline(ss, line, '\n');)
+	for (String line; std::getline(ss, line, c);)
 		result.push_back(line);
 
 	return result;
@@ -699,7 +699,7 @@ gs::Context::Parser::Parser(Context& c) : p_Context(c)
 
 Unique<GraphBuilder> gs::Context::Parser::Parse(String& source)
 {
-	Vector<String> lines = SplitStringByNewline(source);
+	Vector<String> lines = SplitStringByChar(source, '\n');
 	Unique<GraphBuilder> graphBuilder = CreateUnique<GraphBuilder>();
 
 	State s = State::Invalid;
@@ -802,6 +802,25 @@ void gs::Context::Parser::HandleCurrentState(State& s, String& l)
 
 void gs::Context::Parser::ParseFunction(GraphBuilder* builder, String& line)
 {
+	Vector<String> lineContents = SplitStringByChar(line, ',');
+	GS_ASSERT(lineContents.size() >= 1, "Too few elements in line to be a function")
+	builder->AddFunction(lineContents[0]);
+
+	if (lineContents.size() == 1)
+	{
+		return;
+	}
+
+	for (int i = 1; i < lineContents.size(); i++)
+	{
+		Vector<String> paramParts = SplitStringByChar(lineContents[i], ':');
+		GS_ASSERT(paramParts.size() == 2, "Variable definition should have 2 parts, a name and a type hash")
+		String name = paramParts[0];
+		u64 typeHash = std::stoull(paramParts[1]);
+		std::cout << "Adding Variable " << name << " with type hash : " << typeHash << std::endl;
+
+	}
+
 	std::cout << "Parsing Function Line : " << line << std::endl;
 }
 
