@@ -286,11 +286,11 @@ namespace gs
 	{
 	protected:
 		HashMap<HashString, FunctionNode*>	p_Functions;
-		HashMap<HashString, Variable*>		p_VariablesDefs;
+		HashMap<HashString, Variable*>		p_Variables;
 		Vector<Node*>						p_Nodes;
 		Vector<ExecutionConnectionDef>		p_ExecutionConnections;
 		Vector<DataConnection*>				p_DataConnections;
-		
+
 	public:
 
 		Graph(
@@ -301,12 +301,14 @@ namespace gs
 			Vector<DataConnection*>			dataConnections
 		);
 
+		~Graph();
+
 		template<typename T>
 		void SetVariable(HashString variableName, const T& other)
 		{
-			if (p_VariablesDefs.find(variableName) != p_VariablesDefs.end())
+			if (p_Variables.find(variableName) != p_Variables.end())
 			{
-				auto varDef = (VariableT<T>*)p_VariablesDefs[variableName];
+				auto varDef = (VariableT<T>*)p_Variables[variableName];
 				varDef->Set(other);
 			}
 		}

@@ -480,8 +480,36 @@ Node* gs::Graph::GetNode(ExecutionSocket* socket)
 }
 
 Graph::Graph(HashMap<HashString, FunctionNode*> functions, HashMap<HashString, Variable*> variablesDefs, Vector<Node*> nodes, Vector<ExecutionConnectionDef> executionConnections, Vector<DataConnection*> dataConnections) :
-	p_Functions(functions), p_VariablesDefs(variablesDefs), p_Nodes(nodes), p_ExecutionConnections(executionConnections), p_DataConnections(dataConnections)
+	p_Functions(functions), p_Variables(variablesDefs), p_Nodes(nodes), p_ExecutionConnections(executionConnections), p_DataConnections(dataConnections)
 {
+}
+
+gs::Graph::~Graph()
+{
+	for (auto& [name, func] : p_Functions)
+	{
+		delete func;
+	}
+	p_Functions.clear();
+
+	for (auto& [name, var] : p_Variables)
+	{
+		delete var;
+	}
+	p_Variables.clear();
+
+	for (int i = 0; i < p_Nodes.size(); i++)
+	{
+		delete p_Nodes[i];
+	}
+	p_Nodes.clear();
+
+	for (int i = 0; i < p_DataConnections.size(); i++)
+	{
+		delete p_DataConnections[i];
+	}
+	p_DataConnections.clear();
+	p_ExecutionConnections.clear();
 }
 
 FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args)
