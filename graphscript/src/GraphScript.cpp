@@ -667,13 +667,9 @@ GraphBuilder* gs::Context::CreateBuilder()
 
 GraphBuilder* gs::Context::DeserializeGraph(String& source)
 {
-	Vector<String> lines = SplitStringByNewline(source);
+	Parser p(*this);
 
-	for (String& l : lines)
-	{
-		Trim(l, ' ');
-		std::cout << l << std::endl;
-	}
+	Unique<GraphBuilder> graphBuilder = p.Parse(source);
 
 	return nullptr;
 }
@@ -695,6 +691,143 @@ void gs::Context::AddNode(Node* node)
 	}
 
 	p_Nodes.push_back(node);
+}
+
+gs::Context::Parser::Parser(Context& c) : p_Context(c)
+{
+}
+
+Unique<GraphBuilder> gs::Context::Parser::Parse(String& source)
+{
+	Vector<String> lines = SplitStringByNewline(source);
+	Unique<GraphBuilder> graphBuilder = CreateUnique<GraphBuilder>();
+
+	State s = State::Invalid;
+
+	for (String& l : lines)
+	{
+		State previous = s;
+		Trim(l, ' ');
+		HandleCurrentState(s, l);
+		if (s == State::Invalid)
+		{
+			continue;
+		}
+
+		if (previous == State::Invalid)
+		{
+			continue;
+		}
+
+		switch (s)
+		{
+		case Functions:
+			ParseFunction(graphBuilder.get(), l);
+			break;
+		case Nodes:
+			ParseNode(graphBuilder.get(), l);
+			break;
+		case Variables:
+			ParseVariable(graphBuilder.get(), l);
+			break;
+		case NodeDataConnections:
+			ParseNodeDataConnection(graphBuilder.get(), l);
+			break;
+		case VariableDataConnections:
+			ParseVariableDataConnection(graphBuilder.get(), l);
+			break;
+		case ExecutionConnections:
+			ParseExecutionConnection(graphBuilder.get(), l);
+			break;
+		default:
+			std::cout << "How did I get here?" << std::endl;
+			continue;
+		}
+	}
+
+	return graphBuilder;
+}
+
+void gs::Context::Parser::HandleCurrentState(State& s, String& l)
+{
+	if (l == "BeginFunctions")
+	{
+		s = State::Functions;
+	}
+	if (l == "EndFunctions")
+	{
+		s = State::Invalid;
+	}
+	if (l == "BeginNodes")
+	{
+		s = State::Nodes;
+	}
+	if (l == "EndNodes")
+	{
+		s = State::Invalid;
+	}
+	if (l == "BeginVariables")
+	{
+		s = State::Variables;
+	}
+	if (l == "EndVariables")
+	{
+		s = State::Invalid;
+	}
+	if (l == "BeginNodeDataConns")
+	{
+		s = State::NodeDataConnections;
+	}
+	if (l == "EndNodeDataConns")
+	{
+		s = State::Invalid;
+	}
+	if (l == "BeginVariableDataConns")
+	{
+		s = State::VariableDataConnections;
+	}
+	if (l == "EndVariableDataConns")
+	{
+		s = State::Invalid;
+	}
+	if (l == "BeginExeConns")
+	{
+		s = State::VariableDataConnections;
+	}
+	if (l == "EndExeConns")
+	{
+		s = State::Invalid;
+	}
+}
+
+void gs::Context::Parser::ParseFunction(GraphBuilder* builder, String& line)
+{
+	std::cout << "Parsing Function Line : " << line << std::endl;
+}
+
+void gs::Context::Parser::ParseNode(GraphBuilder* builder, String& line)
+{
+	std::cout << "Parsing Node Line : " << line << std::endl;
+}
+
+void gs::Context::Parser::ParseVariable(GraphBuilder* builder, String& line)
+{
+	std::cout << "Parsing Variable Line : " << line << std::endl;
+}
+
+void gs::Context::Parser::ParseNodeDataConnection(GraphBuilder* builder, String& line)
+{
+	std::cout << "Parsing Node Data Connection Line : " << line << std::endl;
+}
+
+void gs::Context::Parser::ParseVariableDataConnection(GraphBuilder* builder, String& line)
+{
+	std::cout << "Parsing Variable Data Connection Line : " << line << std::endl;
+}
+
+void gs::Context::Parser::ParseExecutionConnection(GraphBuilder* builder, String& line)
+{
+	std::cout << "Parsing Execution Connection Line : " << line << std::endl;
 }
 
 gs::Node* gs::Context::GetNode(HashString name)

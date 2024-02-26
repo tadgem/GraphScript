@@ -401,6 +401,44 @@ protected:
 		}
 
 	protected:
+
+		class Parser
+		{
+		public:
+			Parser(Context& c);
+
+			enum State
+			{
+				Invalid = 0,
+				// BeginFunctions, EndFunctions
+				Functions,
+				// BeginNodes/EndNodes
+				Nodes,
+				// BeginVariables/EndVariables
+				Variables,
+				// BeginNodeDataConns/EndNodeDataConns
+				NodeDataConnections,
+				// BeginVariableDataConns/EndVariableDataConns
+				VariableDataConnections,
+				// BeginExeConns/EndExeConns
+				ExecutionConnections,
+			};
+
+			Unique<GraphBuilder> Parse(String& source);
+
+		protected:
+			void HandleCurrentState(State& state, String& line);
+			void ParseFunction(GraphBuilder* builder, String& line);
+			void ParseNode(GraphBuilder* builder, String& line);
+			void ParseVariable(GraphBuilder* builder, String& line);
+			void ParseNodeDataConnection(GraphBuilder* builder, String& line);
+			void ParseVariableDataConnection(GraphBuilder* builder, String& line);
+			void ParseExecutionConnection(GraphBuilder* builder, String& line);
+			const Context& p_Context;
+			
+
+		};
+
 		// Templates for other types
 		Vector<Node*>							p_Nodes;
 		Vector<Unique<GraphBuilder>>			p_Builders;
