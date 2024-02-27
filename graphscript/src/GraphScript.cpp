@@ -886,10 +886,33 @@ void gs::Context::Parser::ParseNodeDataConnection(GraphBuilder* builder, String&
 	Vector<String> both = SplitStringByChar(line, ':');
 	GS_ASSERT(both.size() == 2, "Trying to process a connection but there are not exactly 2 parts");
 
-	String lhs = both[0];
-	String rhs = both[1];
+	Vector<String> lhsComponents = SplitStringByChar(both[0], ',');
+	Vector<String> rhsComponents = SplitStringByChar(both[1], ',');
 
-	int i = 1;
+	GS_ASSERT(lhsComponents.size() == 3 && rhsComponents.size() == 3, "LHS or RHS of node data connection is not the correct length");
+
+	u64 lhsTypeHash = std::stoull(lhsComponents[2]);
+	u64 rhsTypeHash = std::stoull(rhsComponents[2]);
+
+	GS_ASSERT(lhsTypeHash == rhsTypeHash, "Node data connection type is mismatched");
+
+	Node* lhsNode = builder->m_Nodes[std::stoi(lhsComponents[0])];
+	Node* rhsNode = builder->m_Nodes[std::stoi(rhsComponents[0])];
+
+	GS_ASSERT(lhsNode != rhsNode, "Cannot connect a node to itself");
+	DataConnection* conn = p_Context.GetDataConnectionFromHash(lhsTypeHash);
+
+	GS_ASSERT(conn != nullptr, "Failed to find data connection with serialized hash %d", lhsTypeHash);
+	conn = conn->Clone();
+
+	// setup sockets
+	DataSocket* lhsSocket = FindNodeDataSocket(lhsNode, lhsComponents[1]);
+	DataSocket* rhsSocket = FindNodeDataSocket(rhsNode, rhsComponents[1]);
+
+	conn->m_LHS = lhsSocket;
+	conn->m_RHS = rhsSocket;
+
+	builder->m_DataConnections.push_back(conn);
 }
 
 void gs::Context::Parser::ParseVariableDataConnection(GraphBuilder* builder, String& line)
@@ -911,6 +934,27 @@ void gs::Context::Parser::AddOutputDataSocket(Node* node, String name, u64 typeH
 	}
 	
 	node->m_OutputDataSockets.emplace(name, proto->Clone());
+}
+
+gs::DataSocket* gs::Context::Parser::FindNodeDataSocket(Node* node, HashString name)
+{
+	for (auto& [socketName, socket] : node->m_InputDataSockets)
+	{
+		if (socketName == name)
+		{
+			return socket;
+		}
+	}
+
+	for (auto& [socketName, socket] : node->m_OutputDataSockets)
+	{
+		if (socketName == name)
+		{
+			return socket;
+		}
+	}
+
+	return nullptr;
 }
 
 gs::Node* gs::Context::GetNode(HashString name)
