@@ -903,7 +903,7 @@ void gs::Context::Parser::ParseNodeDataConnection(GraphBuilder* builder, String&
 	GS_ASSERT(lhsNode != rhsNode, "Cannot connect a node to itself");
 	DataConnection* conn = p_Context.GetDataConnectionFromHash(lhsTypeHash)->Clone();
 
-	GS_ASSERT(conn != nullptr, "Failed to find data connection with serialized hash %d", lhsTypeHash);
+	GS_ASSERT(conn != nullptr, "Failed to find data connection with serialized hash");
 	conn = conn->Clone();
 
 	// setup sockets

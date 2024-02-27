@@ -30,9 +30,15 @@ namespace typehash_internal
 
 	template <typename T>
 	struct GetTypeNameHelper {
-		static constexpr std::string GetTypeName(void) {
+		static std::string GetTypeName(void) {
+#ifdef __clang__
+			std::string fstring(__PRETTY_FUNCTION__);
+			static const size_t size = sizeof(__PRETTY_FUNCTION__) - FRONT_SIZE - BACK_SIZE;
+			std::string typeString = std::string(__PRETTY_FUNCTION__ + FRONT_SIZE, size - 1u);
+#else
 			static const size_t size = sizeof(__FUNCTION__) - FRONT_SIZE - BACK_SIZE;
 			std::string typeString = std::string(__FUNCTION__ + FRONT_SIZE, size - 1u);
+#endif
 			return typeString;
 		}
 	};
@@ -101,12 +107,12 @@ namespace gs
 	};
 
 	template <typename T>
-	constexpr std::string GetTypeName(void) {
+	static std::string GetTypeName(void) {
 		return typehash_internal::GetTypeNameHelper<T>::GetTypeName();
 	}
 
 	template<typename T>
-	constexpr HashString GetTypeHash() {
+	static HashString GetTypeHash() {
 		return HashString(GetTypeName<T>());
 	}
 
