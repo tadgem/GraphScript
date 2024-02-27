@@ -848,22 +848,49 @@ void gs::Context::Parser::ParseFunction(GraphBuilder* builder, String& line)
 		AddOutputDataSocket(&fn, name, typeHash);
 	}
 
-	std::cout << "Parsing Function Line : " << line << std::endl;
 }
 
 void gs::Context::Parser::ParseNode(GraphBuilder* builder, String& line)
 {
-	std::cout << "Parsing Node Line : " << line << std::endl;
+	// otherwise lookup in node registry
+	Node* n = p_Context.GetNode(line);
+
+	if (!n)
+	{
+		return;
+	}
+
+	builder->m_Nodes.push_back(n);
 }
 
 void gs::Context::Parser::ParseVariable(GraphBuilder* builder, String& line)
 {
-	std::cout << "Parsing Variable Line : " << line << std::endl;
+	Vector<String> variableParts = SplitStringByChar(line, ',');
+	GS_ASSERT(variableParts.size() == 2, "Variables should contain 2 parts, a name and a type. Too many / few parts to parse variable");
+	
+	HashString name = variableParts[0];
+	u64 typeHash = std::stoull(variableParts[1]);
+	
+	Variable* proto = p_Context.GetVariableFromHash(typeHash);
+
+	if (!proto)
+	{
+		return;
+	}
+
+	builder->m_Variables.emplace(name, proto->Clone());
 }
 
 void gs::Context::Parser::ParseNodeDataConnection(GraphBuilder* builder, String& line)
 {
 	std::cout << "Parsing Node Data Connection Line : " << line << std::endl;
+	Vector<String> both = SplitStringByChar(line, ':');
+	GS_ASSERT(both.size() == 2, "Trying to process a connection but there are not exactly 2 parts");
+
+	String lhs = both[0];
+	String rhs = both[1];
+
+	int i = 1;
 }
 
 void gs::Context::Parser::ParseVariableDataConnection(GraphBuilder* builder, String& line)

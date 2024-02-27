@@ -14,6 +14,7 @@ BeginVariables
     LoopCount,47098
 EndVariables
 BeginNodeDataConns
+// this is broken, 0 - 0
     0,NameOfParameter,45304:0,input,45304
     2,result,45304:2,input,45304
 EndNodeDataConns
