@@ -110,7 +110,7 @@ String gs::GraphBuilder::Serialize()
 		DataSocket* lhs = m_DataConnections[i]->m_LHS;
 		DataSocket* rhs = m_DataConnections[i]->m_RHS;
 		i32 lhsNodeIndex = GetNodeIndex(FindDataSocketNode(lhs));
-		i32 rhsNodeIndex = GetNodeIndex(FindDataSocketNode(lhs));
+		i32 rhsNodeIndex = GetNodeIndex(FindDataSocketNode(rhs));
 
 		if (lhsNodeIndex < 0 || rhsNodeIndex < 0)
 		{
@@ -641,7 +641,6 @@ void Graph::ResetSockets()
 		}
 	}
 }
-
 
 ExecutionSocket::ExecutionSocket(HashString socketName, u32 loopCount) : m_SocketName(socketName), m_LoopCount(loopCount), p_ShouldExecute(true){}
 
