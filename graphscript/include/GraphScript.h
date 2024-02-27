@@ -442,8 +442,9 @@ protected:
 			void ParseVariableDataConnection(GraphBuilder* builder, String& line);
 			void ParseExecutionConnection(GraphBuilder* builder, String& line);
 
-			void		AddOutputDataSocket(Node* node, String name, u64 typeHash);
-			DataSocket* FindNodeDataSocket(Node* node, HashString name);
+			void				AddOutputDataSocket(Node* node, String name, u64 typeHash);
+			DataSocket*			FindNodeDataSocket(Node* node, HashString name);
+			ExecutionSocket*	FindNodeExeSocket(Node* node, HashString name);
 
 			Context& p_Context;
 			

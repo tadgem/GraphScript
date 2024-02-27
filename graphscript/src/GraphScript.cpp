@@ -696,9 +696,9 @@ GraphBuilder* gs::Context::DeserializeGraph(String& source)
 {
 	Parser p(*this);
 
-	Unique<GraphBuilder> graphBuilder = p.Parse(source);
+	p_Builders.push_back(p.Parse(source));
 
-	return nullptr;
+	return p_Builders[p_Builders.size() - 1].get();
 }
 
 Graph* gs::Context::BuildGraph(GraphBuilder* builder)
@@ -882,7 +882,6 @@ void gs::Context::Parser::ParseVariable(GraphBuilder* builder, String& line)
 
 void gs::Context::Parser::ParseNodeDataConnection(GraphBuilder* builder, String& line)
 {
-	std::cout << "Parsing Node Data Connection Line : " << line << std::endl;
 	Vector<String> both = SplitStringByChar(line, ':');
 	GS_ASSERT(both.size() == 2, "Trying to process a connection but there are not exactly 2 parts");
 
@@ -947,7 +946,32 @@ void gs::Context::Parser::ParseVariableDataConnection(GraphBuilder* builder, Str
 
 void gs::Context::Parser::ParseExecutionConnection(GraphBuilder* builder, String& line)
 {
-	std::cout << "Parsing Execution Connection Line : " << line << std::endl;
+	Vector<String> parts = SplitStringByChar(line, ':');
+	GS_ASSERT(parts.size() == 2, "Should only have 2 parts in a variable data connection");
+
+	Vector<String> lhsParts = SplitStringByChar(parts[0], ',');
+	Vector<String> rhsParts = SplitStringByChar(parts[1], ',');
+
+	GS_ASSERT(lhsParts.size() == 2 && rhsParts.size() == 2, "LHS & RHS of Execution Connection should be composed of 2 parts.");
+
+	int lhsIndex = std::stoi(lhsParts[0]);
+	int rhsIndex = std::stoi(rhsParts[0]);
+
+	HashString lhsSocketName = lhsParts[1];
+	HashString rhsSocketName = rhsParts[1];
+
+
+	GS_ASSERT(lhsIndex >= 0 && rhsIndex >= 0, "Could not find node");
+
+	Node* lhsNode = builder->m_Nodes[lhsIndex];
+	Node* rhsNode = builder->m_Nodes[rhsIndex];
+
+	ExecutionSocket* lhs = FindNodeExeSocket(lhsNode, lhsSocketName);
+	ExecutionSocket* rhs = FindNodeExeSocket(rhsNode, rhsSocketName);
+
+
+	builder->ConnectExecutionSocket(lhs, rhs);
+
 }
 
 void gs::Context::Parser::AddOutputDataSocket(Node* node, String name, u64 typeHash)
@@ -974,6 +998,27 @@ gs::DataSocket* gs::Context::Parser::FindNodeDataSocket(Node* node, HashString n
 	for (auto& [socketName, socket] : node->m_OutputDataSockets)
 	{
 		if (socketName == name)
+		{
+			return socket;
+		}
+	}
+
+	return nullptr;
+}
+
+gs::ExecutionSocket* gs::Context::Parser::FindNodeExeSocket(Node* node, HashString name)
+{
+	for (auto& socket : node->m_InputExecutionSockets)
+	{
+		if (socket->m_SocketName == name)
+		{
+			return socket;
+		}
+	}
+
+	for (auto& socket : node->m_OutputExecutionSockets)
+	{
+		if (socket->m_SocketName == name)
 		{
 			return socket;
 		}

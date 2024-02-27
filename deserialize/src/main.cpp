@@ -30,6 +30,18 @@ int main() {
 
 	String source = OpenStringAtPath("output.gs");
 
-	context.DeserializeGraph(source);
-	
+	GraphBuilder* builder = context.DeserializeGraph(source);
+	Graph* graph = context.BuildGraph(builder);
+	Graph* g2 = context.BuildGraph(builder);
+
+	HashString entryName("NameOfEntry");
+
+	gs::VariableSet args;
+	args["NameOfParameter"] = 3.0f;
+	graph->SetVariable<float>("NameOfVariable", 3.0f);
+	graph->SetVariable<bool>("ConditionVariable", true);
+	graph->SetVariable<u32>("LoopCount", 2);
+
+	graph->CallFunction(entryName, args);
+
 }
