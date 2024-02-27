@@ -1,5 +1,5 @@
 #include "GraphScript.h"
-
+#include "BuiltInNodes.h"
 using namespace gs;
 
 Vector<String> SplitStringByChar(const String& str, char c)
@@ -520,7 +520,7 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 	}
 
 	// reset sockets so no lingering data from previous invoke
-	ResetSockets();
+	// ResetSockets();
 
 	// Get the function entry node
 	FunctionNode* func = p_Functions[nameOfMethod];
@@ -622,26 +622,6 @@ void Graph::PopulateParams(FunctionNode* functionNode, VariableSet params)
 	}
 }
 
-void Graph::ResetSockets()
-{
-	for (Node* node : p_Nodes)
-	{
-		for (auto& [name, socket] : node->m_InputDataSockets)
-		{
-			if (!socket) continue;
-			
-			socket->m_Value.reset();	
-		}
-
-		for (auto& [name, socket] : node->m_OutputDataSockets)
-		{
-			if (!socket) continue;
-			
-			socket->m_Value.reset();
-		}
-	}
-}
-
 ExecutionSocket::ExecutionSocket(HashString socketName, u32 loopCount) : m_SocketName(socketName), m_LoopCount(loopCount), p_ShouldExecute(true){}
 
 gs::Node::~Node()
@@ -686,6 +666,11 @@ gs::FunctionNode::FunctionNode(HashString name) : gs::Node(name)
 	m_OutputExecutionSockets.push_back(new ExecutionSocket("out"));
 }
 
+gs::Context::Context()
+{
+	AddBuiltIns();
+}
+
 GraphBuilder* gs::Context::CreateBuilder()
 {
 	p_Builders.push_back(CreateUnique<GraphBuilder>());
@@ -718,6 +703,23 @@ void gs::Context::AddNode(Node* node)
 	}
 
 	p_Nodes.push_back(node);
+}
+
+void gs::Context::AddBuiltIns()
+{
+	RegisterType<float>();
+	RegisterType<bool>();
+	RegisterType<u32>();
+
+	auto forNodeBuilder = new ForNode();
+	auto multiplyNodeBuilder = new MutliplyNodeT<float>();
+	auto ifNodeBuilder = new IfNode();
+	auto printFloatNodeBuilder = new PrintNodeT<float>();
+
+	AddNode(forNodeBuilder);
+	AddNode(multiplyNodeBuilder);
+	AddNode(ifNodeBuilder);
+	AddNode(printFloatNodeBuilder);
 }
 
 gs::Context::Parser::Parser(Context& c) : p_Context(c)

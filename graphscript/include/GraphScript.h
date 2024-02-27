@@ -182,6 +182,12 @@ namespace gs
 		VariableT() : Variable(GetTypeT<T>::s_TypeInstance)
 		{
 		}
+
+		VariableT(T value) : Variable(GetTypeT<T>::s_TypeInstance)
+		{
+			Set(value);
+		}
+
 		VariableT(VariableT<T>& other) = default;
 
 		T		Get()
@@ -320,7 +326,6 @@ protected:
 		Node*				GetNode(ExecutionSocket* socket);
 		void				ProcessDataConnections();
 		void				PopulateParams(FunctionNode* functionNode, VariableSet params);
-		void				ResetSockets();
 
 		Stack<Node*>	p_Stack;
 	};
@@ -335,11 +340,18 @@ protected:
 		void						AddNode(Node* node);
 
 		template <typename T>
-		VariableT<T>*				AddVariable(HashString variableName)
+		VariableT<T>* AddVariable(HashString variableName, Optional<T> value = Optional<T>())
 		{
 			if (m_Variables.find(variableName) == m_Variables.end())
 			{
-				m_Variables.emplace(variableName, CreateUnique<VariableT<T>>());
+				if (value.has_value())
+				{
+					m_Variables.emplace(variableName, CreateUnique<VariableT<T>>(value.value()));
+				}
+				else
+				{
+					m_Variables.emplace(variableName, CreateUnique<VariableT<T>>());
+				}
 			}
 			return static_cast<VariableT<T>*>(m_Variables[variableName].get());
 		}
@@ -386,6 +398,8 @@ protected:
 	class Context
 	{
 	public:
+		Context();
+
 		GraphBuilder*	CreateBuilder();
 		GraphBuilder*	DeserializeGraph(String& source);
 
@@ -403,6 +417,8 @@ protected:
 		}
 
 	protected:
+
+		void AddBuiltIns();
 
 		DataSocket*			GetSocketFromHash(u64 typeHash);
 		Variable*			GetVariableFromHash(u64 typeHash);

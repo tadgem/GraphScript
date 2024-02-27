@@ -18,7 +18,7 @@ int main() {
 	// create a graph variable
 	VariableT<float>* var		= builder.AddVariable<float>("NameOfVariable");
 	VariableT<bool>* boolVar	= builder.AddVariable<bool>("ConditionVariable");
-	VariableT<u32>* countVar	= builder.AddVariable<u32>("LoopCount");
+	VariableT<u32>* countVar	= builder.AddVariable<u32>("LoopCount", 10);
 
 	// Create a function entry point
 	FunctionNode& entry = builder.AddFunction("NameOfEntry");
@@ -84,11 +84,11 @@ int main() {
 	// set the multiple variable for this graph instance
 	g1.SetVariable<float>("NameOfVariable", 3.0f);
 	g1.SetVariable<bool>("ConditionVariable", true);
-	g1.SetVariable<u32>("LoopCount", 2);
+	//g1.SetVariable<u32>("LoopCount", 2);
 
 	g2.SetVariable<float>("NameOfVariable", 4.0f);
 	g2.SetVariable<bool>("ConditionVariable", true);
-	g2.SetVariable<u32>("LoopCount", 3);
+	//g2.SetVariable<u32>("LoopCount", 3);
 	// create an argument set to pass the function
 	VariableSet args;
 	// create a named argument (must match the name of the function parameter socket)
