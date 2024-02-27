@@ -819,7 +819,7 @@ void gs::Context::Parser::HandleCurrentState(State& s, String& l)
 	}
 	if (l == "BeginExeConns")
 	{
-		s = State::VariableDataConnections;
+		s = State::ExecutionConnections;
 	}
 	if (l == "EndExeConns")
 	{
@@ -859,7 +859,7 @@ void gs::Context::Parser::ParseNode(GraphBuilder* builder, String& line)
 		return;
 	}
 
-	builder->m_Nodes.push_back(n);
+	builder->m_Nodes.push_back(n->Clone());
 }
 
 void gs::Context::Parser::ParseVariable(GraphBuilder* builder, String& line)
@@ -870,7 +870,7 @@ void gs::Context::Parser::ParseVariable(GraphBuilder* builder, String& line)
 	HashString name = variableParts[0];
 	u64 typeHash = std::stoull(variableParts[1]);
 	
-	Variable* proto = p_Context.GetVariableFromHash(typeHash);
+	Variable* proto = p_Context.GetVariableFromHash(typeHash)->Clone();
 
 	if (!proto)
 	{
@@ -900,7 +900,7 @@ void gs::Context::Parser::ParseNodeDataConnection(GraphBuilder* builder, String&
 	Node* rhsNode = builder->m_Nodes[std::stoi(rhsComponents[0])];
 
 	GS_ASSERT(lhsNode != rhsNode, "Cannot connect a node to itself");
-	DataConnection* conn = p_Context.GetDataConnectionFromHash(lhsTypeHash);
+	DataConnection* conn = p_Context.GetDataConnectionFromHash(lhsTypeHash)->Clone();
 
 	GS_ASSERT(conn != nullptr, "Failed to find data connection with serialized hash %d", lhsTypeHash);
 	conn = conn->Clone();
@@ -917,7 +917,32 @@ void gs::Context::Parser::ParseNodeDataConnection(GraphBuilder* builder, String&
 
 void gs::Context::Parser::ParseVariableDataConnection(GraphBuilder* builder, String& line)
 {
-	std::cout << "Parsing Variable Data Connection Line : " << line << std::endl;
+	Vector<String> parts = SplitStringByChar(line, ':');
+	GS_ASSERT(parts.size() == 2, "Should only have 2 parts in a variable data connection");
+	Vector<String> lhsVariableParts = SplitStringByChar(parts[0], ',');
+	Vector<String> rhsVariableParts = SplitStringByChar(parts[1], ',');
+
+	GS_ASSERT(lhsVariableParts.size() == 2 && rhsVariableParts.size() == 3, "Deserialized variable data connection is not of the correct dimensions");
+	DataSocket* lhs = builder->m_Variables[lhsVariableParts[0]]->GetSocket();
+
+	u64 lhsTypeHash = std::stoull(lhsVariableParts[1]);
+	u64 rhsTypeHash = std::stoull(rhsVariableParts[2]);
+
+	GS_ASSERT(lhsTypeHash == rhsTypeHash, "Connection between data sockets must be of the same type.")
+
+	Node* rhsNode = builder->m_Nodes[std::stoi(rhsVariableParts[0])];
+	HashString rhsSocketName = rhsVariableParts[1];
+	DataSocket* rhs = rhsNode->m_InputDataSockets[rhsSocketName];
+
+	DataConnection* conn = p_Context.GetDataConnectionFromHash(rhsTypeHash)->Clone();
+
+	GS_ASSERT(conn, "Could not find prototype data connection from provided hash");
+
+	conn->m_LHS = lhs;
+	conn->m_RHS = rhs;
+
+	builder->m_DataConnections.push_back(conn);
+
 }
 
 void gs::Context::Parser::ParseExecutionConnection(GraphBuilder* builder, String& line)
