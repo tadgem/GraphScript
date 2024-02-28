@@ -196,6 +196,11 @@ Any StringToAny(String& str, u64 typeHash)
 	{
 		return Any{ std::stod(str) };
 	}
+
+	if (typeHash == HashString("std::string"))
+	{
+		return Any{ str};
+	}
 }
 
 String gs::GraphBuilder::Serialize()
