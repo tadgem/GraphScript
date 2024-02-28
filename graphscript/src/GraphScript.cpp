@@ -140,6 +140,64 @@ String AnyToString(Any& any)
 	}
 }
 
+Any StringToAny(String& str, u64 typeHash)
+{
+	if (str.empty())
+	{
+		return {};
+	}
+
+	if (typeHash == HashString("unsigned long long"))
+	{
+		return Any{ std::stoull(str) };
+	}
+
+	if (typeHash == HashString("unsigned long"))
+	{
+		return Any{ std::stoul(str) };
+	}
+
+	if (typeHash == HashString("unsigned short"))
+	{
+		return Any{ std::stoul(str) };
+	}
+
+	if (typeHash == HashString("unsigned char"))
+	{
+		return Any{ std::stoul(str) };
+	}
+
+	if (typeHash == HashString("long long"))
+	{
+		return Any{ std::stoll(str) };
+	}
+
+	if (typeHash == HashString("long"))
+	{
+		return Any{ std::stoi(str) };
+	}
+
+	if (typeHash == HashString("short"))
+	{
+		return Any{ std::stoi(str) };
+	}
+
+	if (typeHash == HashString("char"))
+	{
+		return Any{ std::stoi(str) };
+	}
+
+	if (typeHash == HashString("float"))
+	{
+		return Any{ std::stof(str) };
+	}
+
+	if (typeHash == HashString("double"))
+	{
+		return Any{ std::stod(str) };
+	}
+}
+
 String gs::GraphBuilder::Serialize()
 {
 	SStream stream;
@@ -843,6 +901,9 @@ Unique<GraphBuilder> gs::Context::Parser::Parse(String& source)
 		case ExecutionConnections:
 			ParseExecutionConnection(graphBuilder.get(), l);
 			break;
+		case DefaultVariableValues:
+			ParseDefaultValues(graphBuilder.get(), l);
+			break;
 		default:
 			std::cout << "How did I get here?" << std::endl;
 			continue;
@@ -899,6 +960,14 @@ void gs::Context::Parser::HandleCurrentState(State& s, String& l)
 		s = State::ExecutionConnections;
 	}
 	if (l == "EndExeConns")
+	{
+		s = State::Invalid;
+	}
+	if (l == "BeginDefaultValues")
+	{
+		s = State::DefaultVariableValues;
+	}
+	if (l == "EndDefaultValues")
 	{
 		s = State::Invalid;
 	}
@@ -1051,6 +1120,15 @@ void gs::Context::Parser::ParseExecutionConnection(GraphBuilder* builder, String
 
 }
 
+void gs::Context::Parser::ParseDefaultValues(GraphBuilder* builder, String& line)
+{
+	Vector<String> parts = SplitStringByChar(line, ':');
+	GS_ASSERT(parts.size() == 3, "There should be 3 parts in a variable default value, name, hash, val");
+	HashString name = parts[0];
+	u64 typeHash = std::stoull(parts[1]);
+	builder->m_Variables[name]->SetValue(StringToAny(parts[2], typeHash));
+}
+
 void gs::Context::Parser::AddOutputDataSocket(Node* node, String name, u64 typeHash)
 {
 	DataSocket* proto = p_Context.GetSocketFromHash(typeHash);
@@ -1154,4 +1232,10 @@ DataConnection* gs::Context::GetDataConnectionFromHash(u64 typeHash)
 
 gs::Type::Type(const HashString& hash) : m_TypeHash(hash)
 {
+}
+
+void gs::Variable::SetValue(Any a)
+{
+	m_Value = a;
+	GetSocket()->m_Value = a;
 }

@@ -169,6 +169,8 @@ namespace gs
 
 		Any m_Value;
 		const Type& m_Type;
+
+		void SetValue(Any a);
 		
 		virtual Variable*	Clone() = 0;
 		virtual DataSocket* GetSocket() = 0;
@@ -445,6 +447,8 @@ protected:
 				VariableDataConnections,
 				// BeginExeConns/EndExeConns
 				ExecutionConnections,
+				// BeginDefaultValues/EndDefaultValues
+				DefaultVariableValues
 			};
 
 			Unique<GraphBuilder> Parse(String& source);
@@ -457,6 +461,7 @@ protected:
 			void ParseNodeDataConnection(GraphBuilder* builder, String& line);
 			void ParseVariableDataConnection(GraphBuilder* builder, String& line);
 			void ParseExecutionConnection(GraphBuilder* builder, String& line);
+			void ParseDefaultValues(GraphBuilder* builder, String& line);
 
 			void				AddOutputDataSocket(Node* node, String name, u64 typeHash);
 			DataSocket*			FindNodeDataSocket(Node* node, HashString name);

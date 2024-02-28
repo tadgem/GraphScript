@@ -11,14 +11,14 @@ EndNodes
 BeginVariables
     NameOfVariable,45304
     ConditionVariable,12422
-    LoopCount,47098
+    LoopCount,12847
 EndVariables
 BeginNodeDataConns
     0,NameOfParameter,45304:2,input,45304
     2,result,45304:4,input,45304
 EndNodeDataConns
 BeginVariableDataConns
-    LoopCount,47098:1,count,47098
+    LoopCount,12847:1,count,12847
     NameOfVariable,45304:2,multiple,45304
     ConditionVariable,12422:3,condition,12422
 EndVariableDataConns
@@ -29,5 +29,5 @@ BeginExeConns
     3,true:4,in
 EndExeConns
 BeginDefaultValues
-LoopCount:47098:10
+LoopCount:12847:10
 EndDefaultValues
