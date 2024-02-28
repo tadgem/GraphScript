@@ -54,6 +54,8 @@ namespace gs
 	using u16		= uint16_t;
 	using u32		= uint32_t;
 	using u64		= uint64_t;
+	using f32		= float;
+	using f64		= double;
 	using String	= std::string;
 	using SStream	= std::stringstream;
 	using FStream	= std::ofstream;

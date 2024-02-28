@@ -78,6 +78,68 @@ ExecutionConnectionDef gs::GraphBuilder::ConnectExecutionSocket(ExecutionSocket*
 	return conn;
 }
 
+String AnyToString(Any& any)
+{
+	if (!any.has_value())
+	{
+		return String();
+	}
+	if (any.type() == typeid(i8))
+	{
+		return std::to_string(std::any_cast<i8>(any));
+	}
+
+	if (any.type() == typeid(i16))
+	{
+		return std::to_string(std::any_cast<i16>(any));
+	}
+
+	if (any.type() == typeid(i32))
+	{
+		return std::to_string(std::any_cast<i32>(any));
+	}
+
+	if (any.type() == typeid(i64))
+	{
+		return std::to_string(std::any_cast<i64>(any));
+	}
+
+	if (any.type() == typeid(u8))
+	{
+		return std::to_string(std::any_cast<u8>(any));
+	}
+
+	if (any.type() == typeid(u16))
+	{
+		return std::to_string(std::any_cast<u16>(any));
+	}
+
+	if (any.type() == typeid(u32))
+	{
+		return std::to_string(std::any_cast<u32>(any));
+	}
+
+	if (any.type() == typeid(u64))
+	{
+		return std::to_string(std::any_cast<u64>(any));
+	}
+
+	if (any.type() == typeid(f32))
+	{
+		return std::to_string(std::any_cast<f32>(any));
+	}
+
+	if (any.type() == typeid(f64))
+	{
+		return std::to_string(std::any_cast<f64>(any));
+	}
+
+	if (any.type() == typeid(String))
+	{
+		return std::any_cast<String>(any);
+	}
+}
+
 String gs::GraphBuilder::Serialize()
 {
 	SStream stream;
@@ -153,7 +215,20 @@ String gs::GraphBuilder::Serialize()
 		stream << GetNodeIndex(FindExeSocketNode(rhs)) << "," << rhs->m_SocketName.m_Original << "\n";
 	}
 
-	stream << "EndExeConns\n";
+	stream << "EndExeConns\nBeginDefaultValues\n";
+	for (auto& [name, var] : m_Variables)
+	{
+		if (var->m_Value.has_value())
+		{
+			String anyValue = AnyToString(var->m_Value);
+			if (anyValue.size() == 0)
+			{
+				continue;
+			}
+			stream << name.m_Original << ":" << var->m_Type.m_TypeHash.m_Value << ":" << anyValue << std::endl;
+		}
+	}
+	stream << "EndDefaultValues\n";
 	return stream.str();
 }
 
@@ -707,19 +782,19 @@ void gs::Context::AddNode(Node* node)
 
 void gs::Context::AddBuiltIns()
 {
-	RegisterType<float>();
+	RegisterType<f32>();
 	RegisterType<bool>();
 	RegisterType<u32>();
 
 	auto forNodeBuilder = new ForNode();
-	auto multiplyNodeBuilder = new MutliplyNodeT<float>();
+	auto multiplyNodeBuilder = new MutliplyNodeT<f32>();
 	auto ifNodeBuilder = new IfNode();
-	auto printFloatNodeBuilder = new PrintNodeT<float>();
+	auto printf32NodeBuilder = new PrintNodeT<f32>();
 
 	AddNode(forNodeBuilder);
 	AddNode(multiplyNodeBuilder);
 	AddNode(ifNodeBuilder);
-	AddNode(printFloatNodeBuilder);
+	AddNode(printf32NodeBuilder);
 }
 
 gs::Context::Parser::Parser(Context& c) : p_Context(c)
