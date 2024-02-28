@@ -4,10 +4,12 @@
 #include "GraphScript.h"
 #include "GraphScriptEditor.h"
 #include "BuiltInNodes.h"
+#include "Utils.h"
+
+using namespace gs;
 
 const int ITERATIONS = 2;
 int main() {
-	using namespace gs;
 	ExampleApp app("Editor");
 	Context context;
 
@@ -73,10 +75,8 @@ int main() {
 	Graph& g2 = *context.BuildGraph(&builder);
 
 	// save builder to string
-	String graphString = builder.Serialize();
-	FStream outFile = FStream("output.gs");
-	outFile << graphString;
-	outFile.close();
+	utils::SaveGraphAtPath(&builder, "output.gs");
+
 	// cache the function name we want to call
 	HashString entryName("NameOfEntry");
 

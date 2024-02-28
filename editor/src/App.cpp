@@ -25,6 +25,10 @@ void DarkTheme()
 	colors[ImGuiCol_FrameBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
 	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.19f, 0.19f, 0.19f, 0.54f);
 	colors[ImGuiCol_FrameBgActive] = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
+
+	colors[ImNodesCol_GridBackground] = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
+	
+	
 	colors[ImGuiCol_TitleBg] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
 	colors[ImGuiCol_TitleBgActive] = ImVec4(0.06f, 0.06f, 0.06f, 1.00f);
 	colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
@@ -65,7 +69,6 @@ void DarkTheme()
 	colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 0.00f, 0.00f, 0.70f);
 	colors[ImGuiCol_NavWindowingDimBg] = ImVec4(1.00f, 0.00f, 0.00f, 0.20f);
 	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(1.00f, 0.00f, 0.00f, 0.35f);
-
 	ImGuiStyle& style = ImGui::GetStyle();
 	style.WindowPadding = ImVec2(8.00f, 8.00f);
 	style.FramePadding = ImVec2(5.00f, 2.00f);
@@ -129,7 +132,7 @@ bool gs::ExampleApp::Init()
 	ImFont* font = io.Fonts->AddFontFromMemoryTTF((void*)&OpenSans[0], 529700, 18.0f);
 
 	DarkTheme();
-
+	ImNodes::StyleColorsDark();
 	return true;
 }
 
