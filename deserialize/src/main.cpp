@@ -3,9 +3,9 @@
 using namespace gs;
 const int ITERATIONS = 2;
 
-String OpenStringAtPath(const String& path)
+String OpenStringAtPath(const String& p_UserPath)
 {
-	std::ifstream t(path);
+	std::ifstream t(p_UserPath);
 	SStream buffer;
 	buffer << t.rdbuf();
 	return buffer.str();

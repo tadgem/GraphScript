@@ -6,10 +6,13 @@
 namespace gs
 {
 	namespace utils {
-		void SaveStringAtPath(String& str, const String& path);
+		void SaveStringAtPath(String& str, const String& p_UserPath);
 
-		void SaveGraphAtPath(GraphBuilder* builder, const String& path);
+		void SaveGraphAtPath(GraphBuilder* builder, const String& p_UserPath);
 
+		String LoadStringAtPath(const String& p_UserPath);
+
+		Vector<String> SplitStringByChar(const String& str, char c);
 	}
 }
 

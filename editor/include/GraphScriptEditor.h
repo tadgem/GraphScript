@@ -6,13 +6,13 @@ namespace gs
 	class GraphScriptEditor
 	{
 	public:
-		GraphScriptEditor(Context* context, GraphBuilder* builder);
+		GraphScriptEditor(Context* context);
 
 		void OnImGui();
 
 	protected:
 		Context* p_Context;
-		GraphBuilder* p_Builder;
+		Vector<GraphBuilder*> p_Builders;
 
 		struct vec2
 		{
@@ -20,7 +20,13 @@ namespace gs
 			float y;
 		};
 
-		HashMap<u32, vec2> p_NodePositions;
+		HashMap<GraphBuilder*, HashMap<u32, vec2>> p_NodePositions;
+
+		void ParseGraphNodePositions(String& source, GraphBuilder* b);
+
+		String p_UserPath;
+
+		bool p_SetPositions = false;
 	};
 }
 

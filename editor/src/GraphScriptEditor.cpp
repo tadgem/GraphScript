@@ -3,10 +3,12 @@
 #include "imgui.h"
 #include "Utils.h"
 
-gs::GraphScriptEditor::GraphScriptEditor(Context* context, GraphBuilder* graphBuilder)
+
+
+gs::GraphScriptEditor::GraphScriptEditor(Context* context)
 {
 	p_Context = context;
-	p_Builder = graphBuilder;
+	p_UserPath.resize(150);
 }
 
 void gs::GraphScriptEditor::OnImGui()
@@ -14,137 +16,226 @@ void gs::GraphScriptEditor::OnImGui()
 	int idCounter = 1;
 	HashMap<void*, int> counterMap;
 
-	if (ImGui::Begin("Debug"))
+	if (ImGui::Begin("Menu"))
 	{
-		ImGui::Text("Node Positions");
-		ImGui::Indent();
-		for (auto& [index, pos] : p_NodePositions)
+		if (ImGui::Button("New Graph"))
 		{
-			ImGui::Text("%d : {%f, %f}", index, pos.x, pos.y);
+			p_Builders.push_back(p_Context->CreateBuilder());
 		}
-		ImGui::Unindent();
-		ImGui::Separator();
-		if (ImGui::Button("Save to file"))
+
+		ImGui::InputText("Path to load", p_UserPath.data(), 150);
+		if (ImGui::Button("Load Graph"))
 		{
-			String gsString = p_Builder->Serialize();
-
-			SStream stream;
-
-			stream << gsString;
-			stream << "BeginNodePositions\n";
-			for (auto& [index, pos] : p_NodePositions)
+			String source = utils::LoadStringAtPath(p_UserPath);
+			if (!source.empty())
 			{
-				stream << index << ":" << pos.x << ":" << pos.y << "\n";
+				GraphBuilder* builder = p_Builders.emplace_back(p_Context->DeserializeGraph(source));
+				ParseGraphNodePositions(source, builder);
 			}
-			stream << "EndNodePositions\n";
-
-			String finalString = stream.str();
-			utils::SaveStringAtPath(finalString, "output.gs");
 		}
+
 	}
 	ImGui::End();
 
-	ImNodes::BeginNodeEditor();
-	for (auto& [name, var] : p_Builder->m_Variables)
+	for (int i = 0; i < p_Builders.size(); i++)
 	{
-		ImNodes::BeginNode(idCounter);
-		counterMap.emplace(var.get(), idCounter);
-		idCounter++;
-		u64 hash = var->m_Type.m_TypeHash.m_Value;
-		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(hash << 4, hash << 2, hash < 8, 255));
-		ImNodes::BeginOutputAttribute(idCounter, ImNodesPinShape_QuadFilled);
-
-		counterMap.emplace(var->GetSocket(), idCounter);
-		idCounter++;
-
-		ImGui::Text(name.m_Original.c_str());
-		ImNodes::EndOutputAttribute();
-		ImNodes::PopColorStyle();
-
-		ImNodes::EndNode();
-	}
-
-	for (u32 i = 0; i < p_Builder->m_Nodes.size(); i++)
-	{
-		Node* node = p_Builder->m_Nodes[i];
-		int nodeId = idCounter;
-		ImNodes::BeginNode(nodeId);
-
-		counterMap.emplace(node, nodeId);
-		idCounter++;
-
-		ImNodes::BeginNodeTitleBar();
-		ImGui::Text(node->m_NodeName.m_Original.c_str());
-		ImNodes::EndNodeTitleBar();
-		for (ExecutionSocket* execution : node->m_InputExecutionSockets)
+		if (ImGui::Begin("Debug"))
 		{
-			ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(255, 255, 255, 255));
-			ImNodes::BeginInputAttribute(idCounter, ImNodesPinShape_Triangle);
+			ImGui::Text("Node Positions");
+			ImGui::Indent();
+			for (auto& [index, pos] : p_NodePositions[p_Builders[i]])
+			{
+				ImGui::Text("%d : {%f, %f}", index, pos.x, pos.y);
+			}
+			ImGui::Unindent();
+			ImGui::Separator();
+			if (ImGui::Button("Save to file"))
+			{
+				String gsString = p_Builders[i]->Serialize();
 
-			counterMap.emplace(execution, idCounter);
-			idCounter++;
+				SStream stream;
 
-			ImGui::Text(execution->m_SocketName.m_Original.c_str());
-			ImNodes::EndInputAttribute();
-			ImNodes::PopColorStyle();
+				stream << gsString;
+				stream << "BeginNodePositions\n";
+				for (auto& [index, pos] : p_NodePositions[p_Builders[i]])
+				{
+					stream << index << ":" << pos.x << ":" << pos.y << "\n";
+				}
+				stream << "EndNodePositions\n";
+
+				String finalString = stream.str();
+				utils::SaveStringAtPath(finalString, "output.gs");
+			}
 		}
-		for (auto [name, socket] : node->m_InputDataSockets)
-		{
-			u64 hash = socket->m_Type.m_TypeHash.m_Value;
-			ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(hash << 4, hash << 2, hash < 8, 255));
-			ImNodes::BeginInputAttribute(idCounter, ImNodesPinShape_QuadFilled);
+		ImGui::End();
 
-			counterMap.emplace(socket, idCounter);
-			idCounter++;
+		ImNodes::BeginNodeEditor();
+		for (auto& [name, var] : p_Builders[i]->m_Variables)
+		{
+			ImNodes::BeginNode(idCounter);
+			int nodeId = idCounter;
 
-			ImGui::Text(name.m_Original.c_str());
-			ImNodes::EndInputAttribute();
-			ImNodes::PopColorStyle();
-		}
-		for (ExecutionSocket* execution : node->m_OutputExecutionSockets)
-		{
-			ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(255, 255, 255, 255));
-			ImNodes::BeginOutputAttribute(idCounter, ImNodesPinShape_Triangle);
-			counterMap.emplace(execution, idCounter);
+			if (p_SetPositions)
+			{
+				if (p_NodePositions.find(p_Builders[i]) != p_NodePositions.end())
+				{
+					if (p_NodePositions[p_Builders[i]].find(nodeId) != p_NodePositions[p_Builders[i]].end())
+					{
+						vec2& pos = p_NodePositions[p_Builders[i]][nodeId];
+						ImNodes::SetNodeGridSpacePos(nodeId, ImVec2{ pos.x, pos.y });
+					}
+				}
+			}
+
+			counterMap.emplace(var.get(), idCounter);
 			idCounter++;
-			ImGui::Text(execution->m_SocketName.m_Original.c_str());
-			ImNodes::EndOutputAttribute();
-			ImNodes::PopColorStyle();
-		}
-		for (auto [name, socket] : node->m_OutputDataSockets)
-		{
-			u64 hash = socket->m_Type.m_TypeHash.m_Value;
+			u64 hash = var->m_Type.m_TypeHash.m_Value;
 			ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(hash << 4, hash << 2, hash < 8, 255));
 			ImNodes::BeginOutputAttribute(idCounter, ImNodesPinShape_QuadFilled);
 
-			counterMap.emplace(socket, idCounter);
+			counterMap.emplace(var->GetSocket(), idCounter);
 			idCounter++;
 
 			ImGui::Text(name.m_Original.c_str());
 			ImNodes::EndOutputAttribute();
 			ImNodes::PopColorStyle();
+
+			ImNodes::EndNode();
+
+			ImVec2 nodePos = ImNodes::GetNodeGridSpacePos(nodeId);
+			p_NodePositions[p_Builders[i]][nodeId] = vec2{ nodePos.x, nodePos.y };
 		}
-		ImNodes::EndNode();
 
-		ImVec2 nodePos = ImNodes::GetNodeGridSpacePos(nodeId);
-		p_NodePositions[i] = vec2{ nodePos.x, nodePos.y };
+		for (u32 j = 0; j < p_Builders[i]->m_Nodes.size(); j++)
+		{
+			Node* node = p_Builders[i]->m_Nodes[j];
+			int nodeId = idCounter;
+			ImNodes::BeginNode(nodeId);
+
+			counterMap.emplace(node, nodeId);
+			idCounter++;
+
+			if (p_SetPositions)
+			{
+				if (p_NodePositions.find(p_Builders[i]) != p_NodePositions.end())
+				{
+					if (p_NodePositions[p_Builders[i]].find(nodeId) != p_NodePositions[p_Builders[i]].end())
+					{
+						vec2& pos = p_NodePositions[p_Builders[i]][nodeId];
+						ImNodes::SetNodeGridSpacePos(nodeId, ImVec2{ pos.x, pos.y });
+					}
+				}
+			}
+
+			ImNodes::BeginNodeTitleBar();
+			ImGui::Text(node->m_NodeName.m_Original.c_str());
+			ImNodes::EndNodeTitleBar();
+			for (ExecutionSocket* execution : node->m_InputExecutionSockets)
+			{
+				ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(255, 255, 255, 255));
+				ImNodes::BeginInputAttribute(idCounter, ImNodesPinShape_Triangle);
+
+				counterMap.emplace(execution, idCounter);
+				idCounter++;
+
+				ImGui::Text(execution->m_SocketName.m_Original.c_str());
+				ImNodes::EndInputAttribute();
+				ImNodes::PopColorStyle();
+			}
+			for (auto [name, socket] : node->m_InputDataSockets)
+			{
+				u64 hash = socket->m_Type.m_TypeHash.m_Value;
+				ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(hash << 4, hash << 2, hash < 8, 255));
+				ImNodes::BeginInputAttribute(idCounter, ImNodesPinShape_QuadFilled);
+
+				counterMap.emplace(socket, idCounter);
+				idCounter++;
+
+				ImGui::Text(name.m_Original.c_str());
+				ImNodes::EndInputAttribute();
+				ImNodes::PopColorStyle();
+			}
+			for (ExecutionSocket* execution : node->m_OutputExecutionSockets)
+			{
+				ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(255, 255, 255, 255));
+				ImNodes::BeginOutputAttribute(idCounter, ImNodesPinShape_Triangle);
+				counterMap.emplace(execution, idCounter);
+				idCounter++;
+				ImGui::Text(execution->m_SocketName.m_Original.c_str());
+				ImNodes::EndOutputAttribute();
+				ImNodes::PopColorStyle();
+			}
+			for (auto [name, socket] : node->m_OutputDataSockets)
+			{
+				u64 hash = socket->m_Type.m_TypeHash.m_Value;
+				ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(hash << 4, hash << 2, hash < 8, 255));
+				ImNodes::BeginOutputAttribute(idCounter, ImNodesPinShape_QuadFilled);
+
+				counterMap.emplace(socket, idCounter);
+				idCounter++;
+
+				ImGui::Text(name.m_Original.c_str());
+				ImNodes::EndOutputAttribute();
+				ImNodes::PopColorStyle();
+			}
+			ImNodes::EndNode();
+
+			ImVec2 nodePos = ImNodes::GetNodeGridSpacePos(nodeId);
+			p_NodePositions[p_Builders[i]][nodeId] = vec2{ nodePos.x, nodePos.y };
+		}
+
+		for (auto& conn : p_Builders[i]->m_ExecutionConnections)
+		{
+			ImNodes::PushColorStyle(ImNodesCol_Link, IM_COL32(255, 255, 255, 255));
+			ImNodes::Link(idCounter++, counterMap[conn.m_RHS], counterMap[conn.m_LHS]);
+			ImNodes::PopColorStyle();
+		}
+
+		for (auto& conn : p_Builders[i]->m_DataConnections)
+		{
+			u64 hash = conn->m_LHS->m_Type.m_TypeHash.m_Value;
+			ImNodes::PushColorStyle(ImNodesCol_Link, IM_COL32(hash << 4, hash << 2, hash < 8, 255));
+			ImNodes::Link(idCounter++, counterMap[conn->m_RHS], counterMap[conn->m_LHS]);
+			ImNodes::PopColorStyle();
+		}
+
+
+		ImNodes::EndNodeEditor();
 	}
 
-	for (auto& conn : p_Builder->m_ExecutionConnections)
+	p_SetPositions = false;
+
+}
+
+void gs::GraphScriptEditor::ParseGraphNodePositions(String& source, GraphBuilder* b)
+{
+	Vector<String> lines = utils::SplitStringByChar(source, '\n');
+
+	bool foundNodePositions = false;
+	for (int i = 0; i < lines.size() ;i ++)
 	{
-		ImNodes::PushColorStyle(ImNodesCol_Link, IM_COL32(255, 255, 255, 255));
-		ImNodes::Link(idCounter++, counterMap[conn.m_RHS], counterMap[conn.m_LHS]);
-		ImNodes::PopColorStyle();
+		String& line = lines[i];
+		if (line == "EndNodePositions")
+		{
+			break;
+		}
+		if (line == "BeginNodePositions")
+		{
+			foundNodePositions = true;
+			continue;
+		}
+		if (!foundNodePositions)
+		{
+			continue;
+		}
+
+		Vector<String> parts = utils::SplitStringByChar(line, ':');
+		i32 nodeIndex = std::stoi(parts[0]);
+		float x = std::stof(parts[1]);
+		float y = std::stof(parts[2]);
+
+		p_NodePositions[b][nodeIndex] = vec2{ x, y };
+		p_SetPositions = true;
+
 	}
-
-	for (auto& conn : p_Builder->m_DataConnections)
-	{
-		u64 hash = conn->m_LHS->m_Type.m_TypeHash.m_Value;
-		ImNodes::PushColorStyle(ImNodesCol_Link, IM_COL32(hash << 4, hash << 2, hash < 8, 255));
-		ImNodes::Link(idCounter++, counterMap[conn->m_RHS], counterMap[conn->m_LHS]);
-		ImNodes::PopColorStyle();
-	}
-
-
-	ImNodes::EndNodeEditor();
 }
