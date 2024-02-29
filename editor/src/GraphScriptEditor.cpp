@@ -132,8 +132,9 @@ void gs::GraphScriptEditor::OnImGui()
 			ImVec2 nodePos = ImNodes::GetNodeGridSpacePos(nodeId);
 			p_NodePositions[p_Builders[i]][nodeId] = vec2{ nodePos.x, nodePos.y };
 		}
+
+		bool anyNodeSelected = false;
 		
-		int indexToDelete = -1;
 		for (int j = 0; j < p_Builders[i]->m_Nodes.size(); j++)
 		{
 			Node* node = p_Builders[i]->m_Nodes[j];
@@ -142,12 +143,8 @@ void gs::GraphScriptEditor::OnImGui()
 
 			if (ImNodes::IsNodeSelected(nodeId))
 			{
-				p_SelectedNodeId = nodeId;
-			}
-
-			if (ImGui::IsKeyPressed(ImGuiKey_Delete) && p_SelectedNodeId == nodeId)
-			{
-				indexToDelete = j;
+				p_SelectedNode = j;
+				anyNodeSelected = true;
 			}
 
 			counterMap.emplace(node, nodeId);
@@ -220,6 +217,17 @@ void gs::GraphScriptEditor::OnImGui()
 
 			ImVec2 nodePos = ImNodes::GetNodeGridSpacePos(nodeId);
 			p_NodePositions[p_Builders[i]][nodeId] = vec2{ nodePos.x, nodePos.y };
+		}
+
+		if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete)) && p_SelectedNode > -1)
+		{
+			p_Builders[i]->DeleteNode(p_SelectedNode);
+			p_SelectedNode = INT_MIN;
+		}
+
+		if (!anyNodeSelected)
+		{
+			p_SelectedNode = INT_MIN;
 		}
 
 		for (auto& conn : p_Builders[i]->m_ExecutionConnections)

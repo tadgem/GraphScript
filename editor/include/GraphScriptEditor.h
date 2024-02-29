@@ -31,7 +31,7 @@ namespace gs
 		bool p_ShowNodesPopup = false;
 		ImVec2 p_PopupPos;
 
-		int p_SelectedNodeId = INT_MIN;
+		int p_SelectedNode = INT_MIN;
 	};
 }
 

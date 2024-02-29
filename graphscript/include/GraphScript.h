@@ -345,6 +345,7 @@ protected:
 
 		FunctionNode&				AddFunction(HashString functionName);
 		void						AddNode(Node* node);
+		void						DeleteNode(int index = -1);
 
 		template <typename T>
 		VariableT<T>* AddVariable(HashString variableName, Optional<T> value = Optional<T>())

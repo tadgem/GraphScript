@@ -54,6 +54,55 @@ void GraphBuilder::AddNode(Node* node)
 	m_Nodes.push_back(node);
 }
 
+void GraphBuilder::DeleteNode(int index)
+{
+	if (index < 0)
+	{
+		return;
+	}
+
+	Node* n = m_Nodes[index];
+
+	Vector<int> dataConnectionsToRelease;
+
+	for (int i = 0; i < m_DataConnections.size(); i++)
+	{
+		if (FindDataSocketNode(m_DataConnections[i]->m_LHS) == n || 
+			FindDataSocketNode(m_DataConnections[i]->m_RHS) == n)
+		{
+			delete m_DataConnections[i];
+			dataConnectionsToRelease.push_back(i);
+		}
+	}
+
+	for (int i = dataConnectionsToRelease.size() - 1; i >= 0; i--)
+	{
+		int index = dataConnectionsToRelease[i];
+		m_DataConnections.erase(m_DataConnections.begin() + index);
+	}
+
+	Vector<int> exeConnectionsToRelease;
+
+	for (int i = 0; i < m_ExecutionConnections.size(); i++)
+	{
+		if (FindExeSocketNode(m_ExecutionConnections[i].m_LHS) == n ||
+			FindExeSocketNode(m_ExecutionConnections[i].m_RHS) == n)
+		{
+			exeConnectionsToRelease.push_back(i);
+		}
+	}
+
+	for (int i = exeConnectionsToRelease.size() - 1; i >= 0; i--)
+	{
+		int index = exeConnectionsToRelease[i];
+		m_ExecutionConnections.erase(m_ExecutionConnections.begin() + index);
+	}
+
+	delete n;
+	m_Nodes.erase(m_Nodes.begin() + index);
+	
+}
+
 Graph* GraphBuilder::Build()
 {
 	// clone functions
