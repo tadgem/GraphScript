@@ -1,6 +1,5 @@
 #include "GraphScriptEditor.h"
 #include "imnodes.h"
-#include "imgui.h"
 #include "Utils.h"
 
 
@@ -70,6 +69,34 @@ void gs::GraphScriptEditor::OnImGui()
 		ImGui::End();
 
 		ImNodes::BeginNodeEditor();
+
+		if (ImGui::IsMouseDown(ImGuiMouseButton_Right))
+		{
+			p_ShowNodesPopup = true;
+			p_PopupPos = ImGui::GetMousePos();
+		}
+
+		if (p_ShowNodesPopup)
+		{
+			ImGui::SetCursorPos(p_PopupPos);
+			if (ImGui::BeginChild("Help", ImVec2(400, 0), true, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				for (Node* node : p_Context->GetAllNodes())
+				{
+					if (ImGui::MenuItem(node->m_NodeName.m_Original.c_str()))
+					{
+						p_ShowNodesPopup = false;
+						p_Builders[i]->AddNode(node->Clone());
+					}
+				}
+				ImGui::Separator();
+				if (ImGui::Button("Close"))
+				{
+					p_ShowNodesPopup = false;
+				}
+				ImGui::EndChild();
+			}
+		}
 		for (auto& [name, var] : p_Builders[i]->m_Variables)
 		{
 			ImNodes::BeginNode(idCounter);
@@ -105,12 +132,23 @@ void gs::GraphScriptEditor::OnImGui()
 			ImVec2 nodePos = ImNodes::GetNodeGridSpacePos(nodeId);
 			p_NodePositions[p_Builders[i]][nodeId] = vec2{ nodePos.x, nodePos.y };
 		}
-
-		for (u32 j = 0; j < p_Builders[i]->m_Nodes.size(); j++)
+		
+		int indexToDelete = -1;
+		for (int j = 0; j < p_Builders[i]->m_Nodes.size(); j++)
 		{
 			Node* node = p_Builders[i]->m_Nodes[j];
 			int nodeId = idCounter;
 			ImNodes::BeginNode(nodeId);
+
+			if (ImNodes::IsNodeSelected(nodeId))
+			{
+				p_SelectedNodeId = nodeId;
+			}
+
+			if (ImGui::IsKeyPressed(ImGuiKey_Delete) && p_SelectedNodeId == nodeId)
+			{
+				indexToDelete = j;
+			}
 
 			counterMap.emplace(node, nodeId);
 			idCounter++;

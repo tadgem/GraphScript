@@ -1,6 +1,7 @@
 #ifndef GRAPH_SCRIPT_EDITOR_H
 #define GRAPH_SCRIPT_EDITOR_H
 #include "GraphScript.h"
+#include "imgui.h"
 namespace gs
 {
 	class GraphScriptEditor
@@ -27,6 +28,10 @@ namespace gs
 		String p_UserPath;
 
 		bool p_SetPositions = false;
+		bool p_ShowNodesPopup = false;
+		ImVec2 p_PopupPos;
+
+		int p_SelectedNodeId = INT_MIN;
 	};
 }
 

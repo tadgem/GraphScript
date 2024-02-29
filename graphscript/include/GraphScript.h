@@ -58,6 +58,11 @@ namespace gs
 		{
 			return {m_SocketName, m_LoopCount};
 		}
+
+		ExecutionSocket* CloneHeap()
+		{
+			return new ExecutionSocket{ m_SocketName, m_LoopCount };
+		}
 	protected:
 		friend class	Graph;
 		friend class	GraphBuilder;
@@ -409,6 +414,8 @@ protected:
 
 		void			AddNode(Node* node);
 		Node*			GetNode(HashString name);
+
+		Vector<Node*>& GetAllNodes() { return p_Nodes; }
 
 		template<typename T>
 		void RegisterType()

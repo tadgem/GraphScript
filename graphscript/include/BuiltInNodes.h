@@ -157,4 +157,53 @@ namespace gs {
 		}
 	};
 
+	class CustomNode : public Node
+	{
+	public:
+		using CustomNodeCallback = std::function<void(HashMap<HashString, DataSocket*>&, HashMap<HashString, DataSocket*>&, Vector<ExecutionSocket*>&, Vector<ExecutionSocket*>&)>;
+		
+		CustomNode(HashString name) : Node(name)
+		{
+		}
+
+		CustomNode(CustomNode& other) = default;
+
+		void OnProcess(CustomNodeCallback callback)
+		{
+			p_Callback = callback;
+		}
+
+		void Process() override
+		{
+			p_Callback(m_InputDataSockets, m_OutputDataSockets, m_InputExecutionSockets, m_OutputExecutionSockets);
+		}
+
+
+		Node* Clone() override
+		{
+			CustomNode* n = new CustomNode(*this);
+			for (auto& [name, socket] : m_InputDataSockets)
+			{
+				n->m_InputDataSockets[name] = socket->Clone();
+			}
+			for (auto& [name, socket] : m_OutputDataSockets)
+			{
+				n->m_OutputDataSockets[name] = socket->Clone();
+			}
+			for (auto exe : m_InputExecutionSockets)
+			{
+				n->m_InputExecutionSockets.push_back(exe->CloneHeap());
+			}
+			for (auto exe : m_OutputExecutionSockets)
+			{
+				n->m_OutputExecutionSockets.push_back(exe->CloneHeap());
+			}
+			return n;
+		}
+	protected:
+
+		CustomNodeCallback p_Callback = NULL;
+	};
+
+
 }
