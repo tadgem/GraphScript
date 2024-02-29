@@ -7,7 +7,7 @@ add_executable(GraphScript-Editor
         "${LIBRARIES_DIR}/imgui/src/imgui_impl_opengl3.cpp"
         "src/main.cpp"
         "src/App.cpp"
-        "src/App.h"
+        "src/Utils.cpp"
         "src/GraphScriptEditor.cpp"
         "include/GraphScriptEditor.h"
         "include/Utils.h"

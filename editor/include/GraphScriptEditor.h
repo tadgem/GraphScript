@@ -13,6 +13,14 @@ namespace gs
 	protected:
 		Context* p_Context;
 		GraphBuilder* p_Builder;
+
+		struct vec2
+		{
+			float x;
+			float y;
+		};
+
+		HashMap<u32, vec2> p_NodePositions;
 	};
 }
 

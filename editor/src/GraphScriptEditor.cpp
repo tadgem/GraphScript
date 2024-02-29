@@ -1,6 +1,8 @@
 #include "GraphScriptEditor.h"
 #include "imnodes.h"
 #include "imgui.h"
+#include "Utils.h"
+
 gs::GraphScriptEditor::GraphScriptEditor(Context* context, GraphBuilder* graphBuilder)
 {
 	p_Context = context;
@@ -11,6 +13,36 @@ void gs::GraphScriptEditor::OnImGui()
 {
 	int idCounter = 1;
 	HashMap<void*, int> counterMap;
+
+	if (ImGui::Begin("Debug"))
+	{
+		ImGui::Text("Node Positions");
+		ImGui::Indent();
+		for (auto& [index, pos] : p_NodePositions)
+		{
+			ImGui::Text("%d : {%f, %f}", index, pos.x, pos.y);
+		}
+		ImGui::Unindent();
+		ImGui::Separator();
+		if (ImGui::Button("Save to file"))
+		{
+			String gsString = p_Builder->Serialize();
+
+			SStream stream;
+
+			stream << gsString;
+			stream << "BeginNodePositions\n";
+			for (auto& [index, pos] : p_NodePositions)
+			{
+				stream << index << ":" << pos.x << ":" << pos.y << "\n";
+			}
+			stream << "EndNodePositions\n";
+
+			String finalString = stream.str();
+			utils::SaveStringAtPath(finalString, "output.gs");
+		}
+	}
+	ImGui::End();
 
 	ImNodes::BeginNodeEditor();
 	for (auto& [name, var] : p_Builder->m_Variables)
@@ -32,11 +64,13 @@ void gs::GraphScriptEditor::OnImGui()
 		ImNodes::EndNode();
 	}
 
-	for (Node* node : p_Builder->m_Nodes)
+	for (u32 i = 0; i < p_Builder->m_Nodes.size(); i++)
 	{
-		ImNodes::BeginNode(idCounter);
+		Node* node = p_Builder->m_Nodes[i];
+		int nodeId = idCounter;
+		ImNodes::BeginNode(nodeId);
 
-		counterMap.emplace(node, idCounter);
+		counterMap.emplace(node, nodeId);
 		idCounter++;
 
 		ImNodes::BeginNodeTitleBar();
@@ -91,6 +125,9 @@ void gs::GraphScriptEditor::OnImGui()
 			ImNodes::PopColorStyle();
 		}
 		ImNodes::EndNode();
+
+		ImVec2 nodePos = ImNodes::GetNodeGridSpacePos(nodeId);
+		p_NodePositions[i] = vec2{ nodePos.x, nodePos.y };
 	}
 
 	for (auto& conn : p_Builder->m_ExecutionConnections)
