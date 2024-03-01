@@ -8,22 +8,14 @@
 
 using namespace gs;
 
-const int ITERATIONS = 2;
 int main() {
 	ExampleApp app("Editor");
 	Context context;
-
-
 	GraphScriptEditor editor(&context);
 
 	while (app.ShouldRun())
 	{
-		if(ImGui::Begin("Hello"))
-		{
-			editor.OnImGui();
-		}
-		ImGui::End();
-
+		editor.OnImGui();
 		app.PostFrame();
 	}
 }

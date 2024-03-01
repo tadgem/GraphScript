@@ -341,7 +341,7 @@ protected:
 	class GraphBuilder
 	{
 	public:
-		GraphBuilder(Context* context);
+		GraphBuilder(Context* context, HashString name);
 		~GraphBuilder();
 
 		FunctionNode&				AddFunction(HashString functionName);
@@ -388,6 +388,8 @@ protected:
 		Vector<DataConnection*>						m_DataConnections;
 		Vector<ExecutionConnectionDef>				m_ExecutionConnections;
 
+		HashString m_Name;
+
 	protected:
 		// Internal Build Methods
 		HashMap<HashString, FunctionNode*>	BuildFunctions();
@@ -413,7 +415,7 @@ protected:
 	public:
 		Context();
 
-		GraphBuilder*	CreateBuilder();
+		GraphBuilder*	CreateBuilder(HashString name);
 		GraphBuilder*	DeserializeGraph(String& source);
 
 		Graph*			BuildGraph(GraphBuilder* builder);
@@ -449,6 +451,8 @@ protected:
 			enum State
 			{
 				Invalid = 0,
+				// BeginName/EndName
+				Name,
 				// BeginFunctions, EndFunctions
 				Functions,
 				// BeginNodes/EndNodes
@@ -469,6 +473,7 @@ protected:
 
 		protected:
 			void HandleCurrentState(State& state, String& line);
+			void ParseName(GraphBuilder* builder, String& line);
 			void ParseFunction(GraphBuilder* builder, String& line);
 			void ParseNode(GraphBuilder* builder, String& line);
 			void ParseVariable(GraphBuilder* builder, String& line);

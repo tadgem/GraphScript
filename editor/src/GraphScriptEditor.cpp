@@ -8,6 +8,8 @@ gs::GraphScriptEditor::GraphScriptEditor(Context* context)
 {
 	p_Context = context;
 	p_UserPath.resize(150);
+	p_ProjectPath.resize(150);
+	p_NewGraphName.resize(150);
 }
 
 void gs::GraphScriptEditor::OnImGui()
@@ -17,11 +19,12 @@ void gs::GraphScriptEditor::OnImGui()
 	HashMap<int, ExecutionSocket*> exeSocketMap;
 	HashMap<int, DataSocket*> dataSocketMap;
 
-	if (ImGui::Begin("Menu"))
+	if (ImGui::Begin("Root Menu"))
 	{
+		ImGui::InputText("New Graph Name", p_NewGraphName.data(), 150);
 		if (ImGui::Button("New Graph"))
 		{
-			p_Builders.push_back(p_Context->CreateBuilder());
+			p_Builders.push_back(p_Context->CreateBuilder(p_NewGraphName));
 		}
 
 		ImGui::InputText("Path to load", p_UserPath.data(), 150);
@@ -35,6 +38,34 @@ void gs::GraphScriptEditor::OnImGui()
 			}
 		}
 
+		ImGui::InputText("Project Path", p_ProjectPath.data(), 150);
+		if (ImGui::Button("Load Project"))
+		{
+			String projectSource = utils::LoadStringAtPath(p_ProjectPath);
+			if (!projectSource.empty())
+			{
+				// TODO:
+			}
+		}
+		if (ImGui::Button("Save Project"))
+		{
+			// TODO
+			// GraphBuilder paths
+			// Instances
+			// Arg Sets
+			// Instance - Arg set mapping
+		}
+
+		ImGui::Separator();
+		ImGui::TextUnformatted("Variable Sets");
+		for (EditorVariableSet& set : m_VariableSets)
+		{
+			// var name input
+			// type selector
+			// add
+			// space
+			// visualise vars
+		}
 	}
 	ImGui::End();
 
@@ -80,9 +111,6 @@ void gs::GraphScriptEditor::ParseGraphNodePositions(String& source, GraphBuilder
 	}
 }
 
-void gs::GraphScriptEditor::HandleDebugMenu()
-{
-}
 
 void gs::GraphScriptEditor::HandleGraphBuilderImGui(GraphBuilder* builder, int& idCounter)
 {
@@ -92,15 +120,19 @@ void gs::GraphScriptEditor::HandleGraphBuilderImGui(GraphBuilder* builder, int& 
 	HashMap<int, int> exeLinkCounter;
 	HashMap<int, int> dataLinkCounter;
 
-	if (ImGui::Begin("Debug"))
+	SStream name;
+	
+	name << builder->m_Name.m_Original << " [DEBUG]";
+
+	if (ImGui::Begin(name.str().c_str()))
 	{
-		ImGui::Text("Node Positions");
-		ImGui::Indent();
-		for (auto& [index, pos] : p_NodePositions[builder])
+		if (ImGui::CollapsingHeader("Node Positions"))
 		{
-			ImGui::Text("%d : {%f, %f}", index, pos.x, pos.y);
+			for (auto& [index, pos] : p_NodePositions[builder])
+			{
+				ImGui::Text("%d : {%f, %f}", index, pos.x, pos.y);
+			}
 		}
-		ImGui::Unindent();
 		ImGui::Separator();
 		if (ImGui::Button("Save to file"))
 		{
@@ -122,6 +154,8 @@ void gs::GraphScriptEditor::HandleGraphBuilderImGui(GraphBuilder* builder, int& 
 	}
 	ImGui::End();
 
+	ImGui::Begin(builder->m_Name.m_Original.c_str());
+
 	ImNodes::BeginNodeEditor();
 
 	HandleAddNodeMenu(builder);
@@ -133,6 +167,8 @@ void gs::GraphScriptEditor::HandleGraphBuilderImGui(GraphBuilder* builder, int& 
 	HandleLinks(builder, idCounter, counterMap, exeLinkCounter, dataLinkCounter);
 
 	ImNodes::EndNodeEditor();
+
+	ImGui::End();
 
 	HandleCreateDestroyLinks(builder, exeSocketMap, dataSocketMap, exeLinkCounter, dataLinkCounter);
 }
@@ -149,7 +185,7 @@ void gs::GraphScriptEditor::HandleAddNodeMenu(GraphBuilder* builder)
 	{
 
 		ImGui::SetNextWindowPos(p_PopupPos);
-		if (ImGui::Begin("Help", &p_ShowNodesPopup, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize))
+		if (ImGui::Begin("Select Node", &p_ShowNodesPopup, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize))
 		{
 			ImGui::Spacing();
 			for (Node* node : p_Context->GetAllNodes())
@@ -315,7 +351,7 @@ void gs::GraphScriptEditor::HandleNodes(GraphBuilder* builder, int& idCounter, H
 	}
 }
 
-void gs::GraphScriptEditor::HandleLinks(GraphBuilder* builder, int& idCounter, HashMap<void*, int>& counterMap, HashMap<int, int> exeLinkCounter, HashMap<int, int> dataLinkCounter)
+void gs::GraphScriptEditor::HandleLinks(GraphBuilder* builder, int& idCounter, HashMap<void*, int>& counterMap, HashMap<int, int>& exeLinkCounter, HashMap<int, int>& dataLinkCounter)
 {
 	for (int j = 0; j < builder->m_ExecutionConnections.size(); j++)
 	{
@@ -348,7 +384,7 @@ void gs::GraphScriptEditor::HandleLinks(GraphBuilder* builder, int& idCounter, H
 	}
 }
 
-void gs::GraphScriptEditor::HandleCreateDestroyLinks(GraphBuilder* builder, HashMap<int, ExecutionSocket*>& exeSocketMap, HashMap<int, DataSocket*>& dataSocketMap, HashMap<int, int> exeLinkCounter, HashMap<int, int> dataLinkCounter)
+void gs::GraphScriptEditor::HandleCreateDestroyLinks(GraphBuilder* builder, HashMap<int, ExecutionSocket*>& exeSocketMap, HashMap<int, DataSocket*>& dataSocketMap, HashMap<int, int>& exeLinkCounter, HashMap<int, int>& dataLinkCounter)
 {
 	int start_attr, end_attr;
 	if (ImNodes::IsLinkCreated(&start_attr, &end_attr))
@@ -368,7 +404,6 @@ void gs::GraphScriptEditor::HandleCreateDestroyLinks(GraphBuilder* builder, Hash
 			builder->ConnectDataSocket(start, end);
 		}
 	}
-	int linkId;
 	if (p_SelectedLink > -1 && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete)))
 	{
 		if (exeLinkCounter.find(p_SelectedLink) != exeLinkCounter.end())

@@ -305,7 +305,9 @@ Any StringToAny(String& str, u64 typeHash)
 String gs::GraphBuilder::Serialize()
 {
 	SStream stream;
-	stream << "BeginFunctions\n";
+	stream << "BeginName\n";
+	stream << "    " << m_Name.m_Original;
+	stream << "\nEndName\nBeginFunctions\n";
 	for (auto& [name, func] : m_Functions)
 	{
 		stream << "    " << name.m_Original;
@@ -521,7 +523,7 @@ GraphBuilder::~GraphBuilder()
 	m_Variables.clear();
 }
 
-gs::GraphBuilder::GraphBuilder(Context* context) : p_Context(context)
+gs::GraphBuilder::GraphBuilder(Context* context, HashString name) : p_Context(context), m_Name(name)
 {
 }
 
@@ -908,9 +910,9 @@ gs::Context::Context()
 	AddBuiltIns();
 }
 
-GraphBuilder* gs::Context::CreateBuilder()
+GraphBuilder* gs::Context::CreateBuilder(HashString name)
 {
-	p_Builders.push_back(CreateUnique<GraphBuilder>(this));
+	p_Builders.push_back(CreateUnique<GraphBuilder>(this, name));
 	return p_Builders[p_Builders.size() - 1].get();
 }
 
@@ -966,7 +968,7 @@ gs::Context::Parser::Parser(Context& c) : p_Context(c)
 Unique<GraphBuilder> gs::Context::Parser::Parse(String& source)
 {
 	Vector<String> lines = SplitStringByChar(source, '\n');
-	Unique<GraphBuilder> graphBuilder = CreateUnique<GraphBuilder>(&p_Context);
+	Unique<GraphBuilder> graphBuilder = CreateUnique<GraphBuilder>(&p_Context, "EMPTY");
 
 	State s = State::Invalid;
 
@@ -987,6 +989,9 @@ Unique<GraphBuilder> gs::Context::Parser::Parse(String& source)
 
 		switch (s)
 		{
+		case Name:
+			ParseName(graphBuilder.get(), l);
+			break;
 		case Functions:
 			ParseFunction(graphBuilder.get(), l);
 			break;
@@ -1019,6 +1024,14 @@ Unique<GraphBuilder> gs::Context::Parser::Parse(String& source)
 
 void gs::Context::Parser::HandleCurrentState(State& s, String& l)
 {
+	if (l == "BeginName")
+	{
+		s = State::Name;
+	}
+	if (l == "EndName")
+	{
+		s = State::Invalid;
+	}
 	if (l == "BeginFunctions")
 	{
 		s = State::Functions;
@@ -1075,6 +1088,11 @@ void gs::Context::Parser::HandleCurrentState(State& s, String& l)
 	{
 		s = State::Invalid;
 	}
+}
+
+void gs::Context::Parser::ParseName(GraphBuilder* builder, String& line)
+{
+	builder->m_Name = line;
 }
 
 void gs::Context::Parser::ParseFunction(GraphBuilder* builder, String& line)
