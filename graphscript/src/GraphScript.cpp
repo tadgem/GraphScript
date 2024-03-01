@@ -67,7 +67,7 @@ void GraphBuilder::DeleteNode(int index)
 
 	for (int i = 0; i < m_DataConnections.size(); i++)
 	{
-		if (FindDataSocketNode(m_DataConnections[i]->m_LHS) == n || 
+		if (FindDataSocketNode(m_DataConnections[i]->m_LHS) == n ||
 			FindDataSocketNode(m_DataConnections[i]->m_RHS) == n)
 		{
 			delete m_DataConnections[i];
@@ -75,7 +75,7 @@ void GraphBuilder::DeleteNode(int index)
 		}
 	}
 
-	for (int i = dataConnectionsToRelease.size() - 1; i >= 0; i--)
+	for (int i = static_cast<int>(dataConnectionsToRelease.size() - 1); i >= 0; i--)
 	{
 		int index = dataConnectionsToRelease[i];
 		m_DataConnections.erase(m_DataConnections.begin() + index);
@@ -92,7 +92,7 @@ void GraphBuilder::DeleteNode(int index)
 		}
 	}
 
-	for (int i = exeConnectionsToRelease.size() - 1; i >= 0; i--)
+	for (int i = static_cast<int>(exeConnectionsToRelease.size()) - 1; i >= 0; i--)
 	{
 		int index = exeConnectionsToRelease[i];
 		m_ExecutionConnections.erase(m_ExecutionConnections.begin() + index);
@@ -100,7 +100,7 @@ void GraphBuilder::DeleteNode(int index)
 
 	delete n;
 	m_Nodes.erase(m_Nodes.begin() + index);
-	
+
 }
 
 Graph* GraphBuilder::Build()
@@ -233,6 +233,8 @@ String AnyToString(Any& any)
 	{
 		return std::any_cast<String>(any);
 	}
+
+	return "";
 }
 
 Any StringToAny(String& str, u64 typeHash)
@@ -294,8 +296,10 @@ Any StringToAny(String& str, u64 typeHash)
 
 	if (typeHash == HashString("std::string"))
 	{
-		return Any{ str};
+		return Any{ str };
 	}
+
+	return {};
 }
 
 String gs::GraphBuilder::Serialize()
@@ -317,13 +321,13 @@ String gs::GraphBuilder::Serialize()
 	{
 		stream << "    " << m_Nodes[i]->m_NodeName.m_Original << "\n";
 	}
-	
+
 	stream << "EndNodes\nBeginVariables\n";
 	for (auto& [name, var] : m_Variables)
 	{
 		stream << "    " << name.m_Original << "," << var->m_Type.m_TypeHash.m_Value << "\n";
 	}
-	
+
 	stream << "EndVariables\nBeginNodeDataConns\n";
 	for (int i = 0; i < m_DataConnections.size(); i++)
 	{
@@ -527,7 +531,7 @@ HashMap<HashString, FunctionNode*> GraphBuilder::BuildFunctions()
 	HashMap<HashString, FunctionNode*> functions;
 	for (auto& [name, func] : m_Functions)
 	{
-		functions[name] = (FunctionNode*) func->Clone();
+		functions[name] = (FunctionNode*)func->Clone();
 	}
 	return functions;
 }
@@ -629,7 +633,7 @@ Vector<ExecutionConnectionDef> GraphBuilder::BuildExecutionConnections(HashMap<H
 	return executionConnections;
 }
 
-Vector<DataConnection*> GraphBuilder::BuildDataConnections(HashMap<HashString, FunctionNode*>& functions,HashMap<HashString, Variable*> variables, Vector<Node*> nodes)
+Vector<DataConnection*> GraphBuilder::BuildDataConnections(HashMap<HashString, FunctionNode*>& functions, HashMap<HashString, Variable*> variables, Vector<Node*> nodes)
 {
 	// Copy Data Connections
 	// Patch data connection removing function nodes replacing with clones
@@ -641,7 +645,7 @@ Vector<DataConnection*> GraphBuilder::BuildDataConnections(HashMap<HashString, F
 		for (int i = 0; i < m_Nodes.size(); i++)
 		{
 			Node* node = m_Nodes[i];
-			
+
 			for (auto& [outputName, output] : node->m_InputDataSockets)
 			{
 				if (clone->m_LHS == output)
@@ -653,7 +657,7 @@ Vector<DataConnection*> GraphBuilder::BuildDataConnections(HashMap<HashString, F
 					clone->m_RHS = nodes[i]->m_InputDataSockets[outputName];
 				}
 			}
-			
+
 			for (auto& [outputName, output] : node->m_OutputDataSockets)
 			{
 				if (clone->m_LHS == output)
@@ -762,8 +766,8 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 	PopulateParams(func, args);
 
 	Node* currentNode = func;
-	ExecutionSocket *lhs, *rhs = nullptr;
-	
+	ExecutionSocket* lhs, * rhs = nullptr;
+
 	// get the first socket in the chain
 	lhs = func->m_OutputExecutionSockets.front();
 
@@ -790,7 +794,7 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 			else
 			{
 				continue;
-			}			
+			}
 		}
 		else
 		{
@@ -829,7 +833,7 @@ FunctionCallResult Graph::CallFunction(HashString nameOfMethod, VariableSet args
 		if (lhs && lhs->m_LoopCount > 1)
 		{
 			// read: the current node, the current output socket, and that sockets loop count
-			p_Stack.push( rhsNode);
+			p_Stack.push(rhsNode);
 		}
 	}
 
@@ -855,7 +859,7 @@ void Graph::PopulateParams(FunctionNode* functionNode, VariableSet params)
 	}
 }
 
-ExecutionSocket::ExecutionSocket(HashString socketName, u32 loopCount) : m_SocketName(socketName), m_LoopCount(loopCount), p_ShouldExecute(true){}
+ExecutionSocket::ExecutionSocket(HashString socketName, u32 loopCount) : m_SocketName(socketName), m_LoopCount(loopCount), p_ShouldExecute(true) {}
 
 gs::Node::~Node()
 {
@@ -1077,7 +1081,7 @@ void gs::Context::Parser::ParseFunction(GraphBuilder* builder, String& line)
 {
 	Vector<String> lineContents = SplitStringByChar(line, ',');
 	GS_ASSERT(lineContents.size() >= 1, "Too few elements in line to be a function")
-	FunctionNode& fn = builder->AddFunction(lineContents[0]);
+		FunctionNode& fn = builder->AddFunction(lineContents[0]);
 
 	if (lineContents.size() == 1)
 	{
@@ -1088,7 +1092,7 @@ void gs::Context::Parser::ParseFunction(GraphBuilder* builder, String& line)
 	{
 		Vector<String> paramParts = SplitStringByChar(lineContents[i], ':');
 		GS_ASSERT(paramParts.size() == 2, "Variable definition should have 2 parts, a name and a type hash")
-		String name = paramParts[0];
+			String name = paramParts[0];
 		u64 typeHash = std::stoull(paramParts[1]);
 		AddOutputDataSocket(&fn, name, typeHash);
 	}
@@ -1112,10 +1116,10 @@ void gs::Context::Parser::ParseVariable(GraphBuilder* builder, String& line)
 {
 	Vector<String> variableParts = SplitStringByChar(line, ',');
 	GS_ASSERT(variableParts.size() == 2, "Variables should contain 2 parts, a name and a type. Too many / few parts to parse variable");
-	
+
 	HashString name = variableParts[0];
 	u64 typeHash = std::stoull(variableParts[1]);
-	
+
 	Variable* proto = p_Context.GetVariableFromHash(typeHash)->Clone();
 
 	if (!proto)
@@ -1175,7 +1179,7 @@ void gs::Context::Parser::ParseVariableDataConnection(GraphBuilder* builder, Str
 
 	GS_ASSERT(lhsTypeHash == rhsTypeHash, "Connection between data sockets must be of the same type.")
 
-	Node* rhsNode = builder->m_Nodes[std::stoi(rhsVariableParts[0])];
+		Node* rhsNode = builder->m_Nodes[std::stoi(rhsVariableParts[0])];
 	HashString rhsSocketName = rhsVariableParts[1];
 	DataSocket* rhs = rhsNode->m_InputDataSockets[rhsSocketName];
 
@@ -1236,7 +1240,7 @@ void gs::Context::Parser::AddOutputDataSocket(Node* node, String name, u64 typeH
 	{
 		return;
 	}
-	
+
 	node->m_OutputDataSockets.emplace(name, proto->Clone());
 }
 
