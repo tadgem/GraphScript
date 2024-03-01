@@ -337,10 +337,11 @@ protected:
 		Stack<Node*>	p_Stack;
 	};
 
+	class Context;
 	class GraphBuilder
 	{
 	public:
-		GraphBuilder();
+		GraphBuilder(Context* context);
 		~GraphBuilder();
 
 		FunctionNode&				AddFunction(HashString functionName);
@@ -371,8 +372,12 @@ protected:
 			m_DataConnections.emplace_back(conn);
 			return conn;
 		}
+		DataConnection*				ConnectDataSocket(DataSocket* lhs, DataSocket* rhs);
+		void						DestroyDataConnection(int index);
+
 
 		ExecutionConnectionDef		ConnectExecutionSocket(ExecutionSocket* lhs, ExecutionSocket* rhs);
+		void						DestroyExecutionConnection(int index);
 
 		String						Serialize();
 
@@ -399,7 +404,7 @@ protected:
 		i32					GetNodeIndex(Node* node);
 		void				PrintNodeSockets(Node* node);
 		Graph*				Build();
-		
+		Context*		p_Context;
 		friend class Context;
 	};
 
@@ -434,6 +439,7 @@ protected:
 		Variable*			GetVariableFromHash(u64 typeHash);
 		DataConnection*		GetDataConnectionFromHash(u64 typeHash);
 
+		friend class GraphBuilder;
 		friend class Parser;
 		class Parser
 		{

@@ -14,6 +14,8 @@ void gs::GraphScriptEditor::OnImGui()
 {
 	int idCounter = 1;
 	HashMap<void*, int> counterMap;
+	HashMap<int, ExecutionSocket*> exeSocketMap;
+	HashMap<int, DataSocket*> dataSocketMap;
 
 	if (ImGui::Begin("Menu"))
 	{
@@ -121,6 +123,7 @@ void gs::GraphScriptEditor::OnImGui()
 			ImNodes::BeginOutputAttribute(idCounter, ImNodesPinShape_QuadFilled);
 
 			counterMap.emplace(var->GetSocket(), idCounter);
+			dataSocketMap[idCounter] = var->GetSocket();
 			idCounter++;
 
 			ImGui::Text(name.m_Original.c_str());
@@ -171,6 +174,7 @@ void gs::GraphScriptEditor::OnImGui()
 				ImNodes::BeginInputAttribute(idCounter, ImNodesPinShape_Triangle);
 
 				counterMap.emplace(execution, idCounter);
+				exeSocketMap[idCounter] = execution;
 				idCounter++;
 
 				ImGui::Text(execution->m_SocketName.m_Original.c_str());
@@ -184,6 +188,7 @@ void gs::GraphScriptEditor::OnImGui()
 				ImNodes::BeginInputAttribute(idCounter, ImNodesPinShape_QuadFilled);
 
 				counterMap.emplace(socket, idCounter);
+				dataSocketMap[idCounter] = socket;
 				idCounter++;
 
 				ImGui::Text(name.m_Original.c_str());
@@ -195,6 +200,7 @@ void gs::GraphScriptEditor::OnImGui()
 				ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(255, 255, 255, 255));
 				ImNodes::BeginOutputAttribute(idCounter, ImNodesPinShape_Triangle);
 				counterMap.emplace(execution, idCounter);
+				exeSocketMap[idCounter] = execution;
 				idCounter++;
 				ImGui::Text(execution->m_SocketName.m_Original.c_str());
 				ImNodes::EndOutputAttribute();
@@ -207,6 +213,7 @@ void gs::GraphScriptEditor::OnImGui()
 				ImNodes::BeginOutputAttribute(idCounter, ImNodesPinShape_QuadFilled);
 
 				counterMap.emplace(socket, idCounter);
+				dataSocketMap[idCounter] = socket;
 				idCounter++;
 
 				ImGui::Text(name.m_Original.c_str());
@@ -230,23 +237,76 @@ void gs::GraphScriptEditor::OnImGui()
 			p_SelectedNode = INT_MIN;
 		}
 
-		for (auto& conn : p_Builders[i]->m_ExecutionConnections)
+		HashMap<int, int> exeLinkCounter;
+		HashMap<int, int> dataLinkCounter;
+
+		for (int j =0 ; j < p_Builders[i]->m_ExecutionConnections.size(); j++)
 		{
+			auto conn = p_Builders[i]->m_ExecutionConnections[j];
+			int link = idCounter;
+			exeLinkCounter[link] = j;
 			ImNodes::PushColorStyle(ImNodesCol_Link, IM_COL32(255, 255, 255, 255));
 			ImNodes::Link(idCounter++, counterMap[conn.m_RHS], counterMap[conn.m_LHS]);
+			if (ImNodes::IsLinkSelected(link))
+			{
+				p_SelectedLink = link;
+			}
 			ImNodes::PopColorStyle();
+
 		}
 
-		for (auto& conn : p_Builders[i]->m_DataConnections)
+		//for (auto& conn : p_Builders[i]->m_DataConnections)
+		for (int j =0 ; j < p_Builders[i]->m_DataConnections.size(); j++)
 		{
+			auto conn = p_Builders[i]->m_DataConnections[j];
+			dataLinkCounter[idCounter] = j;
+			int link = idCounter;
 			u64 hash = conn->m_LHS->m_Type.m_TypeHash.m_Value;
 			ImNodes::PushColorStyle(ImNodesCol_Link, IM_COL32(hash << 4, hash << 2, hash < 8, 255));
 			ImNodes::Link(idCounter++, counterMap[conn->m_RHS], counterMap[conn->m_LHS]);
+			if (ImNodes::IsLinkSelected(link))
+			{
+				p_SelectedLink = link;
+			}
 			ImNodes::PopColorStyle();
 		}
-
-
 		ImNodes::EndNodeEditor();
+
+		int start_attr, end_attr;
+		if (ImNodes::IsLinkCreated(&start_attr, &end_attr))
+		{
+			if (exeSocketMap.find(start_attr) != exeSocketMap.end() && exeSocketMap.find(end_attr) != exeSocketMap.end())
+			{
+				ExecutionSocket* start = exeSocketMap[start_attr];
+				ExecutionSocket* end = exeSocketMap[end_attr];
+
+				p_Builders[i]->ConnectExecutionSocket(start, end);
+			}
+
+			if (dataSocketMap.find(start_attr) != dataSocketMap.end() && dataSocketMap.find(end_attr) != dataSocketMap.end())
+			{
+				DataSocket* start = dataSocketMap[start_attr];
+				DataSocket* end = dataSocketMap[end_attr];
+
+				p_Builders[i]->ConnectDataSocket(start, end);
+			}
+		}
+		int linkId;
+		if (p_SelectedLink > -1 && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete)))
+		{
+			if (exeLinkCounter.find(p_SelectedLink) != exeLinkCounter.end())
+			{
+				p_Builders[i]->DestroyExecutionConnection(exeLinkCounter[p_SelectedLink]);
+				p_SelectedLink = INT_MIN;
+			}
+
+			if (dataLinkCounter.find(p_SelectedLink) != dataLinkCounter.end())
+			{
+				p_Builders[i]->DestroyDataConnection(dataLinkCounter[p_SelectedLink]);
+				p_SelectedLink = INT_MIN;
+			}
+		}
+
 	}
 
 	p_SetPositions = false;

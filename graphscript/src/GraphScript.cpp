@@ -119,6 +119,42 @@ Graph* GraphBuilder::Build()
 	return new Graph{ functions, variables, nodes, executionConns, dataConns };
 }
 
+DataConnection* gs::GraphBuilder::ConnectDataSocket(DataSocket* lhs, DataSocket* rhs)
+{
+	Type lhs_t = lhs->m_Type;
+	Type rhs_t = rhs->m_Type;
+
+	if (lhs_t.m_TypeHash != rhs_t.m_TypeHash)
+	{
+		return nullptr;
+	}
+
+	DataConnection* proto = p_Context->GetDataConnectionFromHash(lhs_t.m_TypeHash);
+	if (proto)
+	{
+		auto c = proto->Clone();
+		c->m_LHS = lhs;
+		c->m_RHS = rhs;
+		m_DataConnections.push_back(c);
+		return c;
+	}
+	return nullptr;
+}
+
+void gs::GraphBuilder::DestroyDataConnection(int index)
+{
+	if (index < 0)
+	{
+		return;
+	}
+
+	delete m_DataConnections[index];
+
+	m_DataConnections.erase(m_DataConnections.begin() + index);
+}
+
+
+
 ExecutionConnectionDef gs::GraphBuilder::ConnectExecutionSocket(ExecutionSocket* lhs, ExecutionSocket* rhs)
 {
 	// TODO: insert return statement here
@@ -126,6 +162,16 @@ ExecutionConnectionDef gs::GraphBuilder::ConnectExecutionSocket(ExecutionSocket*
 	m_ExecutionConnections.push_back(conn);
 	return conn;
 }
+void gs::GraphBuilder::DestroyExecutionConnection(int index)
+{
+	if (index < 0)
+	{
+		return;
+	}
+
+	m_ExecutionConnections.erase(m_ExecutionConnections.begin() + index);
+}
+
 
 String AnyToString(Any& any)
 {
@@ -471,7 +517,7 @@ GraphBuilder::~GraphBuilder()
 	m_Variables.clear();
 }
 
-gs::GraphBuilder::GraphBuilder()
+gs::GraphBuilder::GraphBuilder(Context* context) : p_Context(context)
 {
 }
 
@@ -860,7 +906,7 @@ gs::Context::Context()
 
 GraphBuilder* gs::Context::CreateBuilder()
 {
-	p_Builders.push_back(CreateUnique<GraphBuilder>());
+	p_Builders.push_back(CreateUnique<GraphBuilder>(this));
 	return p_Builders[p_Builders.size() - 1].get();
 }
 
@@ -916,7 +962,7 @@ gs::Context::Parser::Parser(Context& c) : p_Context(c)
 Unique<GraphBuilder> gs::Context::Parser::Parse(String& source)
 {
 	Vector<String> lines = SplitStringByChar(source, '\n');
-	Unique<GraphBuilder> graphBuilder = CreateUnique<GraphBuilder>();
+	Unique<GraphBuilder> graphBuilder = CreateUnique<GraphBuilder>(&p_Context);
 
 	State s = State::Invalid;
 

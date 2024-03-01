@@ -32,6 +32,7 @@ namespace gs
 		ImVec2 p_PopupPos;
 
 		int p_SelectedNode = INT_MIN;
+		int p_SelectedLink = INT_MIN;
 	};
 }
 
