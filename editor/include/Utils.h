@@ -13,6 +13,8 @@ namespace gs
 		String LoadStringAtPath(const String& p_UserPath);
 
 		Vector<String> SplitStringByChar(const String& str, char c);
+
+		void Trim(gs::String& s);
 	}
 }
 

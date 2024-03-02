@@ -1101,6 +1101,8 @@ void gs::Context::Parser::ParseFunction(GraphBuilder* builder, String& line)
 	GS_ASSERT(lineContents.size() >= 1, "Too few elements in line to be a function")
 		FunctionNode& fn = builder->AddFunction(lineContents[0]);
 
+	builder->m_Nodes.pop_back();
+
 	if (lineContents.size() == 1)
 	{
 		return;
@@ -1122,12 +1124,21 @@ void gs::Context::Parser::ParseNode(GraphBuilder* builder, String& line)
 	// otherwise lookup in node registry
 	Node* n = p_Context.GetNode(line);
 
-	if (!n)
+	if (n)
 	{
+		builder->m_Nodes.push_back(n->Clone());
 		return;
 	}
+	
+	HashString nodeName(line);
 
-	builder->m_Nodes.push_back(n->Clone());
+	for (auto& [name, func] : builder->m_Functions)
+	{
+		if (name == nodeName)
+		{
+			builder->m_Nodes.push_back(func.get());
+		}
+	}
 }
 
 void gs::Context::Parser::ParseVariable(GraphBuilder* builder, String& line)

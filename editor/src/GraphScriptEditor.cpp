@@ -2,14 +2,15 @@
 #include "imnodes.h"
 #include "Utils.h"
 
-
-
 gs::GraphScriptEditor::GraphScriptEditor(Context* context)
 {
 	p_Context = context;
 	p_UserPath.resize(150);
 	p_ProjectPath.resize(150);
 	p_NewGraphName.resize(150);
+	p_NewFunctionName.resize(150);
+	p_NewDataSocketName.resize(150);
+	p_NewExeSocketName.resize(150);
 }
 
 void gs::GraphScriptEditor::OnImGui()
@@ -24,6 +25,7 @@ void gs::GraphScriptEditor::OnImGui()
 		ImGui::InputText("New Graph Name", p_NewGraphName.data(), 150);
 		if (ImGui::Button("New Graph"))
 		{
+			utils::Trim(p_NewGraphName);
 			p_Builders.push_back(p_Context->CreateBuilder(p_NewGraphName));
 		}
 
@@ -126,6 +128,56 @@ void gs::GraphScriptEditor::HandleGraphBuilderImGui(GraphBuilder* builder, int& 
 
 	if (ImGui::Begin(name.str().c_str()))
 	{
+		if(ImGui::CollapsingHeader("Functions"))
+		{
+			ImGui::InputText("New Function Name", p_NewFunctionName.data(), 150);
+			ImGui::SameLine();
+			if (ImGui::Button("Add Function") && !p_NewFunctionName.empty())
+			{
+				utils::Trim(p_NewFunctionName);
+				builder->AddFunction(HashString(p_NewFunctionName));
+				ResetString(p_NewFunctionName);
+			}
+			ImGui::Indent();
+			for (auto& [name, func] : builder->m_Functions)
+			{
+				if (ImGui::CollapsingHeader(name.m_Original.c_str()))
+				{
+					ImGui::Indent();
+					ImGui::InputText("New Data Socket Name: ", p_NewDataSocketName.data(), 150);
+					if (ImGui::BeginCombo("Add Output Socket (Parameter)", "Pick Type"))
+					{
+						for (auto& proto : p_Context->GetAllDataSockets())
+						{
+							if (ImGui::MenuItem(proto->m_Type.m_TypeHash.m_Original.c_str()) && !p_NewDataSocketName.empty())
+							{
+								utils::Trim(p_NewDataSocketName);
+								func->m_OutputDataSockets.emplace(HashString(p_NewDataSocketName), proto->Clone());
+								ResetString(p_NewDataSocketName);
+							}
+						}
+
+						ImGui::EndCombo();
+					}
+					ImGui::Text("Parameters / Output Data Sockets");
+					for (auto& [socketName, socket] : func->m_OutputDataSockets)
+					{
+						ImGui::Text("%s : %s", socketName.m_Original.c_str(), socket->m_Type.m_TypeHash.m_Original.c_str());
+					}
+
+					ImGui::Separator();
+					ImGui::Text("Output Execution Sockets");
+					for (auto&  socket : func->m_OutputExecutionSockets)
+					{
+						ImGui::Text("%s : Loop Count : %d", socket->m_SocketName.m_Original.c_str(), socket->m_LoopCount);
+					}
+
+					ImGui::Unindent();
+				}
+			}
+			ImGui::Unindent();
+		}
+		ImGui::Separator();
 		if (ImGui::CollapsingHeader("Node Positions"))
 		{
 			for (auto& [index, pos] : p_NodePositions[builder])
@@ -134,6 +186,7 @@ void gs::GraphScriptEditor::HandleGraphBuilderImGui(GraphBuilder* builder, int& 
 			}
 		}
 		ImGui::Separator();
+		
 		if (ImGui::Button("Save to file"))
 		{
 			String gsString = builder->Serialize();
@@ -418,4 +471,10 @@ void gs::GraphScriptEditor::HandleCreateDestroyLinks(GraphBuilder* builder, Hash
 			p_SelectedLink = INT_MIN;
 		}
 	}
+}
+
+void gs::GraphScriptEditor::ResetString(String& str)
+{
+	str = "";
+	str.resize(150);
 }

@@ -1,0 +1,9 @@
+- add variables to graph via imgui
+- map path - graph in project 
+- path - graph serialization
+- serialize variable sets
+- serialize instances and index of variable set used. 
+
+// then
+- get reference to graph by type (builder)
+- call function on another graph

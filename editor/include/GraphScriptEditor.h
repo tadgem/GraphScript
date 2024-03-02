@@ -31,10 +31,16 @@ namespace gs
 		void HandleNodes(GraphBuilder* builder, int& idCounter, HashMap<void*, int>& counterMap, HashMap<int, ExecutionSocket*>& exeSocketMap, HashMap<int, DataSocket*>& dataSocketMap);
 		void HandleLinks(GraphBuilder* builder, int& idCounter, HashMap<void*, int>& counterMap, HashMap<int, int>& exeLinkCounter, HashMap<int, int>& dataLinkCounter);
 		void HandleCreateDestroyLinks(GraphBuilder* builder, HashMap<int, ExecutionSocket*>& exeSocketMap, HashMap<int, DataSocket*>& dataSocketMap, HashMap<int, int>& exeLinkCounter, HashMap<int, int>& dataLinkCounter);
+		
+		void ResetString(String& str);
+
 
 		String p_UserPath;
 		String p_ProjectPath;
 		String p_NewGraphName;
+		String p_NewFunctionName;
+		String p_NewDataSocketName;
+		String p_NewExeSocketName;
 		
 		using EditorVariableSet = HashMap<HashString, Variable*>;
 

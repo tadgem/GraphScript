@@ -424,6 +424,15 @@ protected:
 		Node*			GetNode(HashString name);
 
 		Vector<Node*>& GetAllNodes() { return p_Nodes; }
+		Vector<DataSocket*> GetAllDataSockets() { 
+			Vector<DataSocket*> sockets;
+
+			for (auto& s : p_Sockets)
+			{
+				sockets.push_back(s.get());
+			}
+			return sockets;
+		}
 
 		template<typename T>
 		void RegisterType()
