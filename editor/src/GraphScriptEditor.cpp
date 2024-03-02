@@ -10,7 +10,7 @@ gs::GraphScriptEditor::GraphScriptEditor(Context* context)
 	p_NewGraphName.resize(150);
 	p_NewFunctionName.resize(150);
 	p_NewDataSocketName.resize(150);
-	p_NewExeSocketName.resize(150);
+	p_NewVariableName.resize(150);
 }
 
 void gs::GraphScriptEditor::OnImGui()
@@ -124,7 +124,7 @@ void gs::GraphScriptEditor::HandleGraphBuilderImGui(GraphBuilder* builder, int& 
 
 	SStream name;
 	
-	name << builder->m_Name.m_Original << " [DEBUG]";
+	name << builder->m_Name.m_Original << " [Inspector]";
 
 	if (ImGui::Begin(name.str().c_str()))
 	{
@@ -178,15 +178,33 @@ void gs::GraphScriptEditor::HandleGraphBuilderImGui(GraphBuilder* builder, int& 
 			ImGui::Unindent();
 		}
 		ImGui::Separator();
-		if (ImGui::CollapsingHeader("Node Positions"))
+		if (ImGui::CollapsingHeader("Variables"))
 		{
-			for (auto& [index, pos] : p_NodePositions[builder])
+			ImGui::InputText("New Variable Name", p_NewVariableName.data(), 150);
+			ImGui::SameLine();
+			if(ImGui::BeginCombo("Add Output Socket (Parameter)", "Pick Type"))
 			{
-				ImGui::Text("%d : {%f, %f}", index, pos.x, pos.y);
+				for (auto& proto : p_Context->GetAllVariables())
+				{
+					if (ImGui::MenuItem(proto->m_Type.m_TypeHash.m_Original.c_str()) && !p_NewVariableName.empty())
+					{
+						utils::Trim(p_NewVariableName);
+						builder->m_Variables.emplace(HashString(p_NewVariableName), proto->Clone());
+						ResetString(p_NewVariableName);
+					}
+				}
+
+				ImGui::EndCombo();
 			}
+
+			ImGui::Indent();
+			for (auto& [name, var] : builder->m_Variables)
+			{
+				ImGui::Text("%s : %s", name.m_Original.c_str(), var->m_Type.m_TypeHash.m_Original.c_str());
+			}
+			ImGui::Unindent();
 		}
 		ImGui::Separator();
-		
 		if (ImGui::Button("Save to file"))
 		{
 			String gsString = builder->Serialize();

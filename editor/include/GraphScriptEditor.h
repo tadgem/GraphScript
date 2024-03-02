@@ -40,7 +40,7 @@ namespace gs
 		String p_NewGraphName;
 		String p_NewFunctionName;
 		String p_NewDataSocketName;
-		String p_NewExeSocketName;
+		String p_NewVariableName;
 		
 		using EditorVariableSet = HashMap<HashString, Variable*>;
 

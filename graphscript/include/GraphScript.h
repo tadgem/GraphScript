@@ -434,6 +434,16 @@ protected:
 			return sockets;
 		}
 
+		Vector<Variable*> GetAllVariables() {
+			Vector<Variable*> sockets;
+
+			for (auto& s : p_Variables)
+			{
+				sockets.push_back(s.get());
+			}
+			return sockets;
+		}
+
 		template<typename T>
 		void RegisterType()
 		{
