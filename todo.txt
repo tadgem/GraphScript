@@ -1,4 +1,3 @@
-- add variables to graph via imgui
 - map path - graph in project 
 - path - graph serialization
 - serialize variable sets
