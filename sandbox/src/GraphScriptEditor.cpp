@@ -50,10 +50,6 @@ void gs::GraphScriptEditor::OnImGui()
 			// TODO
 			String data = Serialize();
 			utils::SaveStringAtPath(data, p_ProjectPath);
-			// GraphBuilder paths
-			// Instances
-			// Arg Sets
-			// Instance - Arg set mapping
 		}
 
 		ImGui::Separator();
@@ -325,6 +321,14 @@ void gs::GraphScriptEditor::HandleNodes(GraphBuilder* builder, int& idCounter, H
 	{
 		Node* node = builder->m_Nodes[j];
 		int nodeId = idCounter;
+
+		bool popColour = false;
+
+		if (builder->m_Functions.find(node->m_NodeName) != builder->m_Functions.end())
+		{
+			ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(230, 100, 120, 255));
+			popColour = true;
+		}
 		ImNodes::BeginNode(nodeId);
 
 		if (ImNodes::IsNodeSelected(nodeId))
@@ -404,7 +408,10 @@ void gs::GraphScriptEditor::HandleNodes(GraphBuilder* builder, int& idCounter, H
 			ImNodes::PopColorStyle();
 		}
 		ImNodes::EndNode();
-
+		if (popColour)
+		{
+			ImNodes::PopColorStyle();
+		}
 		ImVec2 nodePos = ImNodes::GetNodeGridSpacePos(nodeId);
 		p_NodePositions[builder][nodeId] = vec2{ nodePos.x, nodePos.y };
 	}
