@@ -34,7 +34,7 @@ namespace gs
 		void ParseGraphNodePositions(String& source, GraphBuilder* b);
 		
 		void HandleGraphBuilderImGui(GraphBuilder* builder, int& idCounter);
-		void HandleAddNodeMenu(GraphBuilder* builder);
+		void HandleAddNodeMenu(GraphBuilder* builder, int& idCounter);
 		void HandleVariableNodes(GraphBuilder* builder, int& idCounter, HashMap<void*, int>& counterMap, HashMap<int, DataSocket*>& dataSocketMap);
 		void HandleNodes(GraphBuilder* builder, int& idCounter, HashMap<void*, int>& counterMap, HashMap<int, ExecutionSocket*>& exeSocketMap, HashMap<int, DataSocket*>& dataSocketMap);
 		void HandleLinks(GraphBuilder* builder, int& idCounter, HashMap<void*, int>& counterMap, HashMap<int, int>& exeLinkCounter, HashMap<int, int>& dataLinkCounter);

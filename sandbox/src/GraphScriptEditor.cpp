@@ -226,9 +226,11 @@ void gs::GraphScriptEditor::HandleGraphBuilderImGui(GraphBuilder* builder, int& 
 
 	ImNodes::BeginNodeEditor();
 
-	HandleAddNodeMenu(builder);
+	HandleAddNodeMenu(builder, idCounter);
 
 	HandleNodes(builder, idCounter, counterMap, exeSocketMap, dataSocketMap);
+
+	idCounter = 65535;
 	
 	HandleVariableNodes(builder, idCounter, counterMap, dataSocketMap);
 	
@@ -241,7 +243,7 @@ void gs::GraphScriptEditor::HandleGraphBuilderImGui(GraphBuilder* builder, int& 
 	HandleCreateDestroyLinks(builder, exeSocketMap, dataSocketMap, exeLinkCounter, dataLinkCounter);
 }
 
-void gs::GraphScriptEditor::HandleAddNodeMenu(GraphBuilder* builder)
+void gs::GraphScriptEditor::HandleAddNodeMenu(GraphBuilder* builder, int& idCounter)
 {
 	if (ImGui::IsMouseDown(ImGuiMouseButton_Right))
 	{
@@ -253,7 +255,7 @@ void gs::GraphScriptEditor::HandleAddNodeMenu(GraphBuilder* builder)
 	{
 
 		ImGui::SetNextWindowPos(p_PopupPos);
-		if (ImGui::Begin("Select Node", &p_ShowNodesPopup, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize))
+		if (ImGui::Begin("Select Node", &p_ShowNodesPopup, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar))
 		{
 			ImGui::Spacing();
 			for (Node* node : p_Context->GetAllNodes())

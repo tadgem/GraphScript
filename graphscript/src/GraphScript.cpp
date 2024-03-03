@@ -979,16 +979,28 @@ void gs::Context::AddBuiltIns()
 	RegisterType<f32>();
 	RegisterType<bool>();
 	RegisterType<u32>();
+	RegisterType<i32>();
+	RegisterType<String>();
+
+	RegisterArithmaticFunctions<f32>("float");
+	RegisterArithmaticFunctions<u32>("unsigned int");
+	RegisterArithmaticFunctions<i32>("int");
 
 	auto forNodeBuilder = new ForNode();
-	auto multiplyNodeBuilder = new MutliplyNodeT<f32>();
 	auto ifNodeBuilder = new IfNode();
-	auto printf32NodeBuilder = new PrintNodeT<f32>();
+	auto printf32NodeBuilder = new PrintNodeT<f32>("Print(float)");
+	auto printu32NodeBuilder = new PrintNodeT<u32>("Print(unsigned int)");
+	auto printi32NodeBuilder = new PrintNodeT<i32>("Print(int)");
+	auto printBoolNodeBuilder = new PrintNodeT<bool>("Print(bool)");
+	auto printStringNodeBuilder = new PrintNodeT<String>("Print(String)");
 
 	AddNode(forNodeBuilder);
-	AddNode(multiplyNodeBuilder);
 	AddNode(ifNodeBuilder);
 	AddNode(printf32NodeBuilder);
+	AddNode(printu32NodeBuilder);
+	AddNode(printi32NodeBuilder);
+	AddNode(printBoolNodeBuilder);
+	AddNode(printStringNodeBuilder);
 }
 
 gs::Context::Parser::Parser(Context& c) : p_Context(c)
@@ -1238,7 +1250,7 @@ void gs::Context::Parser::ParseVariableDataConnection(GraphBuilder* builder, Str
 
 	GS_ASSERT(lhsTypeHash == rhsTypeHash, "Connection between data sockets must be of the same type.")
 
-		Node* rhsNode = builder->m_Nodes[std::stoi(rhsVariableParts[0])];
+	Node* rhsNode = builder->m_Nodes[std::stoi(rhsVariableParts[0])];
 	HashString rhsSocketName = rhsVariableParts[1];
 	DataSocket* rhs = rhsNode->m_InputDataSockets[rhsSocketName];
 
@@ -1395,6 +1407,7 @@ DataConnection* gs::Context::GetDataConnectionFromHash(u64 typeHash)
 
 gs::Type::Type(const HashString& hash) : m_TypeHash(hash)
 {
+	int i = 1;
 }
 
 void gs::Variable::SetValue(Any a)

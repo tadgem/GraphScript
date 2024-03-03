@@ -453,6 +453,29 @@ protected:
 			p_DataConnections.push_back(CreateUnique<DataConnectionT<T>>(nullptr, nullptr));
 		}
 
+		template<typename T>
+		void RegisterArithmaticFunctions(String typeName)
+		{
+			SStream mulName, divName, addName, subName;
+
+			mulName << "Multiply(" << typeName << ")";
+			auto multiplyNodeBuilder = new MultiplyNodeT<f32>(mulName.str());
+
+			divName << "Divide(" << typeName << ")";
+			auto divideNodeBuilder = new DivideNodeT<f32>(divName.str());
+
+			addName << "Add(" << typeName << ")";
+			auto addNodeBuilder = new AdditionNodeT<f32>(addName.str());
+
+			subName << "Subtract(" << typeName << ")";
+			auto subNodeBuilder = new SubtractNodeT<f32>(subName.str());
+
+			AddNode(multiplyNodeBuilder);
+			AddNode(divideNodeBuilder);
+			AddNode(addNodeBuilder);
+			AddNode(subNodeBuilder);
+		}
+
 	protected:
 
 		void AddBuiltIns();

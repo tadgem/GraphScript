@@ -2,27 +2,33 @@ BeginName
     New
 EndName
 BeginFunctions
-    NewFunc
+    Entry
 EndFunctions
 BeginNodes
-    NewFunc
-    Print
+    Entry
+    Print(int)
+    Print(String)
 EndNodes
 BeginVariables
-    Var,45304
+    Counter,15986
+    Name,47833
 EndVariables
 BeginNodeDataConns
 EndNodeDataConns
 BeginVariableDataConns
-    Var,45304:1,input,45304
+    Counter,15986:1,input,15986
+    Name,47833:2,input,47833
 EndVariableDataConns
 BeginExeConns
     0,out:1,in
+    1,out:2,in
 EndExeConns
 BeginDefaultValues
 EndDefaultValues
 BeginNodePositions
-1:208:88
-3:455:96
-7:305:236
+1:168:94
+3:334:92
+7:496:91
+65535:180:230
+65537:344:261
 EndNodePositions

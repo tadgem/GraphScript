@@ -25,10 +25,6 @@ void DarkTheme()
 	colors[ImGuiCol_FrameBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
 	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.19f, 0.19f, 0.19f, 0.54f);
 	colors[ImGuiCol_FrameBgActive] = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
-
-	colors[ImNodesCol_GridBackground] = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
-	
-	
 	colors[ImGuiCol_TitleBg] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
 	colors[ImGuiCol_TitleBgActive] = ImVec4(0.06f, 0.06f, 0.06f, 1.00f);
 	colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
@@ -91,6 +87,10 @@ void DarkTheme()
 	style.GrabRounding = 3;
 	style.LogSliderDeadzone = 4;
 	style.TabRounding = 4;
+
+	ImNodesStyle& nodeStyle = ImNodes::GetStyle();
+	nodeStyle.Colors[ImNodesCol_GridBackground] = IM_COL32(25, 23, 27, 255);
+	nodeStyle.Colors[ImNodesCol_GridLine] = IM_COL32(66, 60, 60, 130);
 }
 
 gs::ExampleApp::ExampleApp(const gs::String& name) : p_Name(name)
@@ -131,8 +131,8 @@ bool gs::ExampleApp::Init()
 
 	ImFont* font = io.Fonts->AddFontFromMemoryTTF((void*)&OpenSans[0], 529700, 18.0f);
 
-	DarkTheme();
 	ImNodes::StyleColorsDark();
+	DarkTheme();
 	return true;
 }
 

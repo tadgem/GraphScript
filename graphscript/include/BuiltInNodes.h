@@ -4,11 +4,78 @@
 using namespace gs;
 
 namespace gs {
+	
 	template<typename T>
-	class MutliplyNodeT : public Node
+	class AdditionNodeT : public Node
 	{
 	public:
-		MutliplyNodeT() : Node("Multiply")
+		AdditionNodeT(HashString name) : Node(name)
+		{
+			AddExecutionInput("in");
+			AddExecutionOutput("out");
+			AddDataInput<T>("input");
+			AddDataInput<T>("add");
+			AddDataOutput<T>("result");
+		}
+
+		void Process() override
+		{
+			DataSocketT<T>* inputSocket = (DataSocketT<T>*) m_InputDataSockets["input"];
+			DataSocketT<T>* addSocket = (DataSocketT<T>*) m_InputDataSockets["add"];
+			DataSocketT<T>* resultSocket = (DataSocketT<T>*) m_OutputDataSockets["result"];
+
+			if (!inputSocket->Get().has_value() || !addSocket->Get().has_value())
+			{
+				return;
+			}
+
+			resultSocket->Set(inputSocket->Get().value() + addSocket->Get().value());
+		}
+
+		Node* Clone() override
+		{
+			return new AdditionNodeT<T>(m_NodeName);
+		}
+	};
+
+	template<typename T>
+	class SubtractNodeT : public Node
+	{
+	public:
+		SubtractNodeT(HashString name) : Node(name)
+		{
+			AddExecutionInput("in");
+			AddExecutionOutput("out");
+			AddDataInput<T>("input");
+			AddDataInput<T>("add");
+			AddDataOutput<T>("result");
+		}
+
+		void Process() override
+		{
+			DataSocketT<T>* inputSocket = (DataSocketT<T>*) m_InputDataSockets["input"];
+			DataSocketT<T>* subSocket = (DataSocketT<T>*) m_InputDataSockets["add"];
+			DataSocketT<T>* resultSocket = (DataSocketT<T>*) m_OutputDataSockets["result"];
+
+			if (!inputSocket->Get().has_value() || !subSocket->Get().has_value())
+			{
+				return;
+			}
+
+			resultSocket->Set(inputSocket->Get().value() - subSocket->Get().value());
+		}
+
+		Node* Clone() override
+		{
+			return new SubtractNodeT<T>(m_NodeName);
+		}
+	};
+
+	template<typename T>
+	class MultiplyNodeT : public Node
+	{
+	public:
+		MultiplyNodeT(HashString name) : Node(name)
 		{
 			AddExecutionInput("in");
 			AddExecutionOutput("out");
@@ -33,7 +100,40 @@ namespace gs {
 
 		Node* Clone() override
 		{
-			return new MutliplyNodeT<T>();
+			return new MultiplyNodeT<T>(m_NodeName);
+		}
+	};
+
+	template<typename T>
+	class DivideNodeT : public Node
+	{
+	public:
+		DivideNodeT(HashString name) : Node(name)
+		{
+			AddExecutionInput("in");
+			AddExecutionOutput("out");
+			AddDataInput<T>("input");
+			AddDataInput<T>("div");
+			AddDataOutput<T>("result");
+		}
+
+		void Process() override
+		{
+			DataSocketT<T>* inputSocket = (DataSocketT<T>*) m_InputDataSockets["input"];
+			DataSocketT<T>* divSocket = (DataSocketT<T>*) m_InputDataSockets["div"];
+			DataSocketT<T>* resultSocket = (DataSocketT<T>*) m_OutputDataSockets["result"];
+
+			if (!inputSocket->Get().has_value() || !divSocket->Get().has_value())
+			{
+				return;
+			}
+
+			resultSocket->Set(inputSocket->Get().value() / divSocket->Get().value());
+		}
+
+		Node* Clone() override
+		{
+			return new DivideNodeT<T>(m_NodeName);
 		}
 	};
 
@@ -41,7 +141,7 @@ namespace gs {
 	class PrintNodeT : public Node
 	{
 	public:
-		PrintNodeT() : Node("Print")
+		PrintNodeT(HashString name) : Node(name)
 		{
 			AddExecutionInput("in");
 			AddExecutionOutput("out");
@@ -62,7 +162,7 @@ namespace gs {
 
 		Node* Clone() override
 		{
-			return new PrintNodeT<T>();
+			return new PrintNodeT<T>(m_NodeName);
 		}
 	};
 
