@@ -2,9 +2,11 @@
 #include "imnodes.h"
 #include "Utils.h"
 
-gs::GraphScriptEditor::GraphScriptEditor(Context* context)
+gs::GraphScriptEditor::GraphScriptEditor(String projectDir, Context* context)
 {
 	p_Context = context;
+	p_ProjectPath = projectDir;
+	
 	p_UserPath.resize(150);
 	p_ProjectPath.resize(150);
 	p_NewGraphName.resize(150);
@@ -40,15 +42,6 @@ void gs::GraphScriptEditor::OnImGui()
 			}
 		}
 
-		ImGui::InputText("Project Path", p_ProjectPath.data(), 150);
-		if (ImGui::Button("Load Project"))
-		{
-			String projectSource = utils::LoadStringAtPath(p_ProjectPath);
-			if (!projectSource.empty())
-			{
-				// TODO:
-			}
-		}
 		if (ImGui::Button("Save Project"))
 		{
 			// TODO
@@ -136,7 +129,6 @@ void gs::GraphScriptEditor::HandleGraphBuilderImGui(GraphBuilder* builder, int& 
 			{
 				utils::Trim(p_NewFunctionName);
 				builder->AddFunction(HashString(p_NewFunctionName));
-				ResetString(p_NewFunctionName);
 			}
 			ImGui::Indent();
 			for (auto& [name, func] : builder->m_Functions)
@@ -198,9 +190,22 @@ void gs::GraphScriptEditor::HandleGraphBuilderImGui(GraphBuilder* builder, int& 
 			}
 
 			ImGui::Indent();
+			HashString nameToDelete(-1);
 			for (auto& [name, var] : builder->m_Variables)
 			{
 				ImGui::Text("%s : %s", name.m_Original.c_str(), var->m_Type.m_TypeHash.m_Original.c_str());
+				ImGui::SameLine();
+				ImGui::PushID(name.m_Value);
+				if (ImGui::Button("Delete"))
+				{
+					nameToDelete = name;
+				}
+				ImGui::PopID();
+			}
+
+			if (nameToDelete.m_Value != -1)
+			{
+				builder->DeleteVariable(nameToDelete);
 			}
 			ImGui::Unindent();
 		}
@@ -220,7 +225,10 @@ void gs::GraphScriptEditor::HandleGraphBuilderImGui(GraphBuilder* builder, int& 
 			stream << "EndNodePositions\n";
 
 			String finalString = stream.str();
-			utils::SaveStringAtPath(finalString, "output.gs");
+			SStream outputFileName;
+			utils::Trim(builder->m_Name.m_Original);
+			outputFileName << builder->m_Name.m_Original << ".gs";
+			utils::SaveStringAtPath(finalString, outputFileName.str());
 		}
 	}
 	ImGui::End();
@@ -231,9 +239,9 @@ void gs::GraphScriptEditor::HandleGraphBuilderImGui(GraphBuilder* builder, int& 
 
 	HandleAddNodeMenu(builder);
 
-	HandleVariableNodes(builder, idCounter, counterMap, dataSocketMap);
-
 	HandleNodes(builder, idCounter, counterMap, exeSocketMap, dataSocketMap);
+	
+	HandleVariableNodes(builder, idCounter, counterMap, dataSocketMap);
 	
 	HandleLinks(builder, idCounter, counterMap, exeLinkCounter, dataLinkCounter);
 
@@ -494,5 +502,10 @@ void gs::GraphScriptEditor::HandleCreateDestroyLinks(GraphBuilder* builder, Hash
 void gs::GraphScriptEditor::ResetString(String& str)
 {
 	str = "";
-	str.resize(150);
+	str.reserve(150);
+}
+
+gs::String gs::GraphScriptEditor::Serialize()
+{
+	return String();
 }

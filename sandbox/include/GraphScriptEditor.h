@@ -7,7 +7,7 @@ namespace gs
 	class GraphScriptEditor
 	{
 	public:
-		GraphScriptEditor(Context* context);
+		GraphScriptEditor(String projectDir, Context* context);
 
 		void OnImGui();
 
@@ -34,6 +34,7 @@ namespace gs
 		
 		void ResetString(String& str);
 
+		String Serialize();
 
 		String p_UserPath;
 		String p_ProjectPath;

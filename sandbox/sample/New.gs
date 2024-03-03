@@ -1,0 +1,22 @@
+BeginName
+    New
+EndName
+BeginFunctions
+    NewF
+EndFunctions
+BeginNodes
+    NewF
+EndNodes
+BeginVariables
+EndVariables
+BeginNodeDataConns
+EndNodeDataConns
+BeginVariableDataConns
+EndVariableDataConns
+BeginExeConns
+EndExeConns
+BeginDefaultValues
+EndDefaultValues
+BeginNodePositions
+1:0:0
+EndNodePositions

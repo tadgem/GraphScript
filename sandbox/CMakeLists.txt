@@ -1,15 +1,17 @@
 cmake_minimum_required(VERSION 3.17)
-project(GraphScript-Editor)
+project(GraphScript-Sandbox)
 
 set(CMAKE_CXX_STANDARD 17)
-add_executable(GraphScript-Editor
+add_executable(GraphScript-Sandbox
         "${LIBRARIES_DIR}/imgui/src/imgui_impl_glfw.cpp"
         "${LIBRARIES_DIR}/imgui/src/imgui_impl_opengl3.cpp"
         "src/main.cpp"
         "src/App.cpp"
         "src/Utils.cpp"
         "src/GraphScriptEditor.cpp"
+        "src/imgui_filedialog.cpp"
         "include/GraphScriptEditor.h"
+        "include/imgui_filedialog.h"
         "include/Utils.h"
         )
 

@@ -40,5 +40,8 @@ gs::Vector<gs::String> gs::utils::SplitStringByChar(const gs::String& str, char 
 void gs::utils::Trim(gs::String& s)
 {
 	s.erase(std::remove_if(s.begin(), s.end(), isspace), s.end());
+	s.erase(std::remove_if(s.begin(), s.end(), isblank), s.end());
+	s.erase(std::remove_if(s.begin(), s.end(), [](char c) { return c == '\0'; }), s.end());
+	s.shrink_to_fit();
 }
 

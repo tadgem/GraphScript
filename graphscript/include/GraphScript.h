@@ -349,7 +349,7 @@ protected:
 		void						DeleteNode(int index = -1);
 
 		template <typename T>
-		VariableT<T>* AddVariable(HashString variableName, Optional<T> value = Optional<T>())
+		VariableT<T>*	AddVariable(HashString variableName, Optional<T> value = Optional<T>())
 		{
 			if (m_Variables.find(variableName) == m_Variables.end())
 			{
@@ -364,6 +364,7 @@ protected:
 			}
 			return static_cast<VariableT<T>*>(m_Variables[variableName].get());
 		}
+		void			DeleteVariable(HashString variableName);
 
 		template<typename T>
 		DataConnectionT<T>*			ConnectDataSocket(DataSocketT<T>* lhs, DataSocketT<T>* rhs)

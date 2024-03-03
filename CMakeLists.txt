@@ -34,5 +34,5 @@ set(GRAPHSCRIPT_DIR "${LIBRARIES_DIR}/imgui" CACHE INTERNAL "")
 add_subdirectory(graphscript)
 
 add_subdirectory(example)
-add_subdirectory(editor)
+add_subdirectory(sandbox)
 add_subdirectory(deserialize)

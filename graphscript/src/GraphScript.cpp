@@ -141,6 +141,36 @@ DataConnection* gs::GraphBuilder::ConnectDataSocket(DataSocket* lhs, DataSocket*
 	return nullptr;
 }
 
+void gs::GraphBuilder::DeleteVariable(HashString variableName)
+{
+	if (m_Variables.find(variableName) == m_Variables.end())
+	{
+		return;
+	}
+
+	Variable* var = m_Variables[variableName].get();
+
+	Vector<int> dataConnectionsToRelease;
+
+	for (int i = 0; i < m_DataConnections.size(); i++)
+	{
+		if (m_DataConnections[i]->m_LHS == var->GetSocket() ||
+			m_DataConnections[i]->m_RHS == var->GetSocket())
+		{
+			delete m_DataConnections[i];
+			dataConnectionsToRelease.push_back(i);
+		}
+	}
+
+	for (int i = static_cast<int>(dataConnectionsToRelease.size() - 1); i >= 0; i--)
+	{
+		int index = dataConnectionsToRelease[i];
+		m_DataConnections.erase(m_DataConnections.begin() + index);
+	}
+	
+	m_Variables.erase(variableName);
+}
+
 void gs::GraphBuilder::DestroyDataConnection(int index)
 {
 	if (index < 0)
