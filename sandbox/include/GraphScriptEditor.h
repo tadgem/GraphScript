@@ -12,6 +12,14 @@ namespace gs
 		void OnImGui();
 
 	protected:
+
+		enum DeserializeState
+		{
+			Invalid = 0,
+			// BeginGraphs/EndGraphs
+			Graphs,
+		};
+
 		Context* p_Context;
 		Vector<GraphBuilder*> p_Builders;
 
@@ -33,8 +41,13 @@ namespace gs
 		void HandleCreateDestroyLinks(GraphBuilder* builder, HashMap<int, ExecutionSocket*>& exeSocketMap, HashMap<int, DataSocket*>& dataSocketMap, HashMap<int, int>& exeLinkCounter, HashMap<int, int>& dataLinkCounter);
 		
 		void ResetString(String& str);
+		void SaveGraph(GraphBuilder* builder);
 
-		String Serialize();
+		String	Serialize();
+		void	Deserialize();
+		void	ParseGraph(String line);
+
+		void HandleCurrentState(DeserializeState& s, String& l);
 
 		String p_UserPath;
 		String p_ProjectPath;

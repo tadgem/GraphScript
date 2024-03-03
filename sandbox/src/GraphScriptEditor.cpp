@@ -1,6 +1,7 @@
 #include "GraphScriptEditor.h"
 #include "imnodes.h"
 #include "Utils.h"
+#include <filesystem>
 
 gs::GraphScriptEditor::GraphScriptEditor(String projectDir, Context* context)
 {
@@ -13,6 +14,8 @@ gs::GraphScriptEditor::GraphScriptEditor(String projectDir, Context* context)
 	p_NewFunctionName.resize(150);
 	p_NewDataSocketName.resize(150);
 	p_NewVariableName.resize(150);
+
+	Deserialize();
 }
 
 void gs::GraphScriptEditor::OnImGui()
@@ -45,6 +48,8 @@ void gs::GraphScriptEditor::OnImGui()
 		if (ImGui::Button("Save Project"))
 		{
 			// TODO
+			String data = Serialize();
+			utils::SaveStringAtPath(data, p_ProjectPath);
 			// GraphBuilder paths
 			// Instances
 			// Arg Sets
@@ -212,23 +217,7 @@ void gs::GraphScriptEditor::HandleGraphBuilderImGui(GraphBuilder* builder, int& 
 		ImGui::Separator();
 		if (ImGui::Button("Save to file"))
 		{
-			String gsString = builder->Serialize();
-
-			SStream stream;
-
-			stream << gsString;
-			stream << "BeginNodePositions\n";
-			for (auto& [index, pos] : p_NodePositions[builder])
-			{
-				stream << index << ":" << pos.x << ":" << pos.y << "\n";
-			}
-			stream << "EndNodePositions\n";
-
-			String finalString = stream.str();
-			SStream outputFileName;
-			utils::Trim(builder->m_Name.m_Original);
-			outputFileName << builder->m_Name.m_Original << ".gs";
-			utils::SaveStringAtPath(finalString, outputFileName.str());
+			SaveGraph(builder);
 		}
 	}
 	ImGui::End();
@@ -505,7 +494,112 @@ void gs::GraphScriptEditor::ResetString(String& str)
 	str.reserve(150);
 }
 
+void gs::GraphScriptEditor::SaveGraph(GraphBuilder* builder)
+{
+	String gsString = builder->Serialize();
+
+	SStream stream;
+
+	stream << gsString;
+	stream << "BeginNodePositions\n";
+	for (auto& [index, pos] : p_NodePositions[builder])
+	{
+		stream << index << ":" << pos.x << ":" << pos.y << "\n";
+	}
+	stream << "EndNodePositions\n";
+
+	String finalString = stream.str();
+	SStream outputFileName;
+	utils::Trim(builder->m_Name.m_Original);
+	outputFileName << builder->m_Name.m_Original << ".gs";
+	utils::SaveStringAtPath(finalString, outputFileName.str());
+}
+
 gs::String gs::GraphScriptEditor::Serialize()
 {
-	return String();
+	SStream stream;
+
+	stream << "BeginGraphs\n";
+	for (int i = 0; i < p_Builders.size(); i++)
+	{
+		SStream outputNameStream;
+		outputNameStream << p_Builders[i]->m_Name.m_Original << ".gs";
+		String outputName = outputNameStream.str();
+		SaveGraph(p_Builders[i]);
+		stream << outputName << "\n";
+	}
+	
+	stream << "EndGraphs\n";
+
+	return stream.str();
 }
+
+void gs::GraphScriptEditor::Deserialize()
+{
+	p_SetPositions = true;
+	if (p_ProjectPath.empty())
+	{
+		return;
+	}
+	
+	String projectData = utils::LoadStringAtPath(p_ProjectPath);
+	Vector<String> lines = utils::SplitStringByChar(projectData, '\n');
+	DeserializeState s = DeserializeState::Invalid;
+
+	for (auto& line : lines)
+	{
+
+		DeserializeState previous = s;
+		HandleCurrentState(s, line);
+
+		if (s == DeserializeState::Invalid)
+		{
+			continue;
+		}
+
+		if (previous == DeserializeState::Invalid)
+		{
+			continue;
+		}
+
+		switch (s)
+		{
+		case Graphs:
+			ParseGraph(line);
+			break;
+		case Invalid:
+			break;
+		default:
+			break;
+		}
+
+	}
+
+	String path = std::filesystem::current_path().string();
+	SStream finalPath;
+	finalPath << path << "/imgui.ini";
+	ImGui::LoadIniSettingsFromDisk(finalPath.str().c_str());
+
+}
+
+void gs::GraphScriptEditor::ParseGraph(String line)
+{
+	String source = utils::LoadStringAtPath(line);
+	GraphBuilder* builder = p_Context->DeserializeGraph(source);
+	ParseGraphNodePositions(source, builder);
+	p_Builders.push_back(builder);
+}
+
+void gs::GraphScriptEditor::HandleCurrentState(DeserializeState& s, String& l)
+{
+	if (l == "BeginGraphs")
+	{
+		s = DeserializeState::Graphs;
+	}
+	if (l == "EndGraphs")
+	{
+		s = DeserializeState::Invalid;
+	}
+
+}
+
