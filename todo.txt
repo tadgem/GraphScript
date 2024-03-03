@@ -1,5 +1,4 @@
-- map path - graph in project 
-- path - graph serialization
+- implement imgui for variable sets
 - serialize variable sets
 - serialize instances and index of variable set used. 
 
