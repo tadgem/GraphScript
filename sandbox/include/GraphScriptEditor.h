@@ -40,6 +40,8 @@ namespace gs
 		void HandleLinks(GraphBuilder* builder, int& idCounter, HashMap<void*, int>& counterMap, HashMap<int, int>& exeLinkCounter, HashMap<int, int>& dataLinkCounter);
 		void HandleCreateDestroyLinks(GraphBuilder* builder, HashMap<int, ExecutionSocket*>& exeSocketMap, HashMap<int, DataSocket*>& dataSocketMap, HashMap<int, int>& exeLinkCounter, HashMap<int, int>& dataLinkCounter);
 		
+		void HandleVariableInput(HashString name, Variable* var);
+
 		void ResetString(String& str);
 		void SaveGraph(GraphBuilder* builder);
 

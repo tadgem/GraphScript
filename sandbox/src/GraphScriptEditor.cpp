@@ -54,8 +54,40 @@ void gs::GraphScriptEditor::OnImGui()
 
 		ImGui::Separator();
 		ImGui::TextUnformatted("Variable Sets");
-		for (EditorVariableSet& set : m_VariableSets)
+		if (ImGui::Button("Add"))
 		{
+			m_VariableSets.push_back(EditorVariableSet());
+		}
+		for (int i =0; i < m_VariableSets.size() ; i++)
+		{
+			EditorVariableSet& set = m_VariableSets[i];
+			SStream str;
+			str << "Variable Set [" << i << "]";
+			if (ImGui::CollapsingHeader(str.str().c_str()))
+			{
+				ImGui::Indent();
+				ImGui::InputText("New Variable Name", p_NewVariableName.data(), 150);
+				if (ImGui::BeginCombo("Variable Type", "Please Choose"))
+				{
+					for (auto& proto : p_Context->GetAllVariables())
+					{
+						if (ImGui::MenuItem(proto->m_Type.m_TypeHash.m_Original.c_str()))
+						{
+							utils::Trim(p_NewVariableName);
+							set.emplace(p_NewVariableName, proto->Clone());
+						}
+					}
+					ImGui::EndCombo();
+				}
+				ImGui::Separator();
+
+				for (auto& [name, var] : set)
+				{
+					ImGui::Text(name.m_Original.c_str());
+					HandleVariableInput(name, var);
+					ImGui::Separator();
+				}
+			}
 			// var name input
 			// type selector
 			// add
@@ -494,6 +526,71 @@ void gs::GraphScriptEditor::HandleCreateDestroyLinks(GraphBuilder* builder, Hash
 			builder->DestroyDataConnection(dataLinkCounter[p_SelectedLink]);
 			p_SelectedLink = INT_MIN;
 		}
+	}
+}
+
+void gs::GraphScriptEditor::HandleVariableInput(HashString name, Variable* var)
+{
+	if (var->m_Type.m_TypeHash.m_Value == 47833) // string typehash
+	{
+		VariableT<String>* strVar = (VariableT<String>*) var;
+
+		String str = strVar->Get();
+
+		if (str.size() <= 0)
+		{
+			str = "Hello World, from Graph Script! A needlessly long string!";
+		}
+		ImGui::InputText(name.m_Original.c_str(), str.data(), str.capacity());
+
+		strVar->Set(str);
+	}
+	else if (var->m_Type.m_TypeHash == HashString("unsigned long"))
+	{
+		VariableT<u32>* u32Var= (VariableT<u32>*) var;
+
+		u32 val = u32Var->Get();
+
+		ImGui::InputScalar(name.m_Original.c_str(), ImGuiDataType_U32, &val);
+
+		u32Var->Set(val);
+	}
+
+	else if (var->m_Type.m_TypeHash == HashString("long"))
+	{
+		VariableT<i32>* i32Var = (VariableT<i32>*) var;
+
+		i32 val = i32Var->Get();
+
+		ImGui::InputScalar(name.m_Original.c_str(), ImGuiDataType_S32, &val);
+
+		i32Var->Set(val);
+	}
+
+	else if (var->m_Type.m_TypeHash == HashString("float"))
+	{
+		VariableT<float>* floatVar = (VariableT<float>*) var;
+
+		float val = floatVar->Get();
+
+		ImGui::InputScalar(name.m_Original.c_str(), ImGuiDataType_Float, &val);
+
+		floatVar->Set(val);
+	}
+
+	else if (var->m_Type.m_TypeHash == HashString("bool"))
+	{
+		VariableT<bool>* boolVar = (VariableT<bool>*) var;
+
+		bool val = boolVar->Get();
+		ImGui::Checkbox(name.m_Original.c_str(), &val);
+
+		boolVar->Set(val);
+	}
+
+	else
+	{
+		ImGui::Text("%s : No ImGui", name.m_Original.c_str());
 	}
 }
 

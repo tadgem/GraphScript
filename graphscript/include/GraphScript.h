@@ -188,18 +188,24 @@ namespace gs
 
 		VariableT() : Variable(GetTypeT<T>::s_TypeInstance)
 		{
+			m_Value = T();
 		}
 
 		VariableT(T value) : Variable(GetTypeT<T>::s_TypeInstance)
 		{
 			Set(value);
+
+			if (!m_Value.has_value())
+			{
+				m_Value = T();
+			}
 		}
 
 		VariableT(VariableT<T>& other) = default;
 
 		T		Get()
 		{
-			T val = std::any_cast<T>(m_Value);
+			return std::any_cast<T>(m_Value);
 		}
 		void	Set(const T& other)
 		{
