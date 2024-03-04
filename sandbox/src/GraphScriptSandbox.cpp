@@ -1,9 +1,9 @@
-#include "GraphScriptEditor.h"
+#include "GraphScriptSandbox.h"
 #include "imnodes.h"
 #include "Utils.h"
 #include <filesystem>
 
-gs::GraphScriptEditor::GraphScriptEditor(String projectDir, Context* context)
+gs::GraphScriptSandbox::GraphScriptSandbox(String projectDir, Context* context)
 {
 	p_Context = context;
 	p_ProjectPath = projectDir;
@@ -18,7 +18,7 @@ gs::GraphScriptEditor::GraphScriptEditor(String projectDir, Context* context)
 	Deserialize();
 }
 
-void gs::GraphScriptEditor::OnImGui()
+void gs::GraphScriptSandbox::OnImGui()
 {
 	int idCounter = 1;
 	HashMap<void*, int> counterMap;
@@ -106,7 +106,7 @@ void gs::GraphScriptEditor::OnImGui()
 
 }
 
-void gs::GraphScriptEditor::ParseGraphNodePositions(String& source, GraphBuilder* b)
+void gs::GraphScriptSandbox::ParseGraphNodePositions(String& source, GraphBuilder* b)
 {
 	Vector<String> lines = utils::SplitStringByChar(source, '\n');
 
@@ -140,7 +140,7 @@ void gs::GraphScriptEditor::ParseGraphNodePositions(String& source, GraphBuilder
 }
 
 
-void gs::GraphScriptEditor::HandleGraphBuilderImGui(GraphBuilder* builder, int& idCounter)
+void gs::GraphScriptSandbox::HandleGraphBuilderImGui(GraphBuilder* builder, int& idCounter)
 {
 	HashMap<void*, int> counterMap;
 	HashMap<int, ExecutionSocket*> exeSocketMap;
@@ -271,7 +271,7 @@ void gs::GraphScriptEditor::HandleGraphBuilderImGui(GraphBuilder* builder, int& 
 	HandleCreateDestroyLinks(builder, exeSocketMap, dataSocketMap, exeLinkCounter, dataLinkCounter);
 }
 
-void gs::GraphScriptEditor::HandleAddNodeMenu(GraphBuilder* builder, int& idCounter)
+void gs::GraphScriptSandbox::HandleAddNodeMenu(GraphBuilder* builder, int& idCounter)
 {
 	if (ImGui::IsMouseDown(ImGuiMouseButton_Right))
 	{
@@ -305,7 +305,7 @@ void gs::GraphScriptEditor::HandleAddNodeMenu(GraphBuilder* builder, int& idCoun
 	}
 }
 
-void gs::GraphScriptEditor::HandleVariableNodes(GraphBuilder* builder, int& idCounter, HashMap<void*, int>& counterMap, HashMap<int, DataSocket*>& dataSocketMap)
+void gs::GraphScriptSandbox::HandleVariableNodes(GraphBuilder* builder, int& idCounter, HashMap<void*, int>& counterMap, HashMap<int, DataSocket*>& dataSocketMap)
 {
 	for (auto& [name, var] : builder->m_Variables)
 	{
@@ -345,7 +345,7 @@ void gs::GraphScriptEditor::HandleVariableNodes(GraphBuilder* builder, int& idCo
 	}
 }
 
-void gs::GraphScriptEditor::HandleNodes(GraphBuilder* builder, int& idCounter, HashMap<void*, int>& counterMap, HashMap<int, ExecutionSocket*>& exeSocketMap, HashMap<int, DataSocket*>& dataSocketMap)
+void gs::GraphScriptSandbox::HandleNodes(GraphBuilder* builder, int& idCounter, HashMap<void*, int>& counterMap, HashMap<int, ExecutionSocket*>& exeSocketMap, HashMap<int, DataSocket*>& dataSocketMap)
 {
 	bool anyNodeSelected = false;
 
@@ -460,7 +460,7 @@ void gs::GraphScriptEditor::HandleNodes(GraphBuilder* builder, int& idCounter, H
 	}
 }
 
-void gs::GraphScriptEditor::HandleLinks(GraphBuilder* builder, int& idCounter, HashMap<void*, int>& counterMap, HashMap<int, int>& exeLinkCounter, HashMap<int, int>& dataLinkCounter)
+void gs::GraphScriptSandbox::HandleLinks(GraphBuilder* builder, int& idCounter, HashMap<void*, int>& counterMap, HashMap<int, int>& exeLinkCounter, HashMap<int, int>& dataLinkCounter)
 {
 	for (int j = 0; j < builder->m_ExecutionConnections.size(); j++)
 	{
@@ -493,7 +493,7 @@ void gs::GraphScriptEditor::HandleLinks(GraphBuilder* builder, int& idCounter, H
 	}
 }
 
-void gs::GraphScriptEditor::HandleCreateDestroyLinks(GraphBuilder* builder, HashMap<int, ExecutionSocket*>& exeSocketMap, HashMap<int, DataSocket*>& dataSocketMap, HashMap<int, int>& exeLinkCounter, HashMap<int, int>& dataLinkCounter)
+void gs::GraphScriptSandbox::HandleCreateDestroyLinks(GraphBuilder* builder, HashMap<int, ExecutionSocket*>& exeSocketMap, HashMap<int, DataSocket*>& dataSocketMap, HashMap<int, int>& exeLinkCounter, HashMap<int, int>& dataLinkCounter)
 {
 	int start_attr, end_attr;
 	if (ImNodes::IsLinkCreated(&start_attr, &end_attr))
@@ -529,7 +529,7 @@ void gs::GraphScriptEditor::HandleCreateDestroyLinks(GraphBuilder* builder, Hash
 	}
 }
 
-void gs::GraphScriptEditor::HandleVariableInput(HashString name, Variable* var)
+void gs::GraphScriptSandbox::HandleVariableInput(HashString name, Variable* var)
 {
 	if (var->m_Type.m_TypeHash.m_Value == 47833) // string typehash
 	{
@@ -539,7 +539,7 @@ void gs::GraphScriptEditor::HandleVariableInput(HashString name, Variable* var)
 
 		if (str.size() <= 0)
 		{
-			str = "Hello World, from Graph Script! A needlessly long string!";
+			str = "Hello World from Graph Script! Don't use commas or else!";
 		}
 		ImGui::InputText(name.m_Original.c_str(), str.data(), str.capacity());
 
@@ -594,13 +594,13 @@ void gs::GraphScriptEditor::HandleVariableInput(HashString name, Variable* var)
 	}
 }
 
-void gs::GraphScriptEditor::ResetString(String& str)
+void gs::GraphScriptSandbox::ResetString(String& str)
 {
 	str = "";
 	str.reserve(150);
 }
 
-void gs::GraphScriptEditor::SaveGraph(GraphBuilder* builder)
+void gs::GraphScriptSandbox::SaveGraph(GraphBuilder* builder)
 {
 	String gsString = builder->Serialize();
 
@@ -621,7 +621,7 @@ void gs::GraphScriptEditor::SaveGraph(GraphBuilder* builder)
 	utils::SaveStringAtPath(finalString, outputFileName.str());
 }
 
-gs::String gs::GraphScriptEditor::Serialize()
+gs::String gs::GraphScriptSandbox::Serialize()
 {
 	SStream stream;
 
@@ -635,12 +635,23 @@ gs::String gs::GraphScriptEditor::Serialize()
 		stream << outputName << "\n";
 	}
 	
-	stream << "EndGraphs\n";
+	stream << "EndGraphs\nBeginVariableSets\n";
+	for (int i = 0; i < m_VariableSets.size(); i++)
+	{
+		SStream output;
+		output << i << ",";
+		for (auto& [name, val] : m_VariableSets[i])
+		{
+			output << name.m_Original << ":" << val->m_Type.m_TypeHash.m_Value << ":" << GraphBuilder::AnyToString(val->m_Value) << ",";
+		}
+		stream << output.str() << "\n";
+	}
+	stream << "EndVariableSets\n";
 
 	return stream.str();
 }
 
-void gs::GraphScriptEditor::Deserialize()
+void gs::GraphScriptSandbox::Deserialize()
 {
 	p_SetPositions = true;
 	if (p_ProjectPath.empty())
@@ -654,7 +665,6 @@ void gs::GraphScriptEditor::Deserialize()
 
 	for (auto& line : lines)
 	{
-
 		DeserializeState previous = s;
 		HandleCurrentState(s, line);
 
@@ -673,6 +683,9 @@ void gs::GraphScriptEditor::Deserialize()
 		case Graphs:
 			ParseGraph(line);
 			break;
+		case VariableSets:
+			ParseVariableSet(line);
+			break;
 		case Invalid:
 			break;
 		default:
@@ -688,7 +701,7 @@ void gs::GraphScriptEditor::Deserialize()
 
 }
 
-void gs::GraphScriptEditor::ParseGraph(String line)
+void gs::GraphScriptSandbox::ParseGraph(String line)
 {
 	String source = utils::LoadStringAtPath(line);
 	GraphBuilder* builder = p_Context->DeserializeGraph(source);
@@ -696,13 +709,58 @@ void gs::GraphScriptEditor::ParseGraph(String line)
 	p_Builders.push_back(builder);
 }
 
-void gs::GraphScriptEditor::HandleCurrentState(DeserializeState& s, String& l)
+void gs::GraphScriptSandbox::ParseVariableSet(String line)
+{
+	Vector<String> parts = utils::SplitStringByChar(line, ',');
+
+	GS_ASSERT(parts.size() > 0);
+
+	if (parts.size() == 1)
+	{
+		return;
+	}
+
+	EditorVariableSet vars;
+
+	for (int i = 1; i < parts.size(); i++)
+	{
+		Vector<String> components = utils::SplitStringByChar(parts[i], ':');
+		GS_ASSERT(components.size() == 3);
+		HashString name = components[0];
+		u64 typeHash = std::stoull(components[1]);
+		Any val = GraphBuilder::StringToAny(components[2], typeHash);
+
+		for (auto& proto : p_Context->GetAllVariables())
+		{
+			if (proto->m_Type.m_TypeHash.m_Value == typeHash)
+			{
+				Variable* clone = proto->Clone();
+				clone->SetValue(val);
+				vars.emplace(name, clone);
+			}
+		}
+	}
+
+	m_VariableSets.push_back(vars);
+
+}
+
+void gs::GraphScriptSandbox::HandleCurrentState(DeserializeState& s, String& l)
 {
 	if (l == "BeginGraphs")
 	{
 		s = DeserializeState::Graphs;
 	}
 	if (l == "EndGraphs")
+	{
+		s = DeserializeState::Invalid;
+	}
+
+	if (l == "BeginVariableSets")
+	{
+		s = DeserializeState::VariableSets;
+	}
+	if (l == "EndVariableSets")
 	{
 		s = DeserializeState::Invalid;
 	}

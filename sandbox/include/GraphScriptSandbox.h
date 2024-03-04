@@ -4,10 +4,10 @@
 #include "imgui.h"
 namespace gs
 {
-	class GraphScriptEditor
+	class GraphScriptSandbox
 	{
 	public:
-		GraphScriptEditor(String projectDir, Context* context);
+		GraphScriptSandbox(String projectDir, Context* context);
 
 		void OnImGui();
 
@@ -18,6 +18,8 @@ namespace gs
 			Invalid = 0,
 			// BeginGraphs/EndGraphs
 			Graphs,
+			// BeginVariableSets/EndVariableSets
+			VariableSets,
 		};
 
 		Context* p_Context;
@@ -48,6 +50,7 @@ namespace gs
 		String	Serialize();
 		void	Deserialize();
 		void	ParseGraph(String line);
+		void	ParseVariableSet(String line);
 
 		void HandleCurrentState(DeserializeState& s, String& l);
 

@@ -1,5 +1,4 @@
-- implement imgui for variable sets
-- serialize variable sets
+- implement adding instances and serializing instances
 - serialize instances and index of variable set used. 
 
 // then

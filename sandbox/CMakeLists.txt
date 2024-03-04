@@ -8,9 +8,9 @@ add_executable(GraphScript-Sandbox
         "src/main.cpp"
         "src/App.cpp"
         "src/Utils.cpp"
-        "src/GraphScriptEditor.cpp"
+        "src/GraphScriptSandbox.cpp"
         "src/imgui_filedialog.cpp"
-        "include/GraphScriptEditor.h"
+        "include/GraphScriptSandbox.h"
         "include/imgui_filedialog.h"
         "include/Utils.h"
         )

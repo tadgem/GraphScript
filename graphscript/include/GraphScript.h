@@ -413,8 +413,11 @@ protected:
 		i32					GetNodeIndex(Node* node);
 		void				PrintNodeSockets(Node* node);
 		Graph*				Build();
+		static String		AnyToString(Any& any);
+		static Any			StringToAny(String& str, u64 typeHash);
 		Context*		p_Context;
 		friend class Context;
+		friend class GraphScriptSandbox;
 	};
 
 	class Context

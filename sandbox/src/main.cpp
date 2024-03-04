@@ -2,7 +2,7 @@
 #include <imgui.h>
 #include "imnodes.h"
 #include "GraphScript.h"
-#include "GraphScriptEditor.h"
+#include "GraphScriptSandbox.h"
 #include "BuiltInNodes.h"
 #include "Utils.h"
 #include "imgui_filedialog.h"
@@ -12,7 +12,7 @@ using namespace gs;
 int main() {
 	ExampleApp app("Sandbox");
 	Context context;
-	GraphScriptEditor* editor = nullptr;
+	GraphScriptSandbox* editor = nullptr;
 
 	bool m_OpenProjectFileDialog = true;
 	ImFileDialogInfo m_FileDialogInfo;
@@ -30,7 +30,7 @@ int main() {
 				// Result path in: m_fileDialogInfo.resultPath
 				std::filesystem::current_path(m_FileDialogInfo.directoryPath);
 				String projectPath = m_FileDialogInfo.resultPath.string();
-				editor = new GraphScriptEditor(projectPath, &context);
+				editor = new GraphScriptSandbox(projectPath, &context);
 			}
 		}
 

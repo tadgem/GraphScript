@@ -203,7 +203,7 @@ void gs::GraphBuilder::DestroyExecutionConnection(int index)
 }
 
 
-String AnyToString(Any& any)
+String GraphBuilder::AnyToString(Any& any)
 {
 	if (!any.has_value())
 	{
@@ -267,7 +267,7 @@ String AnyToString(Any& any)
 	return "";
 }
 
-Any StringToAny(String& str, u64 typeHash)
+Any GraphBuilder::StringToAny(String& str, u64 typeHash)
 {
 	if (str.empty())
 	{
@@ -286,12 +286,12 @@ Any StringToAny(String& str, u64 typeHash)
 
 	if (typeHash == HashString("unsigned short"))
 	{
-		return Any{ std::stoul(str) };
+		return Any{ (u16)std::stoul(str) };
 	}
 
 	if (typeHash == HashString("unsigned char"))
 	{
-		return Any{ std::stoul(str) };
+		return Any{ (u8)std::stoul(str) };
 	}
 
 	if (typeHash == HashString("long long"))
@@ -301,17 +301,17 @@ Any StringToAny(String& str, u64 typeHash)
 
 	if (typeHash == HashString("long"))
 	{
-		return Any{ std::stoi(str) };
+		return Any{ std::stol(str) };
 	}
 
 	if (typeHash == HashString("short"))
 	{
-		return Any{ std::stoi(str) };
+		return Any{ (short)std::stoi(str) };
 	}
 
 	if (typeHash == HashString("char"))
 	{
-		return Any{ std::stoi(str) };
+		return Any{ (char)std::stoi(str) };
 	}
 
 	if (typeHash == HashString("float"))
@@ -324,7 +324,7 @@ Any StringToAny(String& str, u64 typeHash)
 		return Any{ std::stod(str) };
 	}
 
-	if (typeHash == HashString("std::string"))
+	if (typeHash == GetTypeHash<String>())
 	{
 		return Any{ str };
 	}
@@ -1301,7 +1301,7 @@ void gs::Context::Parser::ParseDefaultValues(GraphBuilder* builder, String& line
 	GS_ASSERT(parts.size() == 3, "There should be 3 parts in a variable default value, name, hash, val");
 	HashString name = parts[0];
 	u64 typeHash = std::stoull(parts[1]);
-	builder->m_Variables[name]->SetValue(StringToAny(parts[2], typeHash));
+	builder->m_Variables[name]->SetValue(GraphBuilder::StringToAny(parts[2], typeHash));
 }
 
 void gs::Context::Parser::AddOutputDataSocket(Node* node, String name, u64 typeHash)
