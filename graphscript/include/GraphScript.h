@@ -341,6 +341,7 @@ namespace gs
 		FunctionCallResult CallFunction(HashString nameOfMethod, VariableSet args);
 	
 protected:
+		friend class GraphScriptSandbox;
 		ExecutionSocket*	FindRHS(ExecutionSocket* lhs);
 		Node*				GetNode(ExecutionSocket* socket);
 		void				ProcessDataConnections();

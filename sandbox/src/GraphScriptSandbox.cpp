@@ -86,13 +86,25 @@ void gs::GraphScriptSandbox::OnImGui()
 			int indexToRemove = -1;
 			if (ImGui::CollapsingHeader("Active Instances"))
 			{
+				ImGui::SliderInt("Variable Set", &p_SelectedVariableSet, -1, m_VariableSets.size() - 1);
 				for (int i = 0; i < p_Instances.size(); i++)
 				{
 					ImGui::PushID(i);
 					ImGui::Text("%d : %s", i, p_Instances[i]->m_Name.m_Original.c_str());
+					ImGui::SameLine();
 					if (ImGui::Button("Delete"))
 					{
 						indexToRemove = i;
+					}
+					for (auto& [name, func] : p_Instances[i]->p_Functions)
+					{
+						if (ImGui::Button(name.m_Original.c_str()))
+						{
+							if (p_SelectedVariableSet > -1)
+							{
+								p_Instances[i]->CallFunction(name, ToVariableSet(m_VariableSets[p_SelectedVariableSet]));
+							}
+						}
 					}
 					ImGui::PopID();
 				}
@@ -836,5 +848,16 @@ void gs::GraphScriptSandbox::HandleCurrentState(DeserializeState& s, String& l)
 		s = DeserializeState::Invalid;
 	}
 
+}
+
+gs::VariableSet gs::GraphScriptSandbox::ToVariableSet(EditorVariableSet& editorSet)
+{
+	VariableSet set;
+
+	for (auto& [name, var] : editorSet)
+	{
+		set.emplace(name, var->m_Value);
+	}
+	return set;
 }
 

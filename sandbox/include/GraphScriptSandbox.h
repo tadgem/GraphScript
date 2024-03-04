@@ -71,12 +71,15 @@ namespace gs
 
 		Vector<EditorVariableSet> m_VariableSets;
 
+		VariableSet ToVariableSet(EditorVariableSet& editorSet);
+
 		bool p_SetPositions = false;
 		bool p_ShowNodesPopup = false;
 		ImVec2 p_PopupPos;
 
 		int p_SelectedNode = INT_MIN;
 		int p_SelectedLink = INT_MIN;
+		int p_SelectedVariableSet = -1;
 	};
 }
 
