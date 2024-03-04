@@ -65,7 +65,8 @@ namespace gs
 		String p_NewFunctionName;
 		String p_NewDataSocketName;
 		String p_NewVariableName;
-		
+		String p_FunctionToCallName;
+
 		using EditorVariableSet = HashMap<HashString, Variable*>;
 
 		Vector<EditorVariableSet> m_VariableSets;

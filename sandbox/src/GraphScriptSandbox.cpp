@@ -14,6 +14,7 @@ gs::GraphScriptSandbox::GraphScriptSandbox(String projectDir, Context* context)
 	p_NewFunctionName.resize(150);
 	p_NewDataSocketName.resize(150);
 	p_NewVariableName.resize(150);
+	p_FunctionToCallName.resize(150);
 
 	Deserialize();
 }
