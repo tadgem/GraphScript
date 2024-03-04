@@ -29,6 +29,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}/include")
 target_link_libraries(${PROJECT_NAME} "imgui" "${CMAKE_DL_LIBS}")
 
 # graphscript
-target_link_libraries(${PROJECT_NAME} GraphScript)
-target_include_directories(${PROJECT_NAME} PRIVATE "${ROOT_DIR}/graphscript/include" "include")
+target_link_libraries(${PROJECT_NAME} GraphScript GraphScript-Raylib)
+target_include_directories(${PROJECT_NAME} PRIVATE "${ROOT_DIR}/graphscript/include" "include" ${GRAPHSCRIPT_RAYLIB_HEADERS})
 

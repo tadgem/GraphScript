@@ -17,7 +17,7 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
 set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "Build the GLFW test programs")
 set(GLFW_BUILD_DOCS OFF CACHE INTERNAL "Build the GLFW documentation")
 set(GLFW_INSTALL OFF CACHE INTERNAL "Generate installation target")
-add_subdirectory("${GLFW_DIR}")
+# add_subdirectory("${GLFW_DIR}")
 
 # imgui
 set(IMGUI_DIR "${LIBRARIES_DIR}/imgui" CACHE INTERNAL "")
@@ -32,6 +32,8 @@ target_include_directories("imgui" PRIVATE "${IMGUI_DIR}/include")
 # graphscript
 set(GRAPHSCRIPT_DIR "${LIBRARIES_DIR}/imgui" CACHE INTERNAL "")
 add_subdirectory(graphscript)
+add_subdirectory(submodules/raylib)
+add_subdirectory(graphscript-raylib)
 
 add_subdirectory(example)
 add_subdirectory(sandbox)
