@@ -672,7 +672,12 @@ gs::String gs::GraphScriptSandbox::Serialize()
 		}
 		stream << output.str() << "\n";
 	}
-	stream << "EndVariableSets\n";
+	stream << "EndVariableSets\nBeginGraphInstances\n";
+	for (int i = 0; i < p_Instances.size(); i++)
+	{
+		stream << p_Instances[i]->m_Name.m_Original << "\n";
+	}
+	stream << "EndGraphInstances\n";
 
 	return stream.str();
 }
@@ -711,6 +716,9 @@ void gs::GraphScriptSandbox::Deserialize()
 			break;
 		case VariableSets:
 			ParseVariableSet(line);
+			break;
+		case GraphInstances:
+			ParseGraphInstance(line);
 			break;
 		case Invalid:
 			break;
@@ -768,6 +776,20 @@ void gs::GraphScriptSandbox::ParseVariableSet(String line)
 	}
 
 	m_VariableSets.push_back(vars);
+
+}
+
+void gs::GraphScriptSandbox::ParseGraphInstance(String line)
+{
+	HashString name(line);
+	for (int i = 0; i < p_Builders.size(); i++)
+	{
+		if (p_Builders[i]->m_Name == name)
+		{
+			p_Instances.push_back(p_Context->BuildGraph(p_Builders[i]));
+			return;
+		}
+	}
 
 }
 

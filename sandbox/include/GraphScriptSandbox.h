@@ -55,6 +55,7 @@ namespace gs
 		void	Deserialize();
 		void	ParseGraph(String line);
 		void	ParseVariableSet(String line);
+		void	ParseGraphInstance(String line);
 
 		void HandleCurrentState(DeserializeState& s, String& l);
 
