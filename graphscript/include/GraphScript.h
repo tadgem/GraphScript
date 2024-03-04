@@ -4,9 +4,15 @@
 
 #ifndef GRAPHSCRIPT_GUARD_H
 #define GRAPHSCRIPT_GUARD_H
+
 #include "TypeDef.h"
 namespace gs
 {
+	namespace utils
+	{
+		String		AnyToString(Any& any);
+		Any			StringToAny(String& str, u64 typeHash);
+	}
 	using VariableSet = HashMap<HashString, Any>;
 	
 	enum FunctionCallResult
@@ -420,8 +426,6 @@ protected:
 		i32					GetNodeIndex(Node* node);
 		void				PrintNodeSockets(Node* node);
 		Graph*				Build();
-		static String		AnyToString(Any& any);
-		static Any			StringToAny(String& str, u64 typeHash);
 		Context*		p_Context;
 		friend class Context;
 		friend class GraphScriptSandbox;
@@ -463,11 +467,15 @@ protected:
 		}
 
 		template<typename T>
-		void RegisterType()
+		void RegisterType(String typeName)
 		{
 			p_Variables.push_back(CreateUnique<VariableT<T>>());
 			p_Sockets.push_back(CreateUnique<DataSocketT<T>>());
 			p_DataConnections.push_back(CreateUnique<DataConnectionT<T>>(nullptr, nullptr));
+
+			SStream stream;
+			stream << "Set(" << typeName << ")";
+			p_Nodes.push_back(new SetNodeT<T>(stream.str()));
 		}
 
 		template<typename T>

@@ -203,7 +203,7 @@ void gs::GraphBuilder::DestroyExecutionConnection(int index)
 }
 
 
-String GraphBuilder::AnyToString(Any& any)
+String utils::AnyToString(Any& any)
 {
 	if (!any.has_value())
 	{
@@ -267,7 +267,7 @@ String GraphBuilder::AnyToString(Any& any)
 	return "";
 }
 
-Any GraphBuilder::StringToAny(String& str, u64 typeHash)
+Any utils::StringToAny(String& str, u64 typeHash)
 {
 	if (str.empty())
 	{
@@ -414,7 +414,7 @@ String gs::GraphBuilder::Serialize()
 	{
 		if (var->m_Value.has_value())
 		{
-			String anyValue = AnyToString(var->m_Value);
+			String anyValue = utils::AnyToString(var->m_Value);
 			if (anyValue.size() == 0)
 			{
 				continue;
@@ -1003,17 +1003,18 @@ void gs::Context::AddNode(Node* node)
 
 void gs::Context::AddBuiltIns()
 {
-	RegisterType<f32>();
-	RegisterType<bool>();
-	RegisterType<u32>();
-	RegisterType<i32>();
-	RegisterType<String>();
+	RegisterType<f32>("float");
+	RegisterType<bool>("bool");
+	RegisterType<u32>("unsigned int");
+	RegisterType<i32>("int");
+	RegisterType<String>("string");
 
 	RegisterArithmaticFunctions<f32>("float");
 	RegisterArithmaticFunctions<u32>("unsigned int");
 	RegisterArithmaticFunctions<i32>("int");
 
 	auto forNodeBuilder = new ForNode();
+	auto whileNodeBuilder = new WhileNode();
 	auto ifNodeBuilder = new IfNode();
 	auto printf32NodeBuilder = new PrintNodeT<f32>("Print(float)");
 	auto printu32NodeBuilder = new PrintNodeT<u32>("Print(unsigned int)");
@@ -1022,6 +1023,7 @@ void gs::Context::AddBuiltIns()
 	auto printStringNodeBuilder = new PrintNodeT<String>("Print(String)");
 
 	AddNode(forNodeBuilder);
+	AddNode(whileNodeBuilder);
 	AddNode(ifNodeBuilder);
 	AddNode(printf32NodeBuilder);
 	AddNode(printu32NodeBuilder);
@@ -1328,7 +1330,7 @@ void gs::Context::Parser::ParseDefaultValues(GraphBuilder* builder, String& line
 	GS_ASSERT(parts.size() == 3, "There should be 3 parts in a variable default value, name, hash, val");
 	HashString name = parts[0];
 	u64 typeHash = std::stoull(parts[1]);
-	builder->m_Variables[name]->SetValue(GraphBuilder::StringToAny(parts[2], typeHash));
+	builder->m_Variables[name]->SetValue(utils::StringToAny(parts[2], typeHash));
 }
 
 void gs::Context::Parser::AddOutputDataSocket(Node* node, String name, u64 typeHash)

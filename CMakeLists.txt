@@ -36,5 +36,6 @@ add_subdirectory(submodules/raylib)
 add_subdirectory(graphscript-raylib)
 
 add_subdirectory(example)
+add_subdirectory(graphscript-runtime-shared)
 add_subdirectory(sandbox)
-add_subdirectory(deserialize)
+add_subdirectory(runtime)

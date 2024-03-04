@@ -6,6 +6,36 @@ using namespace gs;
 namespace gs {
 	
 	template<typename T>
+	class SetNodeT : public Node
+	{
+	public:
+		SetNodeT(HashString name) : Node(name)
+		{
+			AddExecutionInput("in");
+			AddExecutionOutput("out");
+			AddDataInput<T>("variable");
+			AddDataInput<T>("value");
+		}
+
+		void Process() override
+		{
+			DataSocketT<T>* varSocket = (DataSocketT<T>*) m_InputDataSockets["variable"];
+			DataSocketT<T>* valueSocket = (DataSocketT<T>*) m_InputDataSockets["value"];
+
+			if (!varSocket->Get().has_value())
+			{
+				return;
+			}
+			valueSocket->Set(varSocket->Get().value());
+		}
+
+		Node* Clone() override
+		{
+			return new SetNodeT<T>(m_NodeName);
+		}
+	};
+
+	template<typename T>
 	class AdditionNodeT : public Node
 	{
 	public:
@@ -37,6 +67,7 @@ namespace gs {
 			return new AdditionNodeT<T>(m_NodeName);
 		}
 	};
+
 
 	template<typename T>
 	class SubtractNodeT : public Node
@@ -254,6 +285,51 @@ namespace gs {
 		Node* Clone() override
 		{
 			return new ForNode();
+		}
+	};
+
+	class WhileNode : public Node
+	{
+	public:
+		WhileNode() : Node("While")
+		{
+			AddExecutionInput("in");
+			AddExecutionOutput("out");
+			AddExecutionOutput("do");
+			AddDataInput<bool>("condition");
+		}
+
+		void Process() override
+		{
+			DataSocketT<bool>* conditionCountSocket = (DataSocketT<bool>*) m_InputDataSockets["condition"];
+			gs::ExecutionSocket* outExecutionSocket = m_OutputExecutionSockets[0];
+			gs::ExecutionSocket* doExecutionSocket = m_OutputExecutionSockets[1];
+
+			// fails here, data connections are fucked.
+			if (!conditionCountSocket->Get().has_value())
+			{
+				return;
+			}
+			bool condition = conditionCountSocket->Get().value();
+			
+			if (condition)
+			{
+				doExecutionSocket->SetShouldExecute(true);
+				outExecutionSocket->SetShouldExecute(false);
+				doExecutionSocket->m_LoopCount = 2;
+			}
+			else
+			{
+				doExecutionSocket->SetShouldExecute(false);
+				outExecutionSocket->SetShouldExecute(true);
+				doExecutionSocket->m_LoopCount = 0;
+			}
+
+		}
+
+		Node* Clone() override
+		{
+			return new WhileNode();
 		}
 	};
 

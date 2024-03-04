@@ -1,6 +1,6 @@
 #include "GraphScriptSandbox.h"
 #include "imnodes.h"
-#include "Utils.h"
+#include "RuntimeUtils.h"
 #include <filesystem>
 
 gs::GraphScriptSandbox::GraphScriptSandbox(String projectDir, Context* context)
@@ -34,11 +34,11 @@ void gs::GraphScriptSandbox::OnImGui()
 		{
 			if (ImGui::Button("Add"))
 			{
-				m_VariableSets.push_back(EditorVariableSet());
+				m_VariableSets.push_back(RuntimeVariableSet());
 			}
 			for (int i = 0; i < m_VariableSets.size(); i++)
 			{
-				EditorVariableSet& set = m_VariableSets[i];
+				RuntimeVariableSet& set = m_VariableSets[i];
 				SStream str;
 				str << "Variable Set [" << i << "]";
 				if (ImGui::CollapsingHeader(str.str().c_str()))
@@ -89,7 +89,6 @@ void gs::GraphScriptSandbox::OnImGui()
 				ImGui::SliderInt("Variable Set", &p_SelectedVariableSet, -1, m_VariableSets.size() - 1);
 				for (int i = 0; i < p_Instances.size(); i++)
 				{
-					ImGui::PushID(i);
 					ImGui::Text("%d : %s", i, p_Instances[i]->m_Name.m_Original.c_str());
 					ImGui::SameLine();
 					if (ImGui::Button("Delete"))
@@ -106,7 +105,6 @@ void gs::GraphScriptSandbox::OnImGui()
 							}
 						}
 					}
-					ImGui::PopID();
 				}
 			}
 			if (indexToRemove > -1)
@@ -335,7 +333,7 @@ void gs::GraphScriptSandbox::HandleAddNodeMenu(GraphBuilder* builder, int& idCou
 	{
 
 		ImGui::SetNextWindowPos(p_PopupPos);
-		if (ImGui::Begin("Select Node", &p_ShowNodesPopup, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar))
+		if (ImGui::Begin("Select Node", &p_ShowNodesPopup, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar))
 		{
 			ImGui::Spacing();
 			for (Node* node : p_Context->GetAllNodes())
@@ -694,7 +692,7 @@ gs::String gs::GraphScriptSandbox::Serialize()
 		output << i << ",";
 		for (auto& [name, val] : m_VariableSets[i])
 		{
-			output << name.m_Original << ":" << val->m_Type.m_TypeHash.m_Value << ":" << GraphBuilder::AnyToString(val->m_Value) << ",";
+			output << name.m_Original << ":" << val->m_Type.m_TypeHash.m_Value << ":" << utils::AnyToString(val->m_Value) << ",";
 		}
 		stream << output.str() << "\n";
 	}
@@ -780,7 +778,7 @@ void gs::GraphScriptSandbox::ParseVariableSet(String line)
 		return;
 	}
 
-	EditorVariableSet vars;
+	RuntimeVariableSet vars;
 
 	for (int i = 1; i < parts.size(); i++)
 	{
@@ -788,7 +786,7 @@ void gs::GraphScriptSandbox::ParseVariableSet(String line)
 		GS_ASSERT(components.size() == 3);
 		HashString name = components[0];
 		u64 typeHash = std::stoull(components[1]);
-		Any val = GraphBuilder::StringToAny(components[2], typeHash);
+		Any val = utils::StringToAny(components[2], typeHash);
 
 		for (auto& proto : p_Context->GetAllVariables())
 		{
@@ -850,7 +848,7 @@ void gs::GraphScriptSandbox::HandleCurrentState(DeserializeState& s, String& l)
 
 }
 
-gs::VariableSet gs::GraphScriptSandbox::ToVariableSet(EditorVariableSet& editorSet)
+gs::VariableSet gs::GraphScriptSandbox::ToVariableSet(RuntimeVariableSet& editorSet)
 {
 	VariableSet set;
 

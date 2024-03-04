@@ -2,6 +2,7 @@
 #define GRAPH_SCRIPT_EDITOR_H
 #include "GraphScript.h"
 #include "imgui.h"
+#include "RuntimeUtils.h"
 namespace gs
 {
 	class GraphScriptSandbox
@@ -67,11 +68,9 @@ namespace gs
 		String p_NewVariableName;
 		String p_FunctionToCallName;
 
-		using EditorVariableSet = HashMap<HashString, Variable*>;
+		Vector<RuntimeVariableSet> m_VariableSets;
 
-		Vector<EditorVariableSet> m_VariableSets;
-
-		VariableSet ToVariableSet(EditorVariableSet& editorSet);
+		VariableSet ToVariableSet(RuntimeVariableSet& editorSet);
 
 		bool p_SetPositions = false;
 		bool p_ShowNodesPopup = false;

@@ -7,12 +7,10 @@ add_executable(GraphScript-Sandbox
         "${LIBRARIES_DIR}/imgui/src/imgui_impl_opengl3.cpp"
         "src/main.cpp"
         "src/App.cpp"
-        "src/Utils.cpp"
         "src/GraphScriptSandbox.cpp"
         "src/imgui_filedialog.cpp"
         "include/GraphScriptSandbox.h"
         "include/imgui_filedialog.h"
-        "include/Utils.h"
         )
 
 # glad
@@ -28,7 +26,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE "GLFW_INCLUDE_NONE")
 target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}/include")
 target_link_libraries(${PROJECT_NAME} "imgui" "${CMAKE_DL_LIBS}")
 
-# graphscript
-target_link_libraries(${PROJECT_NAME} GraphScript GraphScript-Raylib)
-target_include_directories(${PROJECT_NAME} PRIVATE "${ROOT_DIR}/graphscript/include" "include" ${GRAPHSCRIPT_RAYLIB_HEADERS})
+# graphscript-raylib
+target_link_libraries(${PROJECT_NAME} GraphScript GraphScript-Raylib GraphScript-Runtime-Shared)
+target_include_directories(${PROJECT_NAME} PRIVATE "${ROOT_DIR}/graphscript/include" "include" ${GRAPHSCRIPT_RAYLIB_HEADERS} ${GRAPHSCRIPT_RUNTIME_SHARED_HEADERS})
 

@@ -20,11 +20,11 @@ int main() {
 	// for node 
 	auto forNodeBuilder = gs::CreateUnique<gs::ForNode>();
 	// create a multiply float node 
-	auto multiplyNodeBuilder = gs::CreateUnique<gs::MutliplyNodeT<float>>();
+	auto multiplyNodeBuilder = gs::CreateUnique<gs::MultiplyNodeT<float>>("float");
 	// IF node
 	auto ifNodeBuilder = gs::CreateUnique<gs::IfNode>();
 	// print float node
-	auto printFloatNodeBuilder = gs::CreateUnique<gs::PrintNodeT<float>>();
+	auto printFloatNodeBuilder = gs::CreateUnique<gs::PrintNodeT<float>>("float");
 
 
 	// make sure the builder knows about the nodes

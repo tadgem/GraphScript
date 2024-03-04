@@ -6,12 +6,14 @@
 #include "BuiltInNodes.h"
 #include "Utils.h"
 #include "imgui_filedialog.h"
+#include "GraphScript_Raylib.h"
 
 using namespace gs;
 
 int main() {
 	ExampleApp app("Sandbox");
 	Context context;
+	AddRaylib(context);
 	GraphScriptSandbox* editor = nullptr;
 
 	bool m_OpenProjectFileDialog = true;
