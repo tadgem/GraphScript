@@ -1,6 +1,6 @@
-- implement serializing instances
-- implement calling function on an instance in imgui
-
+- implement runtime serialization from editor
+- implement runtime deserialization 
+- implement fire and forget of runtime process from editor
 // then
 - get reference to graph by type (builder)
 - call function on another graph

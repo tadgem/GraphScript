@@ -46,6 +46,12 @@ void gs::Runtime::Parser::Parse(Context& context, String& input)
 	}
 }
 
+void gs::Runtime::Parser::ParseProjectDirectory(Context& context, String& input)
+{
+
+	// cd dir
+}
+
 void gs::Runtime::Parser::ParseGraphFiles(Context& context, String& input)
 {
 }
