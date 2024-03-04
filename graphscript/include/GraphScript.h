@@ -289,7 +289,12 @@ namespace gs
 
 		Node*	Clone() override
 		{
-			return new FunctionNode(*this);
+			FunctionNode* fn = new FunctionNode(m_NodeName);
+			for (auto& [name, socket] : m_OutputDataSockets)
+			{
+				fn->m_OutputDataSockets.emplace(name, socket->Clone());
+			}
+			return fn;
 		}
 	};
 
@@ -430,6 +435,7 @@ protected:
 		GraphBuilder*	DeserializeGraph(String& source);
 
 		Graph*			BuildGraph(GraphBuilder* builder);
+		void			DestroyGraph(Graph* graph);
 
 		void			AddNode(Node* node);
 		Node*			GetNode(HashString name);

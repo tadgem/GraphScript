@@ -83,12 +83,24 @@ void gs::GraphScriptSandbox::OnImGui()
 				ImGui::EndCombo();
 			}
 			ImGui::Separator();
+			int indexToRemove = -1;
 			if (ImGui::CollapsingHeader("Active Instances"))
 			{
 				for (int i = 0; i < p_Instances.size(); i++)
 				{
+					ImGui::PushID(i);
 					ImGui::Text("%d : %s", i, p_Instances[i]->m_Name.m_Original.c_str());
+					if (ImGui::Button("Delete"))
+					{
+						indexToRemove = i;
+					}
+					ImGui::PopID();
 				}
+			}
+			if (indexToRemove > -1)
+			{
+				p_Context->DestroyGraph(p_Instances[indexToRemove]);
+				p_Instances.erase(p_Instances.begin() + indexToRemove);
 			}
 		}
 	}
@@ -260,6 +272,7 @@ void gs::GraphScriptSandbox::HandleGraphBuilderImGui(GraphBuilder* builder, int&
 				{
 					nameToDelete = name;
 				}
+				HandleVariableInput(name, var.get());
 				ImGui::PopID();
 			}
 

@@ -757,6 +757,15 @@ gs::Graph::~Graph()
 {
 	for (auto& [name, func] : p_Functions)
 	{
+
+		for (int i = p_Nodes.size() - 1; i >= 0; i--)
+		{
+			if (p_Nodes[i] == func)
+			{
+				p_Nodes.erase(p_Nodes.begin() + i);
+			}
+		}
+
 		delete func;
 	}
 	p_Functions.clear();
@@ -962,6 +971,24 @@ Graph* gs::Context::BuildGraph(GraphBuilder* builder)
 	p_ActiveGraphs.push_back(g);
 
 	return g;
+}
+
+void gs::Context::DestroyGraph(Graph* graph)
+{
+	int index = -1;
+	for (int i = 0; i < p_ActiveGraphs.size(); i++)
+	{
+		if (p_ActiveGraphs[i] == graph)
+		{
+			index = i;
+		}
+	}
+
+	if (index >= 0)
+	{
+		delete p_ActiveGraphs[index];
+		p_ActiveGraphs.erase(p_ActiveGraphs.begin() + index);
+	}
 }
 
 void gs::Context::AddNode(Node* node)
