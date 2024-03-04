@@ -116,7 +116,7 @@ Graph* GraphBuilder::Build()
 	// clone all data connections and map builder lhs and rhs to cloned node sockets
 	Vector<DataConnection*> dataConns = BuildDataConnections(functions, variables, nodes);
 
-	return new Graph{ functions, variables, nodes, executionConns, dataConns };
+	return new Graph{ m_Name, functions, variables, nodes, executionConns, dataConns };
 }
 
 DataConnection* gs::GraphBuilder::ConnectDataSocket(DataSocket* lhs, DataSocket* rhs)
@@ -748,8 +748,8 @@ Node* gs::Graph::GetNode(ExecutionSocket* socket)
 	return nullptr;
 }
 
-Graph::Graph(HashMap<HashString, FunctionNode*> functions, HashMap<HashString, Variable*> variablesDefs, Vector<Node*> nodes, Vector<ExecutionConnectionDef> executionConnections, Vector<DataConnection*> dataConnections) :
-	p_Functions(functions), p_Variables(variablesDefs), p_Nodes(nodes), p_ExecutionConnections(executionConnections), p_DataConnections(dataConnections)
+Graph::Graph(HashString name,HashMap<HashString, FunctionNode*> functions, HashMap<HashString, Variable*> variablesDefs, Vector<Node*> nodes, Vector<ExecutionConnectionDef> executionConnections, Vector<DataConnection*> dataConnections) :
+	m_Name (name), p_Functions(functions), p_Variables(variablesDefs), p_Nodes(nodes), p_ExecutionConnections(executionConnections), p_DataConnections(dataConnections)
 {
 }
 

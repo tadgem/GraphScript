@@ -20,10 +20,13 @@ namespace gs
 			Graphs,
 			// BeginVariableSets/EndVariableSets
 			VariableSets,
+			// BeginGraphInstances/EndGraphInstances
+			GraphInstances,
 		};
 
-		Context* p_Context;
-		Vector<GraphBuilder*> p_Builders;
+		Context*				p_Context;
+		Vector<GraphBuilder*>	p_Builders;
+		Vector<Graph*>			p_Instances;
 
 		struct vec2
 		{
@@ -35,6 +38,7 @@ namespace gs
 
 		void ParseGraphNodePositions(String& source, GraphBuilder* b);
 		
+		void HandleMainMenu();
 		void HandleGraphBuilderImGui(GraphBuilder* builder, int& idCounter);
 		void HandleAddNodeMenu(GraphBuilder* builder, int& idCounter);
 		void HandleVariableNodes(GraphBuilder* builder, int& idCounter, HashMap<void*, int>& counterMap, HashMap<int, DataSocket*>& dataSocketMap);

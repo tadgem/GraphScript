@@ -27,72 +27,68 @@ void gs::GraphScriptSandbox::OnImGui()
 
 	if (ImGui::Begin("Root Menu"))
 	{
-		ImGui::InputText("New Graph Name", p_NewGraphName.data(), 150);
-		if (ImGui::Button("New Graph"))
-		{
-			utils::Trim(p_NewGraphName);
-			p_Builders.push_back(p_Context->CreateBuilder(p_NewGraphName));
-		}
+		HandleMainMenu();
 
-		ImGui::InputText("Path to load", p_UserPath.data(), 150);
-		if (ImGui::Button("Load Graph"))
+		if (ImGui::CollapsingHeader("Variable Sets"))
 		{
-			String source = utils::LoadStringAtPath(p_UserPath);
-			if (!source.empty())
+			if (ImGui::Button("Add"))
 			{
-				GraphBuilder* builder = p_Builders.emplace_back(p_Context->DeserializeGraph(source));
-				ParseGraphNodePositions(source, builder);
+				m_VariableSets.push_back(EditorVariableSet());
 			}
-		}
-
-		if (ImGui::Button("Save Project"))
-		{
-			// TODO
-			String data = Serialize();
-			utils::SaveStringAtPath(data, p_ProjectPath);
-		}
-
-		ImGui::Separator();
-		ImGui::TextUnformatted("Variable Sets");
-		if (ImGui::Button("Add"))
-		{
-			m_VariableSets.push_back(EditorVariableSet());
-		}
-		for (int i =0; i < m_VariableSets.size() ; i++)
-		{
-			EditorVariableSet& set = m_VariableSets[i];
-			SStream str;
-			str << "Variable Set [" << i << "]";
-			if (ImGui::CollapsingHeader(str.str().c_str()))
+			for (int i = 0; i < m_VariableSets.size(); i++)
 			{
-				ImGui::Indent();
-				ImGui::InputText("New Variable Name", p_NewVariableName.data(), 150);
-				if (ImGui::BeginCombo("Variable Type", "Please Choose"))
+				EditorVariableSet& set = m_VariableSets[i];
+				SStream str;
+				str << "Variable Set [" << i << "]";
+				if (ImGui::CollapsingHeader(str.str().c_str()))
 				{
-					for (auto& proto : p_Context->GetAllVariables())
+					ImGui::Indent();
+					ImGui::InputText("New Variable Name", p_NewVariableName.data(), 150);
+					if (ImGui::BeginCombo("Variable Type", "Please Choose"))
 					{
-						if (ImGui::MenuItem(proto->m_Type.m_TypeHash.m_Original.c_str()))
+						for (auto& proto : p_Context->GetAllVariables())
 						{
-							utils::Trim(p_NewVariableName);
-							set.emplace(p_NewVariableName, proto->Clone());
+							if (ImGui::MenuItem(proto->m_Type.m_TypeHash.m_Original.c_str()))
+							{
+								utils::Trim(p_NewVariableName);
+								set.emplace(p_NewVariableName, proto->Clone());
+							}
 						}
+						ImGui::EndCombo();
 					}
-					ImGui::EndCombo();
-				}
-				ImGui::Separator();
-
-				for (auto& [name, var] : set)
-				{
-					ImGui::Text(name.m_Original.c_str());
-					HandleVariableInput(name, var);
 					ImGui::Separator();
+
+					for (auto& [name, var] : set)
+					{
+						ImGui::Text(name.m_Original.c_str());
+						HandleVariableInput(name, var);
+						ImGui::Separator();
+					}
 				}
 			}
-			// var name input
-			// type selector
-			// add
-			// space
-			// visualise vars
+		}
+
+		if (ImGui::CollapsingHeader("Instances"))
+		{
+			if (ImGui::BeginCombo("Add Instance", "Pick type"))
+			{
+				for (auto& builder : p_Builders)
+				{
+					if (ImGui::MenuItem(builder->m_Name.m_Original.c_str()))
+					{
+						p_Instances.push_back(p_Context->BuildGraph(builder));
+					}
+				}
+				ImGui::EndCombo();
+			}
+			ImGui::Separator();
+			if (ImGui::CollapsingHeader("Active Instances"))
+			{
+				for (int i = 0; i < p_Instances.size(); i++)
+				{
+					ImGui::Text("%d : %s", i, p_Instances[i]->m_Name.m_Original.c_str());
+				}
+			}
 		}
 	}
 	ImGui::End();
@@ -139,6 +135,36 @@ void gs::GraphScriptSandbox::ParseGraphNodePositions(String& source, GraphBuilde
 	}
 }
 
+
+void gs::GraphScriptSandbox::HandleMainMenu()
+{
+	ImGui::InputText("New Graph Name", p_NewGraphName.data(), 150);
+	if (ImGui::Button("New Graph"))
+	{
+		utils::Trim(p_NewGraphName);
+		p_Builders.push_back(p_Context->CreateBuilder(p_NewGraphName));
+	}
+
+	ImGui::InputText("Path to load", p_UserPath.data(), 150);
+	if (ImGui::Button("Load Graph"))
+	{
+		String source = utils::LoadStringAtPath(p_UserPath);
+		if (!source.empty())
+		{
+			GraphBuilder* builder = p_Builders.emplace_back(p_Context->DeserializeGraph(source));
+			ParseGraphNodePositions(source, builder);
+		}
+	}
+
+	if (ImGui::Button("Save Project"))
+	{
+		// TODO
+		String data = Serialize();
+		utils::SaveStringAtPath(data, p_ProjectPath);
+	}
+
+	ImGui::Separator();
+}
 
 void gs::GraphScriptSandbox::HandleGraphBuilderImGui(GraphBuilder* builder, int& idCounter)
 {
@@ -761,6 +787,15 @@ void gs::GraphScriptSandbox::HandleCurrentState(DeserializeState& s, String& l)
 		s = DeserializeState::VariableSets;
 	}
 	if (l == "EndVariableSets")
+	{
+		s = DeserializeState::Invalid;
+	}
+
+	if (l == "BeginGraphInstances")
+	{
+		s = DeserializeState::GraphInstances;
+	}
+	if (l == "EndGraphInstances")
 	{
 		s = DeserializeState::Invalid;
 	}

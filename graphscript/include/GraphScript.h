@@ -313,6 +313,7 @@ namespace gs
 	public:
 
 		Graph(
+			HashString name,
 			HashMap<HashString, FunctionNode*> functions,
 			HashMap<HashString, Variable*>	variablesDefs,
 			Vector<Node*>						nodes,
@@ -331,7 +332,7 @@ namespace gs
 				varDef->Set(other);
 			}
 		}
-
+		const HashString m_Name;
 		FunctionCallResult CallFunction(HashString nameOfMethod, VariableSet args);
 	
 protected:
