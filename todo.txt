@@ -1,5 +1,5 @@
-- implement adding instances and serializing instances
-- serialize instances and index of variable set used. 
+- implement serializing instances
+- implement calling function on an instance in imgui
 
 // then
 - get reference to graph by type (builder)
