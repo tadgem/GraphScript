@@ -64,7 +64,6 @@ bool ImGui::FileDialog(bool* open, ImFileDialogInfo* dialogInfo)
 	bool complete = false;
 
 	ImGui::PushID(dialogInfo);
-	ImGui::SetNextWindowSize(ImVec2(740.0f, 410.0f), ImGuiCond_FirstUseEver);
 
 	if (ImGui::Begin(dialogInfo->title.c_str(), open))
 	{

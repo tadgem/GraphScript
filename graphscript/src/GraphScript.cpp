@@ -183,8 +183,6 @@ void gs::GraphBuilder::DestroyDataConnection(int index)
 	m_DataConnections.erase(m_DataConnections.begin() + index);
 }
 
-
-
 ExecutionConnectionDef gs::GraphBuilder::ConnectExecutionSocket(ExecutionSocket* lhs, ExecutionSocket* rhs)
 {
 	// TODO: insert return statement here
@@ -192,6 +190,7 @@ ExecutionConnectionDef gs::GraphBuilder::ConnectExecutionSocket(ExecutionSocket*
 	m_ExecutionConnections.push_back(conn);
 	return conn;
 }
+
 void gs::GraphBuilder::DestroyExecutionConnection(int index)
 {
 	if (index < 0)
@@ -201,7 +200,6 @@ void gs::GraphBuilder::DestroyExecutionConnection(int index)
 
 	m_ExecutionConnections.erase(m_ExecutionConnections.begin() + index);
 }
-
 
 String utils::AnyToString(Any& any)
 {

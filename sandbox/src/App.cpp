@@ -3,7 +3,6 @@
 #include <iostream>
 
 #include <GLFW/glfw3.h>
-#include <imgui.h>
 #include "imnodes.h"
 #include <glad/glad.h>
 
@@ -181,6 +180,14 @@ void gs::ExampleApp::Shutdown()
 
 	glfwDestroyWindow(p_Window);
 	glfwTerminate();
+}
+
+ImVec2 gs::ExampleApp::GetUsableWindowSize()
+{
+	int l, t, r, b, w, h;
+	glfwGetWindowFrameSize(p_Window, &l, &t, &r, &b);
+	glfwGetWindowSize(p_Window, &w, &h);
+	return ImVec2(w , h );
 }
 
 void gs::ExampleApp::Dockspace()

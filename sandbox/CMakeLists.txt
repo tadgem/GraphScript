@@ -11,6 +11,7 @@ add_executable(GraphScript-Sandbox
         "src/imgui_filedialog.cpp"
         "include/GraphScriptSandbox.h"
         "include/imgui_filedialog.h"
+        "include/App.h"
         )
 
 # glad

@@ -27,6 +27,8 @@ int main() {
 	{
 		if (m_OpenProjectFileDialog)
 		{
+			ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_Always);
+			ImGui::SetNextWindowSize(app.GetUsableWindowSize(), ImGuiCond_Always);
 			if (ImGui::FileDialog(&m_OpenProjectFileDialog, &m_FileDialogInfo))
 			{
 				// Result path in: m_fileDialogInfo.resultPath

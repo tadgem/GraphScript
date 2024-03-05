@@ -2,6 +2,7 @@
 #include <chrono>
 #include <ctime>
 #include "TypeDef.h"
+#include "imgui.h"
 struct GLFWwindow;
 
 namespace gs
@@ -61,6 +62,8 @@ namespace gs
 		void PostFrame();
 
 		void Shutdown();
+
+		ImVec2 GetUsableWindowSize();
 
 	protected:
 		const gs::String p_Name;

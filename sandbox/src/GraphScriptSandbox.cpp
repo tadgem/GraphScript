@@ -114,12 +114,48 @@ void gs::GraphScriptSandbox::HandleMainMenu()
 
 void gs::GraphScriptSandbox::HandleEntryConfigs()
 {
-	if (ImGui::CollapsingHeader("Entry Configs"))
+	if (ImGui::BeginMainMenuBar())
 	{
-		// GraphBuilder
-		// NameOfEntry
-		// VariableSet
+		ImVec2 menuSize = ImGui::GetItemRectSize();
+		ImVec2 playTextWidth = ImGui::CalcTextSize("Play");
+		ImVec2 configTextWidth = ImGui::CalcTextSize("Config");
+
+		float centerX = (menuSize.x / 2.0f) - (playTextWidth.x / 2.0) - (playTextWidth.x - 2.0) - (configTextWidth.x / 2.0);
+		ImGui::SetCursorPos(ImVec2(centerX, ImGui::GetCursorPosY()));
+		if (ImGui::Button("Play"))
+		{
+
+		}
+		centerX += configTextWidth.x;
+		ImGui::SetCursorPos(ImVec2(centerX, ImGui::GetCursorPosY()));
+		if (ImGui::Button("Stop"))
+		{
+
+		}
+
+		centerX += configTextWidth.x;
+		if (ImGui::BeginMenu("Config"))
+		{
+			if (ImGui::MenuItem("A"))
+			{
+
+			}
+
+			if (ImGui::MenuItem("B"))
+			{
+
+			}
+
+			if (ImGui::MenuItem("C"))
+			{
+
+			}
+			ImGui::EndMenu();
+		}
+		
+
 	}
+	ImGui::EndMainMenuBar();
 }
 
 void gs::GraphScriptSandbox::HandleVariableSets()
