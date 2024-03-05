@@ -40,6 +40,9 @@ namespace gs
 		void ParseGraphNodePositions(String& source, GraphBuilder* b);
 		
 		void HandleMainMenu();
+		void HandleEntryConfigs();
+		void HandleVariableSets();
+		void HandleInstances();
 		void HandleGraphBuilderImGui(GraphBuilder* builder, int& idCounter);
 		void HandleAddNodeMenu(GraphBuilder* builder, int& idCounter);
 		void HandleVariableNodes(GraphBuilder* builder, int& idCounter, HashMap<void*, int>& counterMap, HashMap<int, DataSocket*>& dataSocketMap);

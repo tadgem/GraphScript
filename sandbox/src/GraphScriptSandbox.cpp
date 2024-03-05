@@ -30,90 +30,13 @@ void gs::GraphScriptSandbox::OnImGui()
 	{
 		HandleMainMenu();
 
-		if (ImGui::CollapsingHeader("Variable Sets"))
-		{
-			if (ImGui::Button("Add"))
-			{
-				m_VariableSets.push_back(RuntimeVariableSet());
-			}
-			for (int i = 0; i < m_VariableSets.size(); i++)
-			{
-				RuntimeVariableSet& set = m_VariableSets[i];
-				SStream str;
-				str << "Variable Set [" << i << "]";
-				if (ImGui::CollapsingHeader(str.str().c_str()))
-				{
-					ImGui::Indent();
-					ImGui::InputText("New Variable Name", p_NewVariableName.data(), 150);
-					if (ImGui::BeginCombo("Variable Type", "Please Choose"))
-					{
-						for (auto& proto : p_Context->GetAllVariables())
-						{
-							if (ImGui::MenuItem(proto->m_Type.m_TypeHash.m_Original.c_str()))
-							{
-								utils::Trim(p_NewVariableName);
-								set.emplace(p_NewVariableName, proto->Clone());
-							}
-						}
-						ImGui::EndCombo();
-					}
-					ImGui::Separator();
+		HandleVariableSets();
 
-					for (auto& [name, var] : set)
-					{
-						ImGui::Text(name.m_Original.c_str());
-						HandleVariableInput(name, var);
-						ImGui::Separator();
-					}
-				}
-			}
-		}
+		HandleInstances();
 
-		if (ImGui::CollapsingHeader("Instances"))
-		{
-			if (ImGui::BeginCombo("Add Instance", "Pick type"))
-			{
-				for (auto& builder : p_Builders)
-				{
-					if (ImGui::MenuItem(builder->m_Name.m_Original.c_str()))
-					{
-						p_Instances.push_back(p_Context->BuildGraph(builder));
-					}
-				}
-				ImGui::EndCombo();
-			}
-			ImGui::Separator();
-			int indexToRemove = -1;
-			if (ImGui::CollapsingHeader("Active Instances"))
-			{
-				ImGui::SliderInt("Variable Set", &p_SelectedVariableSet, -1, m_VariableSets.size() - 1);
-				for (int i = 0; i < p_Instances.size(); i++)
-				{
-					ImGui::Text("%d : %s", i, p_Instances[i]->m_Name.m_Original.c_str());
-					ImGui::SameLine();
-					if (ImGui::Button("Delete"))
-					{
-						indexToRemove = i;
-					}
-					for (auto& [name, func] : p_Instances[i]->p_Functions)
-					{
-						if (ImGui::Button(name.m_Original.c_str()))
-						{
-							if (p_SelectedVariableSet > -1)
-							{
-								p_Instances[i]->CallFunction(name, ToVariableSet(m_VariableSets[p_SelectedVariableSet]));
-							}
-						}
-					}
-				}
-			}
-			if (indexToRemove > -1)
-			{
-				p_Context->DestroyGraph(p_Instances[indexToRemove]);
-				p_Instances.erase(p_Instances.begin() + indexToRemove);
-			}
-		}
+		HandleEntryConfigs();
 	}
+
 	ImGui::End();
 
 	for (int i = 0; i < p_Builders.size(); i++)
@@ -187,6 +110,108 @@ void gs::GraphScriptSandbox::HandleMainMenu()
 	}
 
 	ImGui::Separator();
+}
+
+void gs::GraphScriptSandbox::HandleEntryConfigs()
+{
+	if (ImGui::CollapsingHeader("Entry Configs"))
+	{
+		// GraphBuilder
+		// NameOfEntry
+		// VariableSet
+	}
+}
+
+void gs::GraphScriptSandbox::HandleVariableSets()
+{
+	if (ImGui::CollapsingHeader("Variable Sets"))
+	{
+		if (ImGui::Button("Add"))
+		{
+			m_VariableSets.push_back(RuntimeVariableSet());
+		}
+		for (int i = 0; i < m_VariableSets.size(); i++)
+		{
+			RuntimeVariableSet& set = m_VariableSets[i];
+			SStream str;
+			str << "Variable Set [" << i << "]";
+			if (ImGui::CollapsingHeader(str.str().c_str()))
+			{
+				ImGui::Indent();
+				ImGui::InputText("New Variable Name", p_NewVariableName.data(), 150);
+				if (ImGui::BeginCombo("Variable Type", "Please Choose"))
+				{
+					for (auto& proto : p_Context->GetAllVariables())
+					{
+						if (ImGui::MenuItem(proto->m_Type.m_TypeHash.m_Original.c_str()))
+						{
+							utils::Trim(p_NewVariableName);
+							set.emplace(p_NewVariableName, proto->Clone());
+						}
+					}
+					ImGui::EndCombo();
+				}
+				ImGui::Separator();
+
+				for (auto& [name, var] : set)
+				{
+					ImGui::Text(name.m_Original.c_str());
+					HandleVariableInput(name, var);
+					ImGui::Separator();
+				}
+			}
+		}
+	}
+
+}
+
+void gs::GraphScriptSandbox::HandleInstances()
+{
+	if (ImGui::CollapsingHeader("Instances"))
+	{
+		if (ImGui::BeginCombo("Add Instance", "Pick type"))
+		{
+			for (auto& builder : p_Builders)
+			{
+				if (ImGui::MenuItem(builder->m_Name.m_Original.c_str()))
+				{
+					p_Instances.push_back(p_Context->BuildGraph(builder));
+				}
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::Separator();
+		int indexToRemove = -1;
+		if (ImGui::CollapsingHeader("Active Instances"))
+		{
+			ImGui::SliderInt("Variable Set", &p_SelectedVariableSet, -1, m_VariableSets.size() - 1);
+			for (int i = 0; i < p_Instances.size(); i++)
+			{
+				ImGui::Text("%d : %s", i, p_Instances[i]->m_Name.m_Original.c_str());
+				ImGui::SameLine();
+				if (ImGui::Button("Delete"))
+				{
+					indexToRemove = i;
+				}
+				for (auto& [name, func] : p_Instances[i]->p_Functions)
+				{
+					if (ImGui::Button(name.m_Original.c_str()))
+					{
+						if (p_SelectedVariableSet > -1)
+						{
+							p_Instances[i]->CallFunction(name, ToVariableSet(m_VariableSets[p_SelectedVariableSet]));
+						}
+					}
+				}
+			}
+		}
+		if (indexToRemove > -1)
+		{
+			p_Context->DestroyGraph(p_Instances[indexToRemove]);
+			p_Instances.erase(p_Instances.begin() + indexToRemove);
+		}
+	}
+
 }
 
 void gs::GraphScriptSandbox::HandleGraphBuilderImGui(GraphBuilder* builder, int& idCounter)

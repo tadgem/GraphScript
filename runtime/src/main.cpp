@@ -21,10 +21,11 @@ int main(int argc, char* argv[]) {
 	if (argc <= 1) {
 		return -1;
 	}
+	all_args.assign(argv + 1, argv + argc);
+
 	Context context;
 	AddRaylib(context);
 	
-	all_args.assign(argv + 1, argv + argc);
 
 	// get runtime file
 	// parse

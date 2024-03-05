@@ -106,7 +106,9 @@ bool gs::ExampleApp::Init()
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	p_Window = glfwCreateWindow(1440, 900, "GraphScript Example", nullptr, nullptr);
+	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+	
+	p_Window = glfwCreateWindow(1920, 1080, "GraphScript Example", nullptr, nullptr);
 	if (p_Window == nullptr) {
 		std::cout << "Could not create GLFW window" << std::endl;
 		glfwTerminate();
@@ -119,6 +121,9 @@ bool gs::ExampleApp::Init()
 		return false;
 	}
 
+	float xs, ys;
+	glfwGetMonitorContentScale(monitor, &xs, &ys);
+
 	ImGui::CreateContext();
 	ImNodes::CreateContext();
 
@@ -129,7 +134,7 @@ bool gs::ExampleApp::Init()
 	ImGui_ImplGlfw_InitForOpenGL(p_Window, true);
 	ImGui_ImplOpenGL3_Init(GLSL_VERSION);
 
-	ImFont* font = io.Fonts->AddFontFromMemoryTTF((void*)&OpenSans[0], 529700, 18.0f);
+	ImFont* font = io.Fonts->AddFontFromMemoryTTF((void*)&OpenSans[0], 529700, 18.0f * xs);
 
 	ImNodes::StyleColorsDark();
 	DarkTheme();
