@@ -136,19 +136,22 @@ void gs::GraphScriptSandbox::HandleEntryConfigs()
 		centerX += configTextWidth.x;
 		if (ImGui::BeginMenu("Config"))
 		{
-			if (ImGui::MenuItem("A"))
+			if (ImGui::BeginMenu("Graph To Spawn"))
 			{
-
+				ImGui::MenuItem("A");
+				ImGui::EndMenu();
 			}
 
-			if (ImGui::MenuItem("B"))
+			if (ImGui::BeginMenu("Entry Function"))
 			{
-
+				ImGui::MenuItem("B");
+				ImGui::EndMenu();
 			}
 
-			if (ImGui::MenuItem("C"))
+			if (ImGui::BeginMenu("Choose Variable Set"))
 			{
-
+				ImGui::MenuItem("C");
+				ImGui::EndMenu();
 			}
 			ImGui::EndMenu();
 		}
