@@ -36,6 +36,7 @@ namespace gs
 		};
 
 		HashMap<GraphBuilder*, HashMap<u32, vec2>> p_NodePositions;
+		void Dockspace();
 
 		void ParseGraphNodePositions(String& source, GraphBuilder* b);
 		
@@ -79,9 +80,12 @@ namespace gs
 		bool p_ShowNodesPopup = false;
 		ImVec2 p_PopupPos;
 
-		int p_SelectedNode = INT_MIN;
-		int p_SelectedLink = INT_MIN;
-		int p_SelectedVariableSet = -1;
+		int			p_SelectedNode = INT_MIN;
+		int			p_SelectedLink = INT_MIN;
+		int			p_SelectedGraph = -1;
+		int			p_SelectedVariableSet = -1;
+		HashString	p_SelectedFunctionName;
+
 	};
 }
 

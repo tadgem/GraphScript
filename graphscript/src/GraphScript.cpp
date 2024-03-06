@@ -766,7 +766,7 @@ gs::Graph::~Graph()
 	for (auto& [name, func] : p_Functions)
 	{
 
-		for (int i = p_Nodes.size() - 1; i >= 0; i--)
+		for (int i = (int)p_Nodes.size() - 1; i >= 0; i--)
 		{
 			if (p_Nodes[i] == func)
 			{

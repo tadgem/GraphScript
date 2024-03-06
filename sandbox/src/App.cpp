@@ -157,7 +157,6 @@ bool gs::ExampleApp::ShouldRun()
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
-	Dockspace();
 
 	return true;
 }
@@ -187,38 +186,5 @@ ImVec2 gs::ExampleApp::GetUsableWindowSize()
 	int l, t, r, b, w, h;
 	glfwGetWindowFrameSize(p_Window, &l, &t, &r, &b);
 	glfwGetWindowSize(p_Window, &w, &h);
-	return ImVec2(w , h );
-}
-
-void gs::ExampleApp::Dockspace()
-{
-	static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
-
-	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
-
-	ImGuiViewport* viewport = ImGui::GetMainViewport();
-	ImVec2 winPos = viewport->Pos;
-	ImVec2 winSize = viewport->Size;
-	ImGui::SetNextWindowPos(winPos);
-	ImGui::SetNextWindowSize(winSize);
-	ImGui::SetNextWindowViewport(viewport->ID);
-
-	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
-	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-
-	// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
-	if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-		window_flags |= ImGuiWindowFlags_NoBackground;
-
-	// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
-	// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
-	// all active windows docked into it will lose their parent and become undocked.
-	// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
-	// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
-	ImGui::Begin("DockSpace", nullptr, window_flags);
-	ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-	ImGui::DockSpace(dockspace_id, winSize, dockspace_flags);
-	ImGui::End();
+	return ImVec2(static_cast<float>(w) , static_cast<float>(h) );
 }

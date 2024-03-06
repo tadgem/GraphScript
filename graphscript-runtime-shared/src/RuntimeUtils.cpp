@@ -58,7 +58,7 @@ RuntimeVariableSet utils::ParseVariableSet(Context& c, String line)
 {
 	Vector<String> parts = utils::SplitStringByChar(line, ',');
 
-	GS_ASSERT(parts.size() > 0);
+	GS_ASSERT(parts.size() > 0, "Too few parts to be a variable set");
 
 	if (parts.size() == 1)
 	{
@@ -70,7 +70,7 @@ RuntimeVariableSet utils::ParseVariableSet(Context& c, String line)
 	for (int i = 1; i < parts.size(); i++)
 	{
 		Vector<String> components = utils::SplitStringByChar(parts[i], ':');
-		GS_ASSERT(components.size() == 3);
+		GS_ASSERT(components.size() == 3, "Incorrect number of parts");
 		HashString name = components[0];
 		u64 typeHash = std::stoull(components[1]);
 		Any val = utils::StringToAny(components[2], typeHash);

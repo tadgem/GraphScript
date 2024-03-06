@@ -26,6 +26,10 @@ void gs::GraphScriptSandbox::OnImGui()
 	HashMap<int, ExecutionSocket*> exeSocketMap;
 	HashMap<int, DataSocket*> dataSocketMap;
 
+	HandleEntryConfigs();
+
+	Dockspace();
+
 	if (ImGui::Begin("Root Menu"))
 	{
 		HandleMainMenu();
@@ -33,8 +37,6 @@ void gs::GraphScriptSandbox::OnImGui()
 		HandleVariableSets();
 
 		HandleInstances();
-
-		HandleEntryConfigs();
 	}
 
 	ImGui::End();
@@ -81,7 +83,6 @@ void gs::GraphScriptSandbox::ParseGraphNodePositions(String& source, GraphBuilde
 	}
 }
 
-
 void gs::GraphScriptSandbox::HandleMainMenu()
 {
 	ImGui::InputText("New Graph Name", p_NewGraphName.data(), 150);
@@ -120,7 +121,7 @@ void gs::GraphScriptSandbox::HandleEntryConfigs()
 		ImVec2 playTextWidth = ImGui::CalcTextSize("Play");
 		ImVec2 configTextWidth = ImGui::CalcTextSize("Config");
 
-		float centerX = (menuSize.x / 2.0f) - (playTextWidth.x / 2.0) - (playTextWidth.x - 2.0) - (configTextWidth.x / 2.0);
+		float centerX = (menuSize.x / 2.0f) - (playTextWidth.x / 2.0f) - (playTextWidth.x - 2.0f) - (configTextWidth.x / 2.0f);
 		ImGui::SetCursorPos(ImVec2(centerX, ImGui::GetCursorPosY()));
 		if (ImGui::Button("Play"))
 		{
@@ -138,27 +139,68 @@ void gs::GraphScriptSandbox::HandleEntryConfigs()
 		{
 			if (ImGui::BeginMenu("Graph To Spawn"))
 			{
-				ImGui::MenuItem("A");
+				for (int i = 0; i < p_Builders.size(); i++)
+				{
+					if (ImGui::MenuItem(p_Builders[i]->m_Name.m_Original.c_str()))
+					{
+						p_SelectedGraph = i;
+					}
+					if (i == p_SelectedGraph)
+					{
+						ImGui::SameLine();
+						ImGui::TextUnformatted("<---");
+					}
+				}
 				ImGui::EndMenu();
 			}
 
 			if (ImGui::BeginMenu("Entry Function"))
 			{
-				ImGui::MenuItem("B");
+				if (p_SelectedGraph < 0)
+				{
+					ImGui::MenuItem("Please select a graph first");
+				}
+				else
+				{
+					for (auto& [name, f] : p_Builders[p_SelectedGraph]->m_Functions)
+					{
+						if (ImGui::MenuItem(name.m_Original.c_str()))
+						{
+							p_SelectedFunctionName = name;
+						}
+
+						if (p_SelectedFunctionName == name)
+						{
+							ImGui::SameLine();
+							ImGui::TextUnformatted("<---");
+						}
+					}
+				}
 				ImGui::EndMenu();
 			}
 
 			if (ImGui::BeginMenu("Choose Variable Set"))
 			{
-				ImGui::MenuItem("C");
+				for (int i = 0; i < m_VariableSets.size(); i++)
+				{
+					String count = std::to_string(i);
+					if (ImGui::MenuItem(count.c_str()))
+					{
+						p_SelectedVariableSet = i;
+					}
+
+					if (p_SelectedVariableSet == i)
+					{
+						ImGui::SameLine();
+						ImGui::TextUnformatted("<---");
+					}
+				}
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenu();
 		}
-		
-
+		ImGui::EndMainMenuBar();
 	}
-	ImGui::EndMainMenuBar();
 }
 
 void gs::GraphScriptSandbox::HandleVariableSets()
@@ -223,7 +265,7 @@ void gs::GraphScriptSandbox::HandleInstances()
 		int indexToRemove = -1;
 		if (ImGui::CollapsingHeader("Active Instances"))
 		{
-			ImGui::SliderInt("Variable Set", &p_SelectedVariableSet, -1, m_VariableSets.size() - 1);
+			ImGui::SliderInt("Variable Set", &p_SelectedVariableSet, -1, (int) m_VariableSets.size() - 1);
 			for (int i = 0; i < p_Instances.size(); i++)
 			{
 				ImGui::Text("%d : %s", i, p_Instances[i]->m_Name.m_Original.c_str());
@@ -341,7 +383,7 @@ void gs::GraphScriptSandbox::HandleGraphBuilderImGui(GraphBuilder* builder, int&
 			{
 				ImGui::Text("%s : %s", name.m_Original.c_str(), var->m_Type.m_TypeHash.m_Original.c_str());
 				ImGui::SameLine();
-				ImGui::PushID(name.m_Value);
+				ImGui::PushID((int)name.m_Value);
 				if (ImGui::Button("Delete"))
 				{
 					nameToDelete = name;
@@ -835,7 +877,7 @@ void gs::GraphScriptSandbox::ParseVariableSet(String line)
 {
 	Vector<String> parts = utils::SplitStringByChar(line, ',');
 
-	GS_ASSERT(parts.size() > 0);
+	GS_ASSERT(parts.size() > 0, "Not enough parts to be a variable set");
 
 	if (parts.size() == 1)
 	{
@@ -847,7 +889,7 @@ void gs::GraphScriptSandbox::ParseVariableSet(String line)
 	for (int i = 1; i < parts.size(); i++)
 	{
 		Vector<String> components = utils::SplitStringByChar(parts[i], ':');
-		GS_ASSERT(components.size() == 3);
+		GS_ASSERT(components.size() == 3, "Mismatched number of parts to be a variable");
 		HashString name = components[0];
 		u64 typeHash = std::stoull(components[1]);
 		Any val = utils::StringToAny(components[2], typeHash);
@@ -923,3 +965,35 @@ gs::VariableSet gs::GraphScriptSandbox::ToVariableSet(RuntimeVariableSet& editor
 	return set;
 }
 
+void gs::GraphScriptSandbox::Dockspace()
+{
+	static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
+
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImVec2 winPos = viewport->Pos;
+	ImVec2 winSize = viewport->Size;
+	ImGui::SetNextWindowPos({ winPos.x, winPos.y + 24 });
+	ImGui::SetNextWindowSize(winSize);
+	ImGui::SetNextWindowViewport(viewport->ID);
+
+	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+
+	// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
+	if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+		window_flags |= ImGuiWindowFlags_NoBackground;
+
+	// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
+	// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
+	// all active windows docked into it will lose their parent and become undocked.
+	// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
+	// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
+	ImGui::Begin("DockSpace", nullptr, window_flags);
+	ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+	ImGui::DockSpace(dockspace_id, winSize, dockspace_flags);
+	ImGui::End();
+}

@@ -67,7 +67,6 @@ namespace gs
 
 	protected:
 		const gs::String p_Name;
-		void Dockspace();
 		GLFWwindow* p_Window;
 	};
 }
