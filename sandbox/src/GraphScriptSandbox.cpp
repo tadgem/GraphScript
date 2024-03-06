@@ -125,16 +125,37 @@ void gs::GraphScriptSandbox::HandleEntryConfigs()
 		ImGui::SetCursorPos(ImVec2(centerX, ImGui::GetCursorPosY()));
 		if (ImGui::Button("Play"))
 		{
-			// Create .gse (graph script entry, much clever, very original)
-			// place in project directory
-			// start & capture process of GS runtime, set working directory to project directory, argument the .gse path
+			if (p_SelectedGraph >= 0 && p_SelectedVariableSet >= 0 && p_SelectedFunctionName.m_Value != 0)
+			{
+				// Create .gse (graph script entry, much clever, very original)
+				String entryConfig = SerializeSelectedEntryConfig();
+				String entryConfigName = GetSelectedEntryConfigFileName();
+				// place in project directory
+				utils::SaveStringAtPath(entryConfig, entryConfigName);
 
+				if (p_Process)
+				{
+					p_Process->Abort();
+					delete p_Process;
+					p_Process = nullptr;
+				}
+				// start & capture process of GS runtime, set working directory to project directory, argument the .gse path
+				p_Process = Process::CreateAppProcess();
+				SStream processCMD;
+				processCMD << "gsr.exe " << entryConfigName;
+				p_Process->Run(".", processCMD.str());
+			}
 		}
 		centerX += configTextWidth.x;
 		ImGui::SetCursorPos(ImVec2(centerX, ImGui::GetCursorPosY()));
 		if (ImGui::Button("Stop"))
 		{
-			// forcefully destory the remote process
+			if (p_Process)
+			{
+				p_Process->Abort();
+				delete p_Process;
+				p_Process = nullptr;
+			}
 		}
 
 		centerX += configTextWidth.x;
@@ -778,6 +799,44 @@ void gs::GraphScriptSandbox::SaveGraph(GraphBuilder* builder)
 	utils::Trim(builder->m_Name.m_Original);
 	outputFileName << builder->m_Name.m_Original << ".gs";
 	utils::SaveStringAtPath(finalString, outputFileName.str());
+}
+
+gs::String gs::GraphScriptSandbox::GetSelectedEntryConfigFileName()
+{
+	SStream stream;
+	stream << p_Builders[p_SelectedGraph]->m_Name.m_Original << "___" << p_SelectedFunctionName.m_Original << ".gse";
+	return stream.str();
+}
+
+gs::String gs::GraphScriptSandbox::SerializeSelectedEntryConfig()
+{
+	SStream stream;
+
+	stream << "BeginGraphFiles\n";
+	for (int i = 0; i < p_Builders.size(); i++)
+	{
+		SStream outputNameStream;
+		outputNameStream << p_Builders[i]->m_Name.m_Original << ".gs";
+		String outputName = outputNameStream.str();
+		SaveGraph(p_Builders[i]);
+		stream << outputName << "\n";
+	}
+
+	stream << "EndGraphFiles\nBeginEntryGraph\n";
+
+	stream << p_Builders[p_SelectedGraph]->m_Name.m_Original << "\n";	
+	
+	stream << "EndEntryGraph\nBeginEntryArgs\n";
+
+	SStream variableSetOutput;
+	for (auto& [name, val] : m_VariableSets[p_SelectedVariableSet])
+	{
+		variableSetOutput << name.m_Original << ":" << val->m_Type.m_TypeHash.m_Value << ":" << utils::AnyToString(val->m_Value) << ",";
+	}
+	stream << variableSetOutput.str() << "\n";
+	stream << "EndEntryArgs\n";
+
+	return stream.str();
 }
 
 gs::String gs::GraphScriptSandbox::Serialize()

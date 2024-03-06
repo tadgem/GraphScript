@@ -53,7 +53,23 @@ namespace gs
 	class Process
 	{
 	public:
+		virtual void Run(String workingDirectory, String& cmd) = 0;
+		virtual void Abort() = 0;
+		static Process* CreateAppProcess();
 	};
+
+
+#ifdef _WIN32
+#include "windows.h"
+	class WindowsProcess : public Process
+	{
+	public:
+		void Run(String workingDirectory, String& cmd) override;
+		void Abort() override;
+	protected:
+		PROCESS_INFORMATION p_ProcessInfo;
+	};
+#endif
 
 	class ExampleApp
 	{

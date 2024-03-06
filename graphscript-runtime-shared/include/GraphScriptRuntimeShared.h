@@ -16,8 +16,6 @@ namespace gs
 			enum State
 			{
 				Invalid = 0,
-				// BeginProjectDirectory/EndProjectDirectory
-				ProjectDirectory,
 				// BeginGraphFiles/EndGraphFiles
 				GraphFiles,
 				// BeginEntryGraph/EndEntryGraph
@@ -30,7 +28,6 @@ namespace gs
 
 			void Parse(Context& context, String& input);
 
-			void ParseProjectDirectory(Context& context, String& input);
 			void ParseGraphFiles(Context& context, String& input);
 			void ParseEntryGraph(Context& context, String& input);
 			void ParseEntryArgs(Context& context, String& input);

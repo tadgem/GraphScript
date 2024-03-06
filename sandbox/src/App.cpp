@@ -188,3 +188,45 @@ ImVec2 gs::ExampleApp::GetUsableWindowSize()
 	glfwGetWindowSize(p_Window, &w, &h);
 	return ImVec2(static_cast<float>(w) , static_cast<float>(h) );
 }
+
+#ifdef _WIN32
+#include "windows.h"
+void gs::WindowsProcess::Run(String workingDirectory, String& cmd)
+{
+	STARTUPINFO si;
+	
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	ZeroMemory(&p_ProcessInfo, sizeof(p_ProcessInfo));
+
+	// Start the child process. 
+	if (!CreateProcess(NULL,   // No module name (use command line)
+		cmd.data(),        // Command line
+		NULL,           // Process handle not inheritable
+		NULL,           // Thread handle not inheritable
+		FALSE,          // Set handle inheritance to FALSE
+		0,              // No creation flags
+		NULL,           // Use parent's environment block
+		workingDirectory.data(),           // Use parent's starting directory 
+		&si,            // Pointer to STARTUPINFO structure
+		&p_ProcessInfo)           // Pointer to PROCESS_INFORMATION structure
+		)
+	{
+		printf("CreateProcess failed (%d).\n", GetLastError());
+		return;
+	}
+}
+
+void gs::WindowsProcess::Abort()
+{
+	TerminateProcess(p_ProcessInfo.hProcess, -1);
+}
+#endif
+
+gs::Process* gs::Process::CreateAppProcess()
+{
+#ifdef _WIN32
+	return new WindowsProcess();
+#endif
+	return nullptr;
+}

@@ -3,6 +3,7 @@
 #include "GraphScript.h"
 #include "imgui.h"
 #include "RuntimeUtils.h"
+#include "App.h";
 namespace gs
 {
 	class GraphScriptSandbox
@@ -56,13 +57,15 @@ namespace gs
 		void ResetString(String& str);
 		void SaveGraph(GraphBuilder* builder);
 
-		String	Serialize();
-		void	Deserialize();
-		void	ParseGraph(String line);
-		void	ParseVariableSet(String line);
-		void	ParseGraphInstance(String line);
-
-		void HandleCurrentState(DeserializeState& s, String& l);
+		String		GetSelectedEntryConfigFileName();
+		String		SerializeSelectedEntryConfig();
+		String		Serialize();
+		void		Deserialize();
+		void		ParseGraph(String line);
+		void		ParseVariableSet(String line);
+		void		ParseGraphInstance(String line);
+		void		HandleCurrentState(DeserializeState& s, String& l);
+		VariableSet ToVariableSet(RuntimeVariableSet& editorSet);
 
 		String p_UserPath;
 		String p_ProjectPath;
@@ -73,8 +76,7 @@ namespace gs
 		String p_FunctionToCallName;
 
 		Vector<RuntimeVariableSet> m_VariableSets;
-
-		VariableSet ToVariableSet(RuntimeVariableSet& editorSet);
+		Process* p_Process = nullptr;
 
 		bool p_SetPositions = false;
 		bool p_ShowNodesPopup = false;
