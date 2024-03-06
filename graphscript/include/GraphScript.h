@@ -438,6 +438,7 @@ protected:
 
 		GraphBuilder*	CreateBuilder(HashString name);
 		GraphBuilder*	DeserializeGraph(String& source);
+		GraphBuilder*	FindBuilder(HashString name);
 
 		Graph*			BuildGraph(GraphBuilder* builder);
 		void			DestroyGraph(Graph* graph);

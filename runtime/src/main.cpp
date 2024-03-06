@@ -1,7 +1,7 @@
-#include "GraphScript.h"
+#include "GraphScriptRuntimeShared.h"
+#include "RuntimeUtils.h"
 #include "BuiltInNodes.h"
 #include "GraphScript_Raylib.h"
-
 using namespace gs;
 const int ITERATIONS = 2;
 
@@ -26,10 +26,13 @@ int main(int argc, char* argv[]) {
 	Context context;
 	AddRaylib(context);
 	
-
 	// get runtime file
+	String entryString = utils::LoadStringAtPath(all_args.front());
 	// parse
+	Runtime::Parser p(context, entryString);
 	// get first variable set
 	// get first instance
 	// instance->CallFunction(parser.GetEntryName(), args);
+
+	p.m_Instance->CallFunction(p.m_EntryFunctionName, p.m_EntrySet);
 }

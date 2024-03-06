@@ -834,7 +834,9 @@ gs::String gs::GraphScriptSandbox::SerializeSelectedEntryConfig()
 		variableSetOutput << name.m_Original << ":" << val->m_Type.m_TypeHash.m_Value << ":" << utils::AnyToString(val->m_Value) << ",";
 	}
 	stream << variableSetOutput.str() << "\n";
-	stream << "EndEntryArgs\n";
+	stream << "EndEntryArgs\nBeginFunctionName\n";
+	stream << p_SelectedFunctionName.m_Original;
+	stream << "\nEndFunctionName";
 
 	return stream.str();
 }

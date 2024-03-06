@@ -67,7 +67,7 @@ RuntimeVariableSet utils::ParseVariableSet(Context& c, String line)
 
 	RuntimeVariableSet vars;
 
-	for (int i = 1; i < parts.size(); i++)
+	for (int i = 0; i < parts.size(); i++)
 	{
 		Vector<String> components = utils::SplitStringByChar(parts[i], ':');
 		GS_ASSERT(components.size() == 3, "Incorrect number of parts");
@@ -87,6 +87,18 @@ RuntimeVariableSet utils::ParseVariableSet(Context& c, String line)
 	}
 	return vars;
 
+}
+
+gs::VariableSet gs::utils::RuntimeToVariableSet(RuntimeVariableSet& set)
+{
+	auto vs = VariableSet();
+
+	for (auto& [name, var] : set)
+	{
+		vs[name] = var->m_Value;
+	}
+
+	return vs;
 }
 
 Graph* utils::ParseGraphInstance(Context& c, String line)

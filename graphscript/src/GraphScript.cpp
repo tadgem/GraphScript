@@ -963,6 +963,18 @@ GraphBuilder* gs::Context::CreateBuilder(HashString name)
 	return p_Builders[p_Builders.size() - 1].get();
 }
 
+GraphBuilder* gs::Context::FindBuilder(HashString name)
+{
+	for (int i = 0; i < p_Builders.size(); i++)
+	{
+		if (p_Builders[i]->m_Name == name)
+		{
+			return p_Builders[i].get();
+		}
+	}
+	return nullptr;
+}
+
 GraphBuilder* gs::Context::DeserializeGraph(String& source)
 {
 	Parser p(*this);

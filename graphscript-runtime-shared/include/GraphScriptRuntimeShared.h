@@ -1,5 +1,5 @@
-#ifndef GRAPHSCRIPT_RAYLIB_H
-#define GRAPHSCRIPT_RAYLIB_H
+#ifndef GRAPHSCRIPT_RUNTIME_SHARED_H
+#define GRAPHSCRIPT_RUNTIME_SHARED_H
 
 #include "GraphScript.h"
 
@@ -12,6 +12,10 @@ namespace gs
 		public:
 			Parser(Context& context, String& input);
 
+			HashString m_EntryFunctionName;
+			VariableSet m_EntrySet;
+			Graph* m_Instance = nullptr;
+
 		protected:
 			enum State
 			{
@@ -21,20 +25,20 @@ namespace gs
 				// BeginEntryGraph/EndEntryGraph
 				EntryGraph,
 				// BeginEntryArgs/EndEntryArgs
-				EntryArgs
+				EntryArgs,
+				// BeginFunctionName/EndFunctionName
+				FunctionName,
 			};
-			
-			HashString GetEntryName() { return p_EntryFunctionName; }
 
 			void Parse(Context& context, String& input);
 
 			void ParseGraphFiles(Context& context, String& input);
 			void ParseEntryGraph(Context& context, String& input);
 			void ParseEntryArgs(Context& context, String& input);
+			void ParseFunctionName(Context& context, String& input);
 
 			void HandleCurrentState(State& state, String& line);
 
-			HashString p_EntryFunctionName;
 		};
 	}
 }
