@@ -50,6 +50,11 @@ namespace gs
 		bool                                               m_bRunning = false;
 	};
 
+	class Process
+	{
+	public:
+	};
+
 	class ExampleApp
 	{
 	public:

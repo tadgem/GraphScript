@@ -125,13 +125,16 @@ void gs::GraphScriptSandbox::HandleEntryConfigs()
 		ImGui::SetCursorPos(ImVec2(centerX, ImGui::GetCursorPosY()));
 		if (ImGui::Button("Play"))
 		{
+			// Create .gse (graph script entry, much clever, very original)
+			// place in project directory
+			// start & capture process of GS runtime, set working directory to project directory, argument the .gse path
 
 		}
 		centerX += configTextWidth.x;
 		ImGui::SetCursorPos(ImVec2(centerX, ImGui::GetCursorPosY()));
 		if (ImGui::Button("Stop"))
 		{
-
+			// forcefully destory the remote process
 		}
 
 		centerX += configTextWidth.x;
