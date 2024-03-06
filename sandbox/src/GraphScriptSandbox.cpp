@@ -142,7 +142,7 @@ void gs::GraphScriptSandbox::HandleEntryConfigs()
 				// start & capture process of GS runtime, set working directory to project directory, argument the .gse path
 				p_Process = Process::CreateAppProcess();
 				SStream processCMD;
-				processCMD << "gsr.exe " << entryConfigName;
+				processCMD << "GraphScript-Runtime.exe " << entryConfigName;
 				p_Process->Run(".", processCMD.str());
 			}
 		}
