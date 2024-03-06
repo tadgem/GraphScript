@@ -257,6 +257,11 @@ String utils::AnyToString(Any& any)
 		return std::to_string(std::any_cast<f64>(any));
 	}
 
+	if (any.type() == typeid(bool))
+	{
+		return std::to_string(std::any_cast<bool>(any));
+	}
+
 	if (any.type() == typeid(String))
 	{
 		return std::any_cast<String>(any);
@@ -320,6 +325,11 @@ Any utils::StringToAny(String& str, u64 typeHash)
 	if (typeHash == HashString("double"))
 	{
 		return Any{ std::stod(str) };
+	}
+
+	if (typeHash == HashString("bool"))
+	{
+		return Any{ (bool)std::stoi(str) };
 	}
 
 	if (typeHash == GetTypeHash<String>())
