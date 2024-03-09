@@ -34,4 +34,4 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}/include")
 # graphscript-raylib
 target_link_libraries(${PROJECT_NAME} GraphScript GraphScript-Raylib GraphScript-Runtime-Shared)
 target_include_directories(${PROJECT_NAME} PRIVATE "${ROOT_DIR}/graphscript/include" "include" ${GRAPHSCRIPT_RAYLIB_HEADERS} ${GRAPHSCRIPT_RUNTIME_SHARED_HEADERS})
-
+target_link_options(${PROJECT_NAME} PRIVATE /FORCE)

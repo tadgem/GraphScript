@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(LIBRARIES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty" CACHE INTERNAL "")
 
 # SDL
+set(SDL_STATIC TRUE CACHE INTERNAL TRUE)
 add_subdirectory(submodules/sdl)
 
 # imgui
