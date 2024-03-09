@@ -338,8 +338,13 @@ namespace gs {
 	public:
 		using CustomNodeCallback = std::function<void(HashMap<HashString, DataSocket*>&, HashMap<HashString, DataSocket*>&, Vector<ExecutionSocket*>&, Vector<ExecutionSocket*>&)>;
 		
-		CustomNode(HashString name) : Node(name)
+		CustomNode(HashString name, bool addDefaultExeThroughput = true) : Node(name)
 		{
+			if (addDefaultExeThroughput)
+			{
+				AddExecutionInput("in");
+				AddExecutionOutput("out");
+			}
 		}
 
 		CustomNode(CustomNode& other) = default;
@@ -357,7 +362,8 @@ namespace gs {
 
 		Node* Clone() override
 		{
-			CustomNode* n = new CustomNode(*this);
+			CustomNode* n = new CustomNode(m_NodeName, false);
+			n->p_Callback = p_Callback;
 			for (auto& [name, socket] : m_InputDataSockets)
 			{
 				n->m_InputDataSockets[name] = socket->Clone();

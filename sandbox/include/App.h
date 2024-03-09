@@ -3,7 +3,8 @@
 #include <ctime>
 #include "TypeDef.h"
 #include "imgui.h"
-struct GLFWwindow;
+#include "SDL3/SDL.h"
+
 
 namespace gs
 {
@@ -88,7 +89,8 @@ namespace gs
 
 	protected:
 		const gs::String p_Name;
-		GLFWwindow* p_Window;
+		SDL_Window* p_Window;
+		SDL_Renderer* p_Renderer;
 	};
 }
 

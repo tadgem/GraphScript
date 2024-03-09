@@ -2,12 +2,10 @@
 #include "OpenSans.h"
 #include <iostream>
 
-#include <GLFW/glfw3.h>
 #include "imnodes.h"
-#include <glad/glad.h>
+#include "imgui_impl_sdl3.h"
+#include "imgui_impl_sdlrenderer3.h"
 
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
 
 #define GLSL_VERSION "#version 330"
 
@@ -99,29 +97,34 @@ gs::ExampleApp::ExampleApp(const gs::String& name) : p_Name(name)
 
 bool gs::ExampleApp::Init()
 {
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-	
-	p_Window = glfwCreateWindow(1920, 1080, "GraphScript Example", nullptr, nullptr);
-	if (p_Window == nullptr) {
-		std::cout << "Could not create GLFW window" << std::endl;
-		glfwTerminate();
-		return false;
-	}
-	glfwMakeContextCurrent(p_Window);
-
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		std::cout << "Could not initialize GLAD" << std::endl;
-		return false;
+	// Setup SDL
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMEPAD) != 0)
+	{
+		printf("Error: %s\n", SDL_GetError());
+		return -1;
 	}
 
-	float xs, ys;
-	glfwGetMonitorContentScale(monitor, &xs, &ys);
+	// From 2.0.18: Enable native IME.
+#ifdef SDL_HINT_IME_SHOW_UI
+	SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
+#endif
+
+	// Create window with SDL_Renderer graphics context
+	Uint32 window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
+	p_Window = SDL_CreateWindow("Dear ImGui SDL3+SDL_Renderer example", 1280, 720, window_flags);
+	if (p_Window == nullptr)
+	{
+		printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
+		return -1;
+	}
+	p_Renderer = SDL_CreateRenderer(p_Window, nullptr, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
+	if (p_Renderer == nullptr)
+	{
+		SDL_Log("Error: SDL_CreateRenderer(): %s\n", SDL_GetError());
+		return -1;
+	}
+	SDL_SetWindowPosition(p_Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+	SDL_ShowWindow(p_Window);
 
 	ImGui::CreateContext();
 	ImNodes::CreateContext();
@@ -130,10 +133,10 @@ bool gs::ExampleApp::Init()
 	io.IniFilename = "imgui.ini";
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	ImGui_ImplGlfw_InitForOpenGL(p_Window, true);
-	ImGui_ImplOpenGL3_Init(GLSL_VERSION);
+	ImGui_ImplSDL3_InitForSDLRenderer(p_Window, p_Renderer);
+	ImGui_ImplSDLRenderer3_Init(p_Renderer);
 
-	ImFont* font = io.Fonts->AddFontFromMemoryTTF((void*)&OpenSans[0], 529700, 18.0f * xs);
+	ImFont* font = io.Fonts->AddFontFromMemoryTTF((void*)&OpenSans[0], 529700, 24.0f);
 
 	ImNodes::StyleColorsDark();
 	DarkTheme();
@@ -142,20 +145,17 @@ bool gs::ExampleApp::Init()
 
 bool gs::ExampleApp::ShouldRun()
 {
-	bool shouldClose = glfwWindowShouldClose(p_Window);
-
-	if (shouldClose)
+	SDL_Event event;
+	while (SDL_PollEvent(&event))
 	{
-		return false;
+		ImGui_ImplSDL3_ProcessEvent(&event);
+		if (event.type == SDL_EVENT_QUIT)
+			return false;
 	}
+	
+	ImGui_ImplSDLRenderer3_NewFrame();
+	ImGui_ImplSDL3_NewFrame();
 
-	glfwPollEvents();
-
-	glClearColor(0, 0, 0, 0);
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
 	return true;
@@ -164,28 +164,28 @@ bool gs::ExampleApp::ShouldRun()
 void gs::ExampleApp::PostFrame()
 {
 	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-	glfwSwapBuffers(p_Window);
+	SDL_SetRenderDrawColor(p_Renderer,0, 0, 0, 255);
+	SDL_RenderClear(p_Renderer);
+	ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData());
+	SDL_RenderPresent(p_Renderer);
 }
 
 void gs::ExampleApp::Shutdown()
 {
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	
-	ImNodes::DestroyContext();
+	ImGui_ImplSDLRenderer3_Shutdown();
+	ImGui_ImplSDL3_Shutdown();
 	ImGui::DestroyContext();
 
-	glfwDestroyWindow(p_Window);
-	glfwTerminate();
+	SDL_DestroyRenderer(p_Renderer);
+	SDL_DestroyWindow(p_Window);
+	SDL_Quit();
 }
 
 ImVec2 gs::ExampleApp::GetUsableWindowSize()
 {
 	int l, t, r, b, w, h;
-	glfwGetWindowFrameSize(p_Window, &l, &t, &r, &b);
-	glfwGetWindowSize(p_Window, &w, &h);
+	SDL_GetWindowBordersSize(p_Window, &t, &l, &b, &r);
+	SDL_GetWindowSize(p_Window, &w, &h);
 	return ImVec2(static_cast<float>(w) , static_cast<float>(h) );
 }
 
