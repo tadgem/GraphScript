@@ -50,13 +50,19 @@ void gs::AddRaylib(Context& c)
 	raylibWindowShouldCloseNode->AddDataOutput<bool>("shouldClose");
 	raylibWindowShouldCloseNode->OnProcess([](auto inDataSockets, auto outDataSockets, auto inExeSockets, auto outExeSockets)
 		{
-			DataSocketT<bool>* run_soc = (DataSocketT<bool>*) inDataSockets["shouldClose"];
-			run_soc->Set(WindowShouldClose());
+			DataSocketT<bool>* run_soc = (DataSocketT<bool>*) outDataSockets["shouldClose"];
+			bool close = !WindowShouldClose();
+
+			if (!close)
+			{
+				int i = 1;
+			}
+			run_soc->Set(close);
 		}
 	);
 
 	CustomNode* raylibBeginDrawingNode = new CustomNode("Raylib_BeginDrawing");
-	raylibWindowShouldCloseNode->OnProcess([](auto inDataSockets, auto outDataSockets, auto inExeSockets, auto outExeSockets)
+	raylibBeginDrawingNode->OnProcess([](auto inDataSockets, auto outDataSockets, auto inExeSockets, auto outExeSockets)
 		{
 			BeginDrawing();
 			ClearBackground(BLACK);

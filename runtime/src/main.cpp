@@ -25,7 +25,6 @@ int main(int argc, char* argv[]) {
 
 	Context context;
 	AddRaylib(context);
-	
 	// get runtime file
 	String entryString = utils::LoadStringAtPath(all_args.front());
 	// parse

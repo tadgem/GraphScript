@@ -384,49 +384,48 @@ void gs::GraphScriptSandbox::HandleGraphBuilderImGui(GraphBuilder* builder, int&
 		ImGui::Separator();
 		if (ImGui::CollapsingHeader("Variables"))
 		{
-			ImGui::InputText("New Variable Name", p_NewVariableName.data(), 150);
-			ImGui::SameLine();
-			if(ImGui::BeginCombo("Add Output Socket (Parameter)", "Pick Type"))
-			{
-				for (auto& proto : p_Context->GetAllVariables())
-				{
-					if (ImGui::MenuItem(proto->m_Type.m_TypeHash.m_Original.c_str()) && !p_NewVariableName.empty())
-					{
-						utils::Trim(p_NewVariableName);
-						builder->m_Variables.emplace(HashString(p_NewVariableName), proto->Clone());
-						ResetString(p_NewVariableName);
-					}
-				}
-
-				ImGui::EndCombo();
-			}
-
-			ImGui::Indent();
 			HashString nameToDelete(-1);
 			for (auto& [name, var] : builder->m_Variables)
 			{
-				ImGui::Text("%s : %s", name.m_Original.c_str(), var->m_Type.m_TypeHash.m_Original.c_str());
+				ImGui::PushID((int)&var);
+				ImGui::Text(name.m_Original.c_str());
 				ImGui::SameLine();
-				ImGui::PushID((int)name.m_Value);
+				HandleVariableInput(name, var.get());
+				ImGui::SameLine();
 				if (ImGui::Button("Delete"))
 				{
 					nameToDelete = name;
 				}
-				HandleVariableInput(name, var.get());
 				ImGui::PopID();
+				ImGui::Separator();
 			}
 
 			if (nameToDelete.m_Value != -1)
 			{
 				builder->DeleteVariable(nameToDelete);
 			}
-			ImGui::Unindent();
 		}
 		ImGui::Separator();
 		if (ImGui::Button("Save to file"))
 		{
 			SaveGraph(builder);
 		}
+		ImGui::InputText("New Variable Name", p_NewVariableName.data(), 150);
+		if (ImGui::BeginCombo("Type", "Pick Type"))
+		{
+			for (auto& proto : p_Context->GetAllVariables())
+			{
+				if (ImGui::MenuItem(proto->m_Type.m_TypeHash.m_Original.c_str()) && !p_NewVariableName.empty())
+				{
+					utils::Trim(p_NewVariableName);
+					builder->m_Variables.emplace(HashString(p_NewVariableName), proto->Clone());
+					ResetString(p_NewVariableName);
+				}
+			}
+
+			ImGui::EndCombo();
+		}
+		ImGui::Separator();
 	}
 	ImGui::End();
 
@@ -721,7 +720,7 @@ void gs::GraphScriptSandbox::HandleVariableInput(HashString name, Variable* var)
 		{
 			str = "Hello World from Graph Script! Don't use commas or else!";
 		}
-		ImGui::InputText(name.m_Original.c_str(), str.data(), str.capacity());
+		ImGui::InputText("", str.data(), str.capacity());
 
 		strVar->Set(str);
 	}
@@ -731,7 +730,7 @@ void gs::GraphScriptSandbox::HandleVariableInput(HashString name, Variable* var)
 
 		u32 val = u32Var->Get();
 
-		ImGui::InputScalar(name.m_Original.c_str(), ImGuiDataType_U32, &val);
+		ImGui::InputScalar("", ImGuiDataType_U32, &val);
 
 		u32Var->Set(val);
 	}
@@ -742,7 +741,7 @@ void gs::GraphScriptSandbox::HandleVariableInput(HashString name, Variable* var)
 
 		i32 val = i32Var->Get();
 
-		ImGui::InputScalar(name.m_Original.c_str(), ImGuiDataType_S32, &val);
+		ImGui::InputScalar("", ImGuiDataType_S32, &val);
 
 		i32Var->Set(val);
 	}
@@ -753,7 +752,7 @@ void gs::GraphScriptSandbox::HandleVariableInput(HashString name, Variable* var)
 
 		float val = floatVar->Get();
 
-		ImGui::InputScalar(name.m_Original.c_str(), ImGuiDataType_Float, &val);
+		ImGui::InputScalar("", ImGuiDataType_Float, &val);
 
 		floatVar->Set(val);
 	}
@@ -763,14 +762,14 @@ void gs::GraphScriptSandbox::HandleVariableInput(HashString name, Variable* var)
 		VariableT<bool>* boolVar = (VariableT<bool>*) var;
 
 		bool val = boolVar->Get();
-		ImGui::Checkbox(name.m_Original.c_str(), &val);
+		ImGui::Checkbox("", &val);
 
 		boolVar->Set(val);
 	}
 
 	else
 	{
-		ImGui::Text("%s : No ImGui", name.m_Original.c_str());
+		ImGui::Text("%s : No ImGui", "");
 	}
 }
 
