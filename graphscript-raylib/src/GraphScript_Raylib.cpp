@@ -52,11 +52,6 @@ void gs::AddRaylib(Context& c)
 		{
 			DataSocketT<bool>* run_soc = (DataSocketT<bool>*) outDataSockets["shouldClose"];
 			bool close = !WindowShouldClose();
-
-			if (!close)
-			{
-				int i = 1;
-			}
 			run_soc->Set(close);
 		}
 	);

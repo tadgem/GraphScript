@@ -86,6 +86,11 @@ namespace gs
 		DataSocket(DataSocket& other) = default;
 		virtual ~DataSocket();
 		virtual DataSocket* Clone() = 0;
+		
+		bool m_BackPropogate = false;
+
+	protected:
+		friend class Context;
 	};
 
 	template <typename T>
@@ -110,6 +115,7 @@ namespace gs
 		{
 			return new DataSocketT<T>();
 		}
+
 	};
 
 	class DataConnection
@@ -139,6 +145,11 @@ namespace gs
 
 		void Process() override
 		{
+			if (GetRHS()->m_BackPropogate)
+			{
+				GetLHS()->Set(GetRHS()->Get().value());
+				GetRHS()->m_BackPropogate = false;
+			}
 			if (!GetLHS()->Get().has_value())
 			{
 				return;

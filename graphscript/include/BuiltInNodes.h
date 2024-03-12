@@ -26,7 +26,9 @@ namespace gs {
 			{
 				return;
 			}
-			valueSocket->Set(varSocket->Get().value());
+
+			varSocket->Set(valueSocket->Get().value());
+			varSocket->m_BackPropogate = true;;
 		}
 
 		Node* Clone() override
