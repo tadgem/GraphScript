@@ -82,6 +82,22 @@ namespace gs
 		return opt ? os << opt.value() : os << "EMPTY";
 	}
 
+	// vector specialization
+	template<typename T>
+	std::ostream& operator<<(std::ostream& os, std::optional<std::vector<T>> const& opt)
+	{
+		if (!opt.has_value())
+		{
+			return os << "EMPTY";
+		}
+
+		for (int i = 0; i < opt.value().size(); i++)
+		{
+			os << i << ":" << opt.value()[i] << ",";
+		}
+		return os;
+	}
+
 	template<typename T, typename ... Args>
 	constexpr Unique<T> CreateUnique(Args &&... args) {
 		return std::make_unique<T>(std::forward<Args>(args)...);

@@ -1028,6 +1028,8 @@ void gs::Context::AddBuiltIns()
 	RegisterType<u32>("unsigned int");
 	RegisterType<i32>("int");
 	RegisterType<String>("string");
+	RegisterType<Graph*>("graph");
+	RegisterType<HashString>("hashstring");
 
 	RegisterArithmaticFunctions<f32>("float");
 	RegisterArithmaticFunctions<u32>("unsigned int");

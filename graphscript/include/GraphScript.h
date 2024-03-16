@@ -485,9 +485,22 @@ protected:
 			p_Sockets.push_back(CreateUnique<DataSocketT<T>>());
 			p_DataConnections.push_back(CreateUnique<DataConnectionT<T>>(nullptr, nullptr));
 
+			p_Variables.push_back(CreateUnique<VariableT<Vector<T>>>());
+			p_Sockets.push_back(CreateUnique<DataSocketT<Vector<T>>>());
+			p_DataConnections.push_back(CreateUnique<DataConnectionT<Vector<T>>>(nullptr, nullptr));
+
 			SStream stream;
 			stream << "Set(" << typeName << ")";
 			p_Nodes.push_back(new SetNodeT<T>(stream.str()));
+
+			// todo add:
+			// add element
+			// remove elememt
+			// get size
+			// get element at index
+			stream.clear();
+			stream << "Set(" << typeName << " Array)";
+			p_Nodes.push_back(new SetNodeT<Vector<T>>(stream.str()));
 		}
 
 		template<typename T>
