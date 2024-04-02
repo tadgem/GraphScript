@@ -396,13 +396,6 @@ protected:
 		}
 		void			DeleteVariable(HashString variableName);
 
-		template<typename T>
-		DataConnectionT<T>*			ConnectDataSocket(DataSocketT<T>* lhs, DataSocketT<T>* rhs)
-		{
-			auto conn = new DataConnectionT<T>(lhs, rhs);
-			m_DataConnections.emplace_back(conn);
-			return conn;
-		}
 		DataConnection*				ConnectDataSocket(DataSocket* lhs, DataSocket* rhs);
 		void						DestroyDataConnection(int index);
 

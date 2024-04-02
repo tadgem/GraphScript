@@ -387,7 +387,6 @@ void gs::GraphScriptSandbox::HandleGraphBuilderImGui(GraphBuilder* builder, int&
 			HashString nameToDelete(-1);
 			for (auto& [name, var] : builder->m_Variables)
 			{
-				ImGui::PushID((int)&var);
 				ImGui::Text(name.m_Original.c_str());
 				ImGui::SameLine();
 				HandleVariableInput(name, var.get());
@@ -396,7 +395,6 @@ void gs::GraphScriptSandbox::HandleGraphBuilderImGui(GraphBuilder* builder, int&
 				{
 					nameToDelete = name;
 				}
-				ImGui::PopID();
 				ImGui::Separator();
 			}
 

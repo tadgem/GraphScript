@@ -3,7 +3,8 @@
 #include "GraphScript.h"
 #include "imgui.h"
 #include "RuntimeUtils.h"
-#include "App.h";
+#include "App.h"
+
 namespace gs
 {
 	class GraphScriptSandbox

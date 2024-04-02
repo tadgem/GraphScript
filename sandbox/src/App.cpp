@@ -101,7 +101,7 @@ bool gs::ExampleApp::Init()
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMEPAD) != 0)
 	{
 		printf("Error: %s\n", SDL_GetError());
-		return -1;
+		return false;
 	}
 
 	// From 2.0.18: Enable native IME.
@@ -115,13 +115,13 @@ bool gs::ExampleApp::Init()
 	if (p_Window == nullptr)
 	{
 		printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
-		return -1;
+		return false;
 	}
 	p_Renderer = SDL_CreateRenderer(p_Window, nullptr, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
 	if (p_Renderer == nullptr)
 	{
 		SDL_Log("Error: SDL_CreateRenderer(): %s\n", SDL_GetError());
-		return -1;
+		return false;
 	}
 	SDL_SetWindowPosition(p_Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 	SDL_ShowWindow(p_Window);
