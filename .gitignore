@@ -4,3 +4,5 @@ build/*
 vs22
 *./vs22
 *.exe
+/.vs
+/out

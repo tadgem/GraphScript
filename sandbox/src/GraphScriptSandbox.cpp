@@ -260,9 +260,13 @@ void gs::GraphScriptSandbox::HandleVariableSets()
 
 				for (auto& [name, var] : set)
 				{
+					ImGui::PushID((int)(var));
+
 					ImGui::Text(name.m_Original.c_str());
 					HandleVariableInput(name, var);
 					ImGui::Separator();
+
+					ImGui::PopID();
 				}
 			}
 		}
@@ -387,6 +391,7 @@ void gs::GraphScriptSandbox::HandleGraphBuilderImGui(GraphBuilder* builder, int&
 			HashString nameToDelete(-1);
 			for (auto& [name, var] : builder->m_Variables)
 			{
+				ImGui::PushID((int)(var.get()));
 				ImGui::Text(name.m_Original.c_str());
 				ImGui::SameLine();
 				HandleVariableInput(name, var.get());
@@ -396,6 +401,7 @@ void gs::GraphScriptSandbox::HandleGraphBuilderImGui(GraphBuilder* builder, int&
 					nameToDelete = name;
 				}
 				ImGui::Separator();
+				ImGui::PopID();
 			}
 
 			if (nameToDelete.m_Value != -1)
